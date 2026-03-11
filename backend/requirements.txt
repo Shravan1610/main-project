@@ -14,6 +14,9 @@ deepgram-sdk>=5.0.0,<6.0.0
 python-dotenv==1.0.1
 python-multipart==0.0.9
 
+# PDF parsing
+PyPDF2==3.0.1
+
 # Caching
 cachetools==5.3.3
 

@@ -1,3 +1,22 @@
+export type AiAnalytics = {
+  esgRiskScore: number | null;
+  esgRiskLevel: string;
+  aiConfidence: number;
+  greenwashingProbability: number;
+  climateClaimCredibility: number;
+  suspiciousStatements: string[];
+  riskBreakdown: {
+    environmentalRisk: number;
+    governanceRisk: number;
+    carbonExposure: number;
+    greenwashingRisk: number;
+  };
+  esgModelResponse: Record<string, unknown>;
+  nlpModelResponse: Record<string, unknown>;
+  verificationStatus: "verified" | "flagged" | "unavailable";
+  extractedMetrics: Record<string, number>;
+};
+
 export type DocumentAnalyzerResponse = {
   inputType: "document" | "url" | "webpage" | string;
   contentLength: number;
@@ -19,4 +38,5 @@ export type DocumentAnalyzerResponse = {
   source?: {
     url?: string | null;
   };
+  aiAnalytics?: AiAnalytics | null;
 };

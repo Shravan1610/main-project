@@ -1,5 +1,6 @@
 from functools import lru_cache
 import importlib.util
+import sys
 from pathlib import Path
 from types import ModuleType
 
@@ -16,6 +17,7 @@ def load_module(relative_path: str) -> ModuleType:
         raise ImportError(f"Unable to load module from {file_path}")
 
     module = importlib.util.module_from_spec(spec)
+    sys.modules[module_name] = module
     spec.loader.exec_module(module)
     return module
 
