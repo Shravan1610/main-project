@@ -4,12 +4,27 @@ import IntegrityScoreCard from "./integrity-score-card"
 import BlockchainVerificationBadge from "./blockchain-verification-badge"
 import TamperAlert from "./tamper-alert"
 import IntegrityTimeline from "./integrity-timeline"
+import type { IntegrityRecord } from "../types/integrity.types"
 
-export default function IntegrityDashboard({ record, events }) {
+type IntegrityEvent = {
+  type: string
+  timestamp: number
+}
 
-  const tampered =
+interface IntegrityDashboardProps {
+  record: IntegrityRecord
+  events: IntegrityEvent[]
+}
+
+export default function IntegrityDashboard({
+  record,
+  events
+}: IntegrityDashboardProps) {
+
+  const tampered = Boolean(
     record.previousHash &&
     record.previousHash !== record.hash
+  )
 
   return (
 

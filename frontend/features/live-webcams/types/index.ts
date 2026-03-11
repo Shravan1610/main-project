@@ -6,6 +6,7 @@ export type LiveWebcamFeed = {
   country: string;
   region: WebcamRegion | string;
   videoId: string;
+  channelId?: string;
   title: string;
   channelTitle: string;
   score: number;

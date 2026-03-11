@@ -10,13 +10,13 @@ export default function TamperAlert({ tampered }: Props) {
 
   return (
 
-    <div className="p-4 bg-red-900 border border-red-600 rounded">
+    <div className="rounded border border-terminal-red/35 bg-terminal-red/10 p-4">
 
-      <h4 className="font-semibold text-red-300">
+      <h4 className="font-semibold text-terminal-red">
         Tampering Detected
       </h4>
 
-      <p className="text-sm text-red-200 mt-1">
+      <p className="mt-1 text-sm text-terminal-red">
         Document content changed after verification.
       </p>
 

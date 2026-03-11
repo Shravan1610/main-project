@@ -5,6 +5,7 @@ from fastapi import APIRouter
 router = APIRouter()
 
 
+@router.get("/")
 @router.get("/health")
 async def get_health() -> dict[str, str]:
     """Return a simple service heartbeat payload."""

@@ -6,6 +6,7 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 FRONTEND_DIR="$ROOT_DIR/frontend"
 BACKEND_DIR="$ROOT_DIR/backend"
 BACKEND_VENV_DIR="$BACKEND_DIR/.venv"
+BACKEND_PYTHON="$BACKEND_VENV_DIR/bin/python"
 
 if ! command -v npm >/dev/null 2>&1; then
   echo "Error: npm is not installed or not in PATH."
@@ -22,8 +23,6 @@ if ! python3 -m pip --version >/dev/null 2>&1; then
   exit 1
 fi
 
-SKIP_INSTALL="${SKIP_INSTALL:-0}"
-
 cleanup() {
   echo
   echo "Stopping dev servers..."
@@ -34,24 +33,21 @@ cleanup() {
 trap cleanup EXIT INT TERM
 
 if [[ ! -d "$BACKEND_VENV_DIR" ]]; then
-  echo "Creating backend virtual environment in $BACKEND_VENV_DIR ..."
-  python3 -m venv "$BACKEND_VENV_DIR"
+  echo "Error: backend virtual environment not found at $BACKEND_VENV_DIR"
+  echo "Run ./install-deps.sh first."
+  exit 1
 fi
 
-BACKEND_PYTHON="$BACKEND_VENV_DIR/bin/python"
+if [[ ! -x "$BACKEND_PYTHON" ]]; then
+  echo "Error: backend python executable not found at $BACKEND_PYTHON"
+  echo "Run ./install-deps.sh first."
+  exit 1
+fi
 
-if [[ "$SKIP_INSTALL" != "1" ]]; then
-  echo "Installing backend dependencies ..."
-  (
-    cd "$BACKEND_DIR"
-    "$BACKEND_PYTHON" -m pip install -r requirements.txt
-  )
-
-  echo "Installing frontend dependencies ..."
-  (
-    cd "$FRONTEND_DIR"
-    npm install
-  )
+if [[ ! -d "$FRONTEND_DIR/node_modules" ]]; then
+  echo "Error: frontend dependencies are not installed."
+  echo "Run ./install-deps.sh first."
+  exit 1
 fi
 
 echo "Starting backend on http://localhost:8000 ..."

@@ -13,7 +13,7 @@ export default function IntegrityTimeline({ events }: Props) {
 
   return (
 
-    <div className="p-4 bg-slate-900 rounded border border-slate-700">
+    <div className="rounded border border-terminal-border bg-terminal-surface p-4 text-terminal-text">
 
       <h3 className="font-semibold mb-3">
         Integrity Timeline
@@ -27,7 +27,7 @@ export default function IntegrityTimeline({ events }: Props) {
 
             <span>{e.type}</span>
 
-            <span className="text-gray-400">
+            <span className="text-terminal-text-dim">
               {new Date(e.timestamp).toLocaleTimeString()}
             </span>
 

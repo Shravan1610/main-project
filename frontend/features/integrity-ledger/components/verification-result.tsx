@@ -18,15 +18,15 @@ export default function VerificationResult({ result }: Props) {
 
       <div className="flex items-center justify-between">
 
-        <h3 className="text-sm font-semibold text-cyan-300">
+        <h3 className="text-sm font-semibold text-terminal-cyan">
           Integrity Verification Result
         </h3>
 
         <span
           className={`text-xs px-2 py-1 rounded border ${
             verified
-              ? "border-green-500 text-green-400 bg-green-500/10"
-              : "border-red-500 text-red-400 bg-red-500/10"
+              ? "border-terminal-green/35 text-terminal-green bg-terminal-green/8"
+              : "border-terminal-red/35 text-terminal-red bg-terminal-red/8"
           }`}
         >
           {verified ? "VERIFIED" : "NOT FOUND"}
@@ -60,7 +60,7 @@ export default function VerificationResult({ result }: Props) {
             Blockchain Proof
           </p>
 
-          <div className="font-mono text-xs break-all bg-terminal-bg border border-terminal-border p-2 rounded text-green-400">
+          <div className="font-mono text-xs break-all bg-terminal-bg border border-terminal-border p-2 rounded text-terminal-green">
 
             TX: {result.blockchainTx}
 

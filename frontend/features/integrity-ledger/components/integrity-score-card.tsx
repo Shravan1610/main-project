@@ -15,13 +15,13 @@ export default function IntegrityScoreCard({
   const verified = Boolean(blockchainTx)
 
   return (
-    <div className="p-5 bg-slate-900 rounded-xl border border-slate-700">
+    <div className="rounded-xl border border-terminal-border bg-terminal-surface p-5 text-terminal-text">
 
       <h3 className="text-lg font-semibold mb-3">
         Integrity Status
       </h3>
 
-      <div className="text-sm text-gray-400 mb-2">
+      <div className="mb-2 text-sm text-terminal-text-dim">
         Document Hash
       </div>
 
@@ -36,11 +36,11 @@ export default function IntegrityScoreCard({
         </span>
 
         {verified ? (
-          <span className="px-2 py-1 text-xs bg-green-600 rounded">
+          <span className="rounded border border-terminal-green/35 bg-terminal-green/8 px-2 py-1 text-xs text-terminal-green">
             Verified on Blockchain
           </span>
         ) : (
-          <span className="px-2 py-1 text-xs bg-yellow-600 rounded">
+          <span className="rounded border border-terminal-amber/35 bg-terminal-amber/8 px-2 py-1 text-xs text-terminal-amber">
             Pending Verification
           </span>
         )}

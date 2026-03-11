@@ -5,6 +5,20 @@ export type DocumentClaim = {
   confidence: number;
 };
 
+export type AiAnalytics = {
+  esgRiskScore: number;
+  esgRiskLevel: string;
+  aiConfidence: number;
+  greenwashingProbability: number;
+  climateClaimCredibility: number;
+  suspiciousStatements: string[];
+  riskBreakdown: Record<string, number>;
+  esgModelResponse?: Record<string, unknown>;
+  nlpModelResponse?: Record<string, unknown>;
+  verificationStatus: "verified" | "flagged" | "unavailable" | string;
+  extractedMetrics?: Record<string, number>;
+};
+
 export type DocumentAnalyzerResponse = {
   inputType: "document" | "url" | "webpage" | string;
   contentLength: number;

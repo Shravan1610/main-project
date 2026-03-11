@@ -22,14 +22,14 @@ export function Header({ searchSlot, compareTraySlot, navSlot }: HeaderProps) {
           </div>
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-lg font-semibold tracking-[0.18em] text-terminal-text">WORLD MONITOR</h1>
-              <span className="text-xs text-terminal-text-muted">v2.6.1</span>
-              <span className="inline-flex items-center gap-1 text-xs text-emerald-300">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+              <h1 className="text-lg font-semibold tracking-[0.18em] text-terminal-text">GREENTRUST INTELLIGENCE TERMINAL</h1>
+              <span className="text-xs text-terminal-text-muted">v3.0.0</span>
+              <span className="inline-flex items-center gap-1 text-xs text-terminal-green">
+                <span className="h-1.5 w-1.5 rounded-full bg-terminal-green" />
                 LIVE
               </span>
             </div>
-            <p className="text-xs text-terminal-text-muted md:tracking-wide">Signal dashboard for markets, climate, and news</p>
+            <p className="text-xs text-terminal-text-muted md:tracking-wide">Live risk, evidence, document, and verification command center</p>
             {navSlot ? <div className="mt-2">{navSlot}</div> : null}
           </div>
         </div>

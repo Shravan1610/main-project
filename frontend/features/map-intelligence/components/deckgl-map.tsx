@@ -21,6 +21,7 @@ type DeckGLMapProps = {
   markers: MapMarker[];
   activeLayers?: ActiveLayers;
   onMarkerSelect?: (marker: MapMarker) => void;
+  onContextMenu?: (lngLat: { lat: number; lng: number }) => void;
 };
 
 const MARKER_KINDS: MarkerKind[] = ["entity", "exchange", "climate", "news"];
@@ -165,6 +166,7 @@ export function DeckGLMap({
   markers,
   activeLayers = DEFAULT_ACTIVE,
   onMarkerSelect,
+  onContextMenu,
 }: DeckGLMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
@@ -423,6 +425,18 @@ export function DeckGLMap({
     pulseScale,
   ]);
 
+  const getSafeLayers = useCallback((): Layer[] => {
+    return buildLayers().filter((layer): layer is Layer => {
+      return Boolean(
+        layer &&
+        typeof layer === "object" &&
+        "id" in layer &&
+        typeof layer.id === "string" &&
+        layer.id.length > 0,
+      );
+    });
+  }, [buildLayers]);
+
   // Initialize MapLibre + deck.gl overlay
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
@@ -444,7 +458,7 @@ export function DeckGLMap({
 
     const overlay = new MapboxOverlay({
       interleaved: true,
-      layers: buildLayers(),
+      layers: getSafeLayers(),
     });
 
     map.addControl(overlay as unknown as maplibregl.IControl);
@@ -471,10 +485,16 @@ export function DeckGLMap({
       setCurrentZoom(map.getZoom());
     });
 
+    map.on("contextmenu", (e) => {
+      e.preventDefault();
+      onContextMenu?.({ lat: e.lngLat.lat, lng: e.lngLat.lng });
+    });
+
     mapRef.current = map;
     overlayRef.current = overlay;
 
     return () => {
+      overlay.setProps({ layers: [] });
       map.remove();
       mapRef.current = null;
       overlayRef.current = null;
@@ -485,9 +505,9 @@ export function DeckGLMap({
   // Sync deck.gl layers when data changes
   useEffect(() => {
     if (overlayRef.current) {
-      overlayRef.current.setProps({ layers: buildLayers() });
+      overlayRef.current.setProps({ layers: getSafeLayers() });
     }
-  }, [buildLayers]);
+  }, [getSafeLayers]);
 
   // Fly to new viewport when props change
   useEffect(() => {

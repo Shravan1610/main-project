@@ -50,7 +50,7 @@ export function WorldMap({ viewport, markers }: MapProps) {
         <span className="font-semibold tracking-[0.12em] text-terminal-text">GLOBAL SITUATION</span>
         <div className="flex items-center gap-2">
           <span>WED, 11 MAR 2026</span>
-          <span className="rounded border border-emerald-500/30 bg-emerald-500/15 px-1.5 py-0.5 text-emerald-300">2D</span>
+          <span className="rounded border border-terminal-green/25 bg-terminal-green/10 px-1.5 py-0.5 text-terminal-green">2D</span>
         </div>
       </div>
 
@@ -60,10 +60,16 @@ export function WorldMap({ viewport, markers }: MapProps) {
           const position = toMapPercent(marker.coordinates.lat, marker.coordinates.lng);
           const ringClass =
             marker.intensity === "high"
-              ? "bg-rose-400/70"
+              ? "bg-terminal-red/60"
               : marker.intensity === "medium"
-                ? "bg-amber-300/65"
-                : "bg-emerald-300/65";
+                ? "bg-terminal-amber/60"
+                : "bg-terminal-green/60";
+          const glowClass =
+            marker.intensity === "high"
+              ? "shadow-[0_0_14px_rgb(var(--terminal-red)/0.32)]"
+              : marker.intensity === "medium"
+                ? "shadow-[0_0_14px_rgb(var(--terminal-amber)/0.28)]"
+                : "shadow-[0_0_14px_rgb(var(--terminal-green)/0.28)]";
           const pulseClass =
             marker.intensity === "high"
               ? "h-9 w-9"
@@ -79,7 +85,7 @@ export function WorldMap({ viewport, markers }: MapProps) {
               title={`${marker.label} (${marker.intensity})`}
             >
               <div className={`absolute -z-10 animate-ping rounded-full ${pulseClass} ${ringClass}`} />
-              <div className={`h-3 w-3 rounded-full ${ringClass} shadow-[0_0_14px_rgba(248,113,113,0.35)]`} />
+              <div className={`h-3 w-3 rounded-full ${ringClass} ${glowClass}`} />
             </div>
           );
         })}
@@ -88,15 +94,15 @@ export function WorldMap({ viewport, markers }: MapProps) {
           CLIMATE SIM
           <span className="ml-2 inline-flex items-center gap-2">
             <span className="inline-flex items-center gap-1">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-300/80" />
+              <span className="h-1.5 w-1.5 rounded-full bg-terminal-green/80" />
               LOW
             </span>
             <span className="inline-flex items-center gap-1">
-              <span className="h-1.5 w-1.5 rounded-full bg-amber-300/80" />
+              <span className="h-1.5 w-1.5 rounded-full bg-terminal-amber/80" />
               MED
             </span>
             <span className="inline-flex items-center gap-1">
-              <span className="h-1.5 w-1.5 rounded-full bg-rose-400/90" />
+              <span className="h-1.5 w-1.5 rounded-full bg-terminal-red/90" />
               HIGH
             </span>
           </span>

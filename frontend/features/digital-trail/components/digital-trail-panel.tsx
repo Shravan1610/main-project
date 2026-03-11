@@ -52,9 +52,9 @@ const BASE_EVENTS: TrailEvent[] = [
 ];
 
 function riskClassName(risk: TrailEvent["risk"]) {
-  if (risk === "high") return "text-rose-300";
-  if (risk === "medium") return "text-amber-300";
-  return "text-emerald-300";
+  if (risk === "high") return "text-terminal-red";
+  if (risk === "medium") return "text-terminal-amber";
+  return "text-terminal-green";
 }
 
 export function DigitalTrailPanel() {
@@ -89,7 +89,7 @@ export function DigitalTrailPanel() {
               onClick={() => setAssetKind(item.id)}
               className={`rounded border px-3 py-1 text-xs uppercase tracking-wide transition-colors ${
                 assetKind === item.id
-                  ? "border-cyan-400/60 bg-cyan-500/15 text-cyan-200"
+                  ? "border-terminal-cyan/35 bg-terminal-cyan/8 text-terminal-cyan"
                   : "border-terminal-border text-terminal-text-dim hover:bg-terminal-border/35"
               }`}
             >

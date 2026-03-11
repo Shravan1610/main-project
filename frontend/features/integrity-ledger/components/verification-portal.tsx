@@ -114,7 +114,7 @@ export default function VerificationPortal() {
       <div className="border border-terminal-border bg-terminal-surface p-4 rounded flex justify-between items-center">
 
         <div>
-          <h2 className="text-lg font-semibold text-cyan-300">
+          <h2 className="text-lg font-semibold text-terminal-cyan">
             Integrity Verification Console
           </h2>
 
@@ -134,7 +134,7 @@ export default function VerificationPortal() {
 
       {error && (
 
-        <div className="border border-red-500/40 bg-red-500/10 text-red-400 text-xs p-3 rounded">
+        <div className="border border-terminal-red/35 bg-terminal-red/8 text-terminal-red text-xs p-3 rounded">
 
           {error}
 
@@ -159,14 +159,14 @@ export default function VerificationPortal() {
           className={`border border-dashed rounded p-8 text-center cursor-pointer transition
           ${
             dragActive
-              ? "border-cyan-400 bg-cyan-500/10"
+              ? "border-terminal-cyan/45 bg-terminal-cyan/8"
               : "border-terminal-border bg-terminal-surface"
           }`}
         >
 
           <div className="space-y-2">
 
-            <div className="text-cyan-400 text-sm font-semibold">
+            <div className="text-terminal-cyan text-sm font-semibold">
               DOCUMENT INGESTION NODE
             </div>
 
@@ -190,7 +190,7 @@ export default function VerificationPortal() {
 
           {fileName && (
 
-            <div className="mt-4 text-xs text-green-400">
+            <div className="mt-4 text-xs text-terminal-green">
 
               Asset Loaded: {fileName}
 
@@ -264,11 +264,11 @@ export default function VerificationPortal() {
           <button
             onClick={handleVerify}
             disabled={!content || loading}
-            className="px-5 py-2 border border-cyan-400 text-cyan-300 hover:bg-cyan-500/20 rounded text-xs transition disabled:opacity-40 flex items-center gap-2"
+            className="px-5 py-2 border border-terminal-cyan/40 text-terminal-cyan hover:bg-terminal-cyan/10 rounded text-xs transition disabled:opacity-40 flex items-center gap-2"
           >
 
             {loading && (
-              <span className="w-3 h-3 border-2 border-cyan-300 border-t-transparent rounded-full animate-spin"></span>
+              <span className="w-3 h-3 border-2 border-terminal-cyan border-t-transparent rounded-full animate-spin"></span>
             )}
 
             {loading ? "Running Integrity Check..." : "Run Integrity Check"}

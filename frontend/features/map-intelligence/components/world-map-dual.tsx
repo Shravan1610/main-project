@@ -4,6 +4,7 @@ import { useCallback, useState } from "react";
 import dynamic from "next/dynamic";
 
 import type { ActiveLayers, MapEngine, MapMarker, MapProps } from "../types";
+import { StreetViewPanel } from "./street-view-panel";
 
 const DeckGLMap = dynamic(
   () => import("./deckgl-map").then((m) => m.DeckGLMap),
@@ -35,6 +36,9 @@ export function WorldMap({
   const [internalEngine, setInternalEngine] = useState<MapEngine>("2d");
   const engine = externalEngine ?? internalEngine;
 
+  const [streetViewCoord, setStreetViewCoord] = useState<{ lat: number; lng: number } | null>(null);
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; lat: number; lng: number } | null>(null);
+
   const toggle = useCallback(() => {
     const next = engine === "2d" ? "3d" : "2d";
     if (onEngineChange) {
@@ -43,6 +47,18 @@ export function WorldMap({
       setInternalEngine(next);
     }
   }, [engine, onEngineChange]);
+
+  const handleContextMenu = useCallback((lngLat: { lat: number; lng: number }) => {
+    // Position the context menu near the center of the map viewport
+    setContextMenu({ x: 200, y: 200, lat: lngLat.lat, lng: lngLat.lng });
+  }, []);
+
+  const openStreetView = useCallback(() => {
+    if (contextMenu) {
+      setStreetViewCoord({ lat: contextMenu.lat, lng: contextMenu.lng });
+      setContextMenu(null);
+    }
+  }, [contextMenu]);
 
   const countByKind = (kind: MapMarker["kind"]) =>
     markers.filter((m) => m.kind === kind).length;
@@ -79,7 +95,7 @@ export function WorldMap({
               onClick={() => engine !== "2d" && toggle()}
               className={`px-2 py-0.5 text-[10px] transition-colors ${
                 engine === "2d"
-                  ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
+                  ? "border-terminal-green/30 bg-terminal-green/10 text-terminal-green"
                   : "text-terminal-text-dim hover:text-terminal-text"
               }`}
             >
@@ -90,7 +106,7 @@ export function WorldMap({
               onClick={() => engine !== "3d" && toggle()}
               className={`px-2 py-0.5 text-[10px] transition-colors ${
                 engine === "3d"
-                  ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
+                  ? "border-terminal-green/30 bg-terminal-green/10 text-terminal-green"
                   : "text-terminal-text-dim hover:text-terminal-text"
               }`}
             >
@@ -103,11 +119,41 @@ export function WorldMap({
       {/* Map viewport */}
       <div className="relative overflow-hidden rounded-lg border border-terminal-border bg-[#0b0f16] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]"
         style={{ height: "calc(100% - 40px)" }}
+        onClick={() => setContextMenu(null)}
       >
         {engine === "2d" ? (
-          <DeckGLMap viewport={viewport} markers={markers} activeLayers={activeLayers} onMarkerSelect={onMarkerSelect} />
+          <DeckGLMap viewport={viewport} markers={markers} activeLayers={activeLayers} onMarkerSelect={onMarkerSelect} onContextMenu={handleContextMenu} />
         ) : (
           <GlobeMap viewport={viewport} markers={markers} activeLayers={activeLayers} onMarkerSelect={onMarkerSelect} />
+        )}
+
+        {/* Street View overlay */}
+        {streetViewCoord && (
+          <StreetViewPanel
+            lat={streetViewCoord.lat}
+            lng={streetViewCoord.lng}
+            onClose={() => setStreetViewCoord(null)}
+          />
+        )}
+
+        {/* Right-click context menu */}
+        {contextMenu && !streetViewCoord && (
+          <div
+            className="absolute z-40 rounded border border-terminal-border bg-terminal-surface/95 py-1 shadow-lg backdrop-blur-sm"
+            style={{ left: contextMenu.x, top: contextMenu.y }}
+          >
+            <button
+              type="button"
+              onClick={openStreetView}
+              className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-[11px] text-terminal-text transition-colors hover:bg-terminal-border/40"
+            >
+              <span className="text-terminal-cyan">&#9673;</span> Open Street View
+            </button>
+            <div className="mx-2 border-t border-terminal-border/50" />
+            <div className="px-3 py-1 text-[10px] text-terminal-text-dim">
+              {contextMenu.lat.toFixed(4)}°, {contextMenu.lng.toFixed(4)}°
+            </div>
+          </div>
         )}
 
         {/* HUD: Legend */}
@@ -137,7 +183,7 @@ export function WorldMap({
 
         {/* HUD: Status badge */}
         <div className="pointer-events-none absolute right-3 top-3">
-          <span className="rounded border border-emerald-500/30 bg-emerald-500/15 px-2 py-0.5 text-[10px] text-emerald-300 backdrop-blur-sm">
+          <span className="rounded border border-terminal-green/30 bg-terminal-green/10 px-2 py-0.5 text-[10px] text-terminal-green backdrop-blur-sm">
             LIVE
           </span>
         </div>
