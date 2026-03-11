@@ -1,1 +1,1 @@
-export { VoiceAgentLauncher } from "./voice-agent-launcher";
+export { VapiVoiceAgent } from "./voice-agent-launcher";

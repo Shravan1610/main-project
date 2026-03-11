@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
 
 import { formatCurrency, formatPercent } from "@/shared/utils";
@@ -75,12 +76,14 @@ export function MarketWatchlist({ items }: MarketWatchlistProps) {
             const changeValue = (item.price * change) / 100;
             const isSelected = item.symbol === selectedItem?.symbol;
             const isPositive = change >= 0;
+            const href = `/markets/${encodeURIComponent(item.symbol)}?asset=${item.assetType ?? "equity"}${item.exchange ? `&exchange=${encodeURIComponent(item.exchange)}` : ""}`;
 
             return (
-              <button
+              <Link
                 key={item.symbol}
-                type="button"
-                onClick={() => setSelectedSymbol(item.symbol)}
+                href={href}
+                onMouseEnter={() => setSelectedSymbol(item.symbol)}
+                onFocus={() => setSelectedSymbol(item.symbol)}
                 className={`grid w-full grid-cols-[1.15fr_1fr_0.95fr_0.8fr] gap-2 rounded px-2 py-1.5 text-left text-sm transition-colors ${
                   isSelected
                     ? "bg-terminal-border/28 text-terminal-text"
@@ -94,7 +97,7 @@ export function MarketWatchlist({ items }: MarketWatchlistProps) {
                   {change >= 0 ? "+" : ""}
                   {formatPercent(change)}
                 </span>
-              </button>
+              </Link>
             );
           })}
         </div>
@@ -110,6 +113,12 @@ export function MarketWatchlist({ items }: MarketWatchlistProps) {
             {formatPercent(selectedItem.changePercent ?? 0)}
           </p>
           <p className="mt-2 text-xs text-terminal-text-muted">Live watchlist pulse based on current market feed.</p>
+          <Link
+            href={`/markets/${encodeURIComponent(selectedItem.symbol)}?asset=${selectedItem.assetType ?? "equity"}${selectedItem.exchange ? `&exchange=${encodeURIComponent(selectedItem.exchange)}` : ""}`}
+            className="mt-3 inline-flex rounded-full border border-terminal-cyan/40 px-3 py-1.5 text-xs uppercase tracking-[0.16em] text-terminal-cyan transition-colors hover:bg-terminal-cyan/10"
+          >
+            Open chart and analysis
+          </Link>
 
           <div className="mt-4 grid grid-cols-3 gap-2">
             {performance.map((item) => (

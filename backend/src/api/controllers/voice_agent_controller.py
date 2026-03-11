@@ -1,43 +1,43 @@
 from __future__ import annotations
 
-import json
+import re
 
 from fastapi import HTTPException, UploadFile
+from pydantic import BaseModel, field_validator
 from src.api.controllers._service_loader import load_function
 
 get_voice_tools = load_function("features/voice-agent/services/voice_service.py", "get_voice_tools")
-transcribe_audio_with_tools = load_function(
-    "features/voice-agent/services/voice_service.py",
-    "transcribe_audio_with_tools",
-)
+create_phone_call = load_function("features/voice-agent/services/voice_service.py", "create_phone_call")
+
+# E.164 pattern: + followed by 1-15 digits
+_E164_RE = re.compile(r"^\+[1-9]\d{1,14}$")
+
+
+class PhoneCallRequest(BaseModel):
+    phone_number: str
+
+    @field_validator("phone_number")
+    @classmethod
+    def validate_phone(cls, v: str) -> str:
+        v = v.strip()
+        if not _E164_RE.match(v):
+            raise ValueError("Phone number must be in E.164 format (e.g. +14155551234)")
+        return v
 
 
 def fetch_voice_tools() -> dict:
     return {"tools": get_voice_tools()}
 
 
-async def transcribe_voice_audio(audio: UploadFile, tools: str | None = None) -> dict:
-    if audio is None:
-        raise HTTPException(status_code=400, detail="Audio file is required.")
-
-    audio_bytes = await audio.read()
-    if not audio_bytes:
-        raise HTTPException(status_code=400, detail="Uploaded audio is empty.")
-
+async def start_phone_call(body: PhoneCallRequest) -> dict:
     try:
-        selected_tools = json.loads(tools) if tools else []
-    except json.JSONDecodeError as error:
-        raise HTTPException(status_code=400, detail=f"Invalid tools payload: {error}") from error
-
-    if not isinstance(selected_tools, list):
-        raise HTTPException(status_code=400, detail="Tools payload must be a JSON array.")
-
-    selected_tools = [str(item) for item in selected_tools if item]
-
-    try:
-        payload = await transcribe_audio_with_tools(audio_bytes, selected_tools, audio.content_type)
-        return payload
+        result = await create_phone_call(body.phone_number)
+        return {
+            "status": "initiated",
+            "callId": result.get("id"),
+            "phoneNumber": body.phone_number,
+        }
     except ValueError as error:
-        raise HTTPException(status_code=500, detail=str(error)) from error
+        raise HTTPException(status_code=400, detail=str(error)) from error
     except Exception as error:
-        raise HTTPException(status_code=502, detail=f"Voice transcription failed: {error}") from error
+        raise HTTPException(status_code=502, detail=f"Phone call failed: {error}") from error

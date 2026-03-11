@@ -1,1 +1,1 @@
-export { useVoiceTools } from "./use-voice-tools";
+export { useVapiCall, usePhoneCall } from "./use-voice-tools";

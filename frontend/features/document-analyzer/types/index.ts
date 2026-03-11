@@ -6,6 +6,7 @@ export type DocumentClaim = {
 };
 
 export type AiAnalytics = {
+  analysisEngine?: "esg" | "nlp" | "nlp+esg" | string;
   esgRiskScore: number;
   esgRiskLevel: string;
   aiConfidence: number;
@@ -20,6 +21,7 @@ export type AiAnalytics = {
 };
 
 export type DocumentAnalyzerResponse = {
+  analysisEngine?: "esg" | "nlp" | "nlp+esg" | string;
   inputType: "document" | "url" | "webpage" | string;
   contentLength: number;
   esg: {
@@ -41,5 +43,28 @@ export type DocumentAnalyzerResponse = {
   source?: {
     url?: string | null;
   };
+  storage?: {
+    status?: string;
+    id?: string | null;
+    message?: string;
+  };
   aiAnalytics?: AiAnalytics | null;
+};
+
+export type DocumentAnalyzerHistoryItem = {
+  id: string;
+  input_type: "document" | "url" | "webpage" | string;
+  analysis_engine: "esg" | "nlp" | "nlp+esg" | string;
+  model_status: string;
+  source?: {
+    url?: string | null;
+  };
+  content_length: number;
+  extraction?: {
+    summary?: string;
+  };
+  ai_analytics?: {
+    esgRiskScore?: number;
+  };
+  created_at: string;
 };

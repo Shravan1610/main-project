@@ -1,1 +1,1 @@
-export { getVoiceTools, transcribeVoiceAudio } from "./voice-agent-service";
+export { initiatePhoneCall } from "./voice-agent-service";

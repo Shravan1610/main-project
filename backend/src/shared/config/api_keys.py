@@ -8,10 +8,10 @@ _SERVICE_TO_FIELD: dict[str, str] = {
     "gnews": "gnews_api_key",
     "the_news": "the_news_api_key",
     "gemini": "google_ai_studio_api_key",
-    "deepgram": "deepgram_api_key",
     "climate": "climate_api_key",
     "geocoding": "geocoding_api_key",
     "youtube": "youtube_api_key",
+    "vapi": "vapi_api_key",
 }
 
 

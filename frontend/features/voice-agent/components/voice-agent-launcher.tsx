@@ -1,204 +1,297 @@
 "use client";
 
-import { Mic, Square, Volume2, X } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Globe, Mic, MicOff, Phone, PhoneCall, PhoneOff } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
-import { useVoiceTools } from "../hooks";
-import { transcribeVoiceAudio } from "../services";
+import { useVapiCall, usePhoneCall } from "../hooks";
+import type { VapiCallMode } from "../types";
 
-export function VoiceAgentLauncher() {
-  const { data, loading, error } = useVoiceTools(true);
-  const [isOpen, setIsOpen] = useState(false);
-  const [isRecording, setIsRecording] = useState(false);
-  const [activeTools, setActiveTools] = useState<string[]>([]);
-  const [transcript, setTranscript] = useState("");
-  const [suggestedTools, setSuggestedTools] = useState<string[]>([]);
-  const [requestError, setRequestError] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+const ASSISTANT_ID = process.env.NEXT_PUBLIC_VAPI_ASSISTANT_ID ?? "";
 
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const streamRef = useRef<MediaStream | null>(null);
-  const chunksRef = useRef<Blob[]>([]);
+export function VapiVoiceAgent() {
+  const [mode, setMode] = useState<VapiCallMode>("web");
+  const [phoneNumber, setPhoneNumber] = useState("");
+
+  const web = useVapiCall(ASSISTANT_ID);
+  const phone = usePhoneCall();
+
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!data?.tools?.length) {
-      return;
-    }
-    if (activeTools.length > 0) {
-      return;
-    }
-    setActiveTools(data.tools.map((tool) => tool.id));
-  }, [activeTools.length, data?.tools]);
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [web.messages]);
 
-  useEffect(() => {
-    return () => {
-      streamRef.current?.getTracks().forEach((track) => track.stop());
-    };
-  }, []);
+  const isWebIdle = web.status === "idle";
+  const isWebConnecting = web.status === "connecting";
+  const isWebActive = web.status === "active";
+  const isWebEnding = web.status === "ending";
+  const isWebBusy = isWebConnecting || isWebActive || isWebEnding;
 
-  const suggestionsText = useMemo(() => {
-    if (suggestedTools.length === 0) {
-      return "";
-    }
-    return suggestedTools.join(", ");
-  }, [suggestedTools]);
+  const isPhoneBusy = phone.status === "calling";
 
-  function toggleTool(toolId: string) {
-    setActiveTools((previous) =>
-      previous.includes(toolId)
-        ? previous.filter((item) => item !== toolId)
-        : [...previous, toolId],
-    );
-  }
+  // Derive display status for header badge
+  const displayStatus =
+    mode === "web"
+      ? web.status
+      : phone.status === "calling"
+        ? "calling"
+        : phone.status === "initiated"
+          ? "initiated"
+          : "idle";
 
-  async function startRecording() {
-    setRequestError(null);
+  const statusColor =
+    displayStatus === "active" || displayStatus === "initiated"
+      ? "text-terminal-green"
+      : displayStatus === "connecting" || displayStatus === "calling"
+        ? "text-terminal-amber"
+        : "text-terminal-text-muted";
 
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      streamRef.current = stream;
+  const dotColor =
+    displayStatus === "active" || displayStatus === "initiated"
+      ? "bg-terminal-green animate-pulse"
+      : displayStatus === "connecting" || displayStatus === "calling"
+        ? "bg-terminal-amber animate-pulse"
+        : "bg-terminal-text-muted";
 
-      const recorder = new MediaRecorder(stream, { mimeType: "audio/webm" });
-      chunksRef.current = [];
-      recorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          chunksRef.current.push(event.data);
-        }
-      };
-
-      recorder.start();
-      mediaRecorderRef.current = recorder;
-      setIsRecording(true);
-    } catch (caughtError) {
-      const message = caughtError instanceof Error ? caughtError.message : "Failed to access microphone";
-      setRequestError(message);
-    }
-  }
-
-  async function stopRecording() {
-    const recorder = mediaRecorderRef.current;
-    if (!recorder) {
-      return;
-    }
-
-    setIsRecording(false);
-    setIsSubmitting(true);
-    setRequestError(null);
-
-    await new Promise<void>((resolve) => {
-      recorder.onstop = () => resolve();
-      recorder.stop();
-    });
-
-    streamRef.current?.getTracks().forEach((track) => track.stop());
-    streamRef.current = null;
-    mediaRecorderRef.current = null;
-
-    const audioBlob = new Blob(chunksRef.current, { type: "audio/webm" });
-    chunksRef.current = [];
-
-    try {
-      const response = await transcribeVoiceAudio(audioBlob, activeTools);
-      setTranscript(response.transcript || "");
-      setSuggestedTools(response.toolSuggestions ?? []);
-    } catch (caughtError) {
-      const message = caughtError instanceof Error ? caughtError.message : "Voice request failed";
-      setRequestError(message);
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
+  const canSwitchMode = !isWebBusy && !isPhoneBusy && phone.status !== "initiated";
 
   return (
-    <>
-      <button
-        type="button"
-        onClick={() => setIsOpen(true)}
-        className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-terminal-border bg-terminal-bg/70 text-terminal-text transition-colors hover:bg-terminal-border/30"
-        aria-label="Open voice agent"
-      >
-        <Volume2 size={16} />
-      </button>
+    <div className="flex h-full flex-col rounded border border-terminal-border bg-terminal-surface">
+      {/* Header */}
+      <div className="flex items-center justify-between border-b border-terminal-border px-4 py-3">
+        <div className="flex items-center gap-2">
+          <Phone size={14} className="text-terminal-green" />
+          <h3 className="text-sm font-semibold tracking-wide text-terminal-text">
+            AI VOICE AGENT
+          </h3>
+          <span
+            className={`inline-flex items-center gap-1 text-[10px] uppercase tracking-wider ${statusColor}`}
+          >
+            <span className={`h-1.5 w-1.5 rounded-full ${dotColor}`} />
+            {displayStatus}
+          </span>
+        </div>
+      </div>
 
-      {isOpen ? (
-        <div className="fixed inset-0 z-50 flex items-start justify-end bg-black/30 p-3 md:p-6">
-          <section className="w-full max-w-md rounded-xl border border-terminal-border bg-terminal-surface p-4 shadow-glow">
-            <div className="flex items-center justify-between">
-              <h4 className="text-sm font-semibold text-terminal-text">Voice Agent</h4>
-              <button
-                type="button"
-                onClick={() => setIsOpen(false)}
-                className="rounded border border-terminal-border p-1 text-terminal-text-dim hover:bg-terminal-border/30"
-                aria-label="Close voice agent"
-              >
-                <X size={14} />
-              </button>
-            </div>
+      {/* Mode toggle */}
+      <div className="flex border-b border-terminal-border">
+        <button
+          type="button"
+          onClick={() => canSwitchMode && setMode("web")}
+          disabled={!canSwitchMode}
+          className={`flex flex-1 items-center justify-center gap-1.5 px-3 py-2 text-[11px] font-medium uppercase tracking-wider transition-colors ${
+            mode === "web"
+              ? "border-b-2 border-terminal-green bg-terminal-green/5 text-terminal-green"
+              : "text-terminal-text-muted hover:text-terminal-text"
+          } disabled:opacity-50`}
+        >
+          <Globe size={12} />
+          Web Call
+        </button>
+        <button
+          type="button"
+          onClick={() => canSwitchMode && setMode("phone")}
+          disabled={!canSwitchMode}
+          className={`flex flex-1 items-center justify-center gap-1.5 px-3 py-2 text-[11px] font-medium uppercase tracking-wider transition-colors ${
+            mode === "phone"
+              ? "border-b-2 border-terminal-cyan bg-terminal-cyan/5 text-terminal-cyan"
+              : "text-terminal-text-muted hover:text-terminal-text"
+          } disabled:opacity-50`}
+        >
+          <PhoneCall size={12} />
+          Phone Call
+        </button>
+      </div>
 
-            <p className="mt-1 text-xs text-terminal-text-muted">
-              Deepgram STT with tool suggestions from your selected toolset.
-            </p>
-
-            <div className="mt-3 rounded border border-terminal-border bg-terminal-bg/55 p-2">
-              <p className="mb-2 text-[11px] uppercase tracking-wide text-terminal-text-muted">Tools</p>
-              {loading ? <p className="text-xs text-terminal-text-dim">Loading tools…</p> : null}
-              {error ? <p className="text-xs text-terminal-red">Failed to load tools.</p> : null}
-              <div className="grid grid-cols-1 gap-2">
-                {(data?.tools ?? []).map((tool) => (
-                  <label key={tool.id} className="flex cursor-pointer items-start gap-2 text-xs text-terminal-text-dim">
-                    <input
-                      type="checkbox"
-                      checked={activeTools.includes(tool.id)}
-                      onChange={() => toggleTool(tool.id)}
-                      className="mt-0.5"
-                    />
-                    <span>
-                      <span className="block text-terminal-text">{tool.label}</span>
-                      <span>{tool.description}</span>
-                    </span>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            <div className="mt-3 flex items-center gap-2">
-              {!isRecording ? (
-                <button
-                  type="button"
-                  onClick={() => void startRecording()}
-                  disabled={isSubmitting}
-                  className="inline-flex items-center gap-1 rounded border border-terminal-green/35 bg-terminal-green/8 px-3 py-1.5 text-xs text-terminal-green disabled:opacity-70"
-                >
-                  <Mic size={14} />
-                  Start
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => void stopRecording()}
-                  className="inline-flex items-center gap-1 rounded border border-terminal-red/35 bg-terminal-red/8 px-3 py-1.5 text-xs text-terminal-red"
-                >
-                  <Square size={14} />
-                  Stop
-                </button>
-              )}
-              {isSubmitting ? <span className="text-xs text-terminal-text-dim">Transcribing…</span> : null}
-            </div>
-
-            {requestError ? <p className="mt-2 text-xs text-terminal-red">{requestError}</p> : null}
-
-            <div className="mt-3 rounded border border-terminal-border bg-terminal-bg/60 p-2">
-              <p className="text-[11px] uppercase tracking-wide text-terminal-text-muted">Transcript</p>
-              <p className="mt-1 min-h-12 text-xs text-terminal-text">
-                {transcript || "Record a short command to transcribe and infer tool actions."}
-              </p>
-              {suggestionsText ? (
-                <p className="mt-1 text-xs text-terminal-cyan">Suggested tools: {suggestionsText}</p>
-              ) : null}
-            </div>
-          </section>
+      {/* Missing config warning */}
+      {mode === "web" && !web.hasKey ? (
+        <div className="px-4 py-3">
+          <p className="text-xs text-terminal-amber">
+            Set <code className="rounded bg-terminal-bg px-1 text-[10px]">NEXT_PUBLIC_VAPI_PUBLIC_KEY</code> and{" "}
+            <code className="rounded bg-terminal-bg px-1 text-[10px]">NEXT_PUBLIC_VAPI_ASSISTANT_ID</code> in{" "}
+            <code className="rounded bg-terminal-bg px-1 text-[10px]">.env.local</code> to enable web calls.
+          </p>
         </div>
       ) : null}
-    </>
+
+      {/* Volume indicator (web mode only) */}
+      {mode === "web" && isWebActive ? (
+        <div className="px-4 pt-3">
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] uppercase tracking-wider text-terminal-text-muted">Vol</span>
+            <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-terminal-border">
+              <div
+                className="h-full rounded-full bg-terminal-green transition-all duration-100"
+                style={{ width: `${Math.min(web.volumeLevel * 100, 100)}%` }}
+              />
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {/* Main content area */}
+      <div className="flex-1 overflow-y-auto px-4 py-3">
+        {mode === "web" ? (
+          /* ─── Web call transcript ─── */
+          <>
+            {web.messages.length === 0 && isWebIdle ? (
+              <div className="flex h-full flex-col items-center justify-center gap-2 text-center">
+                <Globe size={28} className="text-terminal-text-muted" />
+                <p className="text-xs text-terminal-text-muted">
+                  {web.hasKey
+                    ? "Start a browser voice call with the AI financial analyst."
+                    : "Configure VAPI keys to begin."}
+                </p>
+              </div>
+            ) : null}
+
+            {web.messages.length === 0 && isWebConnecting ? (
+              <div className="flex h-full items-center justify-center">
+                <p className="text-xs text-terminal-amber animate-pulse">Connecting to voice agent…</p>
+              </div>
+            ) : null}
+
+            <div className="space-y-2">
+              {web.messages.map((msg, idx) => (
+                <div
+                  key={idx}
+                  className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                >
+                  <div
+                    className={`max-w-[85%] rounded-lg px-3 py-2 text-xs ${
+                      msg.role === "user"
+                        ? "bg-terminal-cyan/15 text-terminal-cyan"
+                        : "bg-terminal-green/10 text-terminal-text"
+                    }`}
+                  >
+                    <span className="mb-0.5 block text-[9px] uppercase tracking-wider opacity-60">
+                      {msg.role}
+                    </span>
+                    {msg.content}
+                  </div>
+                </div>
+              ))}
+              <div ref={messagesEndRef} />
+            </div>
+          </>
+        ) : (
+          /* ─── Phone call UI ─── */
+          <div className="flex h-full flex-col items-center justify-center gap-4">
+            {phone.status === "idle" ? (
+              <>
+                <PhoneCall size={28} className="text-terminal-text-muted" />
+                <p className="text-center text-xs text-terminal-text-muted">
+                  Enter a phone number to receive a call from the AI analyst.
+                </p>
+                <input
+                  type="tel"
+                  value={phoneNumber}
+                  onChange={(e) => setPhoneNumber(e.target.value)}
+                  placeholder="+1 234 567 8900"
+                  className="w-full max-w-[260px] rounded border border-terminal-border bg-terminal-bg px-3 py-2 text-center text-sm text-terminal-text placeholder:text-terminal-text-muted/50 focus:border-terminal-cyan focus:outline-none"
+                />
+                <p className="text-[10px] text-terminal-text-muted">
+                  Include country code (e.g. +1, +61, +64)
+                </p>
+              </>
+            ) : phone.status === "calling" ? (
+              <>
+                <PhoneCall size={28} className="text-terminal-amber animate-pulse" />
+                <p className="text-xs text-terminal-amber animate-pulse">
+                  Initiating call to {phoneNumber}…
+                </p>
+              </>
+            ) : (
+              /* initiated */
+              <>
+                <Phone size={28} className="text-terminal-green" />
+                <p className="text-xs text-terminal-green">
+                  Call initiated! Your phone will ring shortly.
+                </p>
+                {phone.callId ? (
+                  <p className="text-[10px] text-terminal-text-muted">
+                    Call ID: <span className="font-mono">{phone.callId}</span>
+                  </p>
+                ) : null}
+              </>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Error */}
+      {(mode === "web" ? web.error : phone.error) ? (
+        <div className="border-t border-terminal-border px-4 py-2">
+          <p className="text-xs text-terminal-red">{mode === "web" ? web.error : phone.error}</p>
+        </div>
+      ) : null}
+
+      {/* Call controls */}
+      <div className="flex items-center justify-center gap-3 border-t border-terminal-border px-4 py-3">
+        {mode === "web" ? (
+          /* ─── Web call controls ─── */
+          isWebIdle ? (
+            <button
+              type="button"
+              onClick={() => void web.startCall()}
+              disabled={!web.hasKey || !ASSISTANT_ID}
+              className="inline-flex items-center gap-2 rounded-full border border-terminal-green/40 bg-terminal-green/10 px-5 py-2 text-xs font-medium text-terminal-green transition-colors hover:bg-terminal-green/20 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              <Globe size={14} />
+              Start Web Call
+            </button>
+          ) : (
+            <>
+              <button
+                type="button"
+                onClick={web.toggleMute}
+                disabled={!isWebActive}
+                className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition-colors ${
+                  web.isMuted
+                    ? "border-terminal-red/40 bg-terminal-red/10 text-terminal-red"
+                    : "border-terminal-border bg-terminal-bg/60 text-terminal-text hover:bg-terminal-border/40"
+                }`}
+                aria-label={web.isMuted ? "Unmute" : "Mute"}
+              >
+                {web.isMuted ? <MicOff size={14} /> : <Mic size={14} />}
+              </button>
+
+              <button
+                type="button"
+                onClick={web.endCall}
+                disabled={isWebEnding}
+                className="inline-flex items-center gap-2 rounded-full border border-terminal-red/40 bg-terminal-red/10 px-5 py-2 text-xs font-medium text-terminal-red transition-colors hover:bg-terminal-red/20 disabled:opacity-50"
+              >
+                <PhoneOff size={14} />
+                {isWebEnding ? "Ending…" : "End Call"}
+              </button>
+            </>
+          )
+        ) : (
+          /* ─── Phone call controls ─── */
+          phone.status === "idle" ? (
+            <button
+              type="button"
+              onClick={() => void phone.call(phoneNumber.replace(/\s/g, ""))}
+              disabled={!phoneNumber.replace(/\s/g, "").match(/^\+\d{7,15}$/)}
+              className="inline-flex items-center gap-2 rounded-full border border-terminal-cyan/40 bg-terminal-cyan/10 px-5 py-2 text-xs font-medium text-terminal-cyan transition-colors hover:bg-terminal-cyan/20 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              <PhoneCall size={14} />
+              Call My Phone
+            </button>
+          ) : phone.status === "calling" ? (
+            <span className="text-xs text-terminal-amber animate-pulse">Placing call…</span>
+          ) : (
+            <button
+              type="button"
+              onClick={phone.reset}
+              className="inline-flex items-center gap-2 rounded-full border border-terminal-border bg-terminal-bg/60 px-5 py-2 text-xs font-medium text-terminal-text transition-colors hover:bg-terminal-border/40"
+            >
+              New Call
+            </button>
+          )
+        )}
+      </div>
+    </div>
   );
 }

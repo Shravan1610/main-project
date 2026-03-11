@@ -1,16 +1,16 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
-import { analyzeDocumentInput } from "../services";
-import type { DocumentAnalyzerResponse } from "../types";
+import { analyzeDocumentInput, fetchDocumentAnalysisHistory } from "../services";
+import type { DocumentAnalyzerHistoryItem, DocumentAnalyzerResponse } from "../types";
 
 type InputMode = "document" | "url" | "webpage";
 
 const INPUT_MODES: Array<{ id: InputMode; label: string }> = [
   { id: "document", label: "Document" },
-  { id: "url", label: "URL" },
-  { id: "webpage", label: "Webpage" },
+  { id: "url", label: "Website URL" },
+  { id: "webpage", label: "Webpage Content" },
 ];
 
 const CLAIM_TYPE_STYLES: Record<string, string> = {
@@ -32,14 +32,21 @@ function scoreColorClass(value: number, inverse = false) {
   return "text-terminal-red";
 }
 
+function getRouteLabel(mode: InputMode | string) {
+  if (mode === "document" || mode === "nlp" || mode === "nlp+esg") return "NLP extractor + ESG scoring";
+  return "ESG web analysis model";
+}
+
 export function DocumentAnalyzerPanel() {
   const [mode, setMode] = useState<InputMode>("document");
   const [file, setFile] = useState<File | null>(null);
   const [url, setUrl] = useState("");
   const [webpage, setWebpage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [historyLoading, setHistoryLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<DocumentAnalyzerResponse | null>(null);
+  const [history, setHistory] = useState<DocumentAnalyzerHistoryItem[]>([]);
 
   const entityEntries = useMemo(() => {
     if (!result?.extraction?.entities) return [];
@@ -48,16 +55,54 @@ export function DocumentAnalyzerPanel() {
 
   const claims = result?.claims ?? [];
 
+  async function loadHistory() {
+    setHistoryLoading(true);
+    try {
+      const response = await fetchDocumentAnalysisHistory(8);
+      setHistory(response.items);
+    } catch {
+      setHistory([]);
+    } finally {
+      setHistoryLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    void loadHistory();
+  }, []);
+
   async function submit() {
+    const trimmedUrl = url.trim();
+    const trimmedWebpage = webpage.trim();
+
+    if (mode === "document" && !file) {
+      setError("Select a document before running the analyzer.");
+      setResult(null);
+      return;
+    }
+
+    if (mode === "url" && !trimmedUrl) {
+      setError("Enter a website URL to scrape.");
+      setResult(null);
+      return;
+    }
+
+    if (mode === "webpage" && !trimmedWebpage) {
+      setError("Paste webpage content to analyze.");
+      setResult(null);
+      return;
+    }
+
     setLoading(true);
     setError(null);
     try {
       const response = await analyzeDocumentInput(mode, {
         file,
-        url: url.trim(),
-        webpage: webpage.trim(),
+        url: trimmedUrl,
+        webpage: trimmedWebpage,
       });
       setResult(response);
+      await loadHistory();
     } catch (caughtError) {
       const message = caughtError instanceof Error ? caughtError.message : "Analyzer request failed";
       setError(message);
@@ -70,8 +115,8 @@ export function DocumentAnalyzerPanel() {
   return (
     <section className="space-y-3">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-terminal-text">ESK + NLP Document Analyzer</h3>
-        <p className="text-xs text-terminal-text-muted">Model adapter ready</p>
+        <h3 className="text-sm font-semibold text-terminal-text">ESG + NLP Document Analyzer</h3>
+        <p className="text-xs text-terminal-text-muted">{getRouteLabel(mode)}</p>
       </div>
 
       <div className="rounded-xl border border-terminal-border bg-terminal-bg/50 p-3">
@@ -109,18 +154,25 @@ export function DocumentAnalyzerPanel() {
               placeholder="https://company.com/sustainability"
               className="w-full rounded border border-terminal-border bg-terminal-surface px-2 py-2 text-xs text-terminal-text"
             />
-            <p className="text-[11px] text-terminal-text-muted">Scrape URL for ESG Claims</p>
+            <p className="text-[11px] text-terminal-text-muted">Scrapes the live webpage and runs ESG scoring.</p>
           </div>
         ) : null}
 
         {mode === "webpage" ? (
-          <textarea
-            value={webpage}
-            onChange={(event) => setWebpage(event.target.value)}
-            placeholder="Paste company ad text, press-release HTML or webpage content to scan for claims..."
-            rows={7}
-            className="w-full rounded border border-terminal-border bg-terminal-surface px-2 py-2 text-xs text-terminal-text"
-          />
+          <div className="space-y-1">
+            <textarea
+              value={webpage}
+              onChange={(event) => setWebpage(event.target.value)}
+              placeholder="Paste company ad text, press-release HTML, or webpage content to scan with the ESG model..."
+              rows={7}
+              className="w-full rounded border border-terminal-border bg-terminal-surface px-2 py-2 text-xs text-terminal-text"
+            />
+            <p className="text-[11px] text-terminal-text-muted">Uses the same ESG scoring logic as website URL analysis on pasted web content.</p>
+          </div>
+        ) : null}
+
+        {mode === "document" ? (
+          <p className="mt-2 text-[11px] text-terminal-text-muted">Documents run NLP extraction first, then ESG scoring.</p>
         ) : null}
 
         <div className="mt-3 flex items-center gap-2">
@@ -141,13 +193,15 @@ export function DocumentAnalyzerPanel() {
           <div className="grid gap-1 sm:grid-cols-2">
             <p>Input: {result.inputType}</p>
             <p>Content Length: {result.contentLength}</p>
+            <p>Analysis Route: {getRouteLabel(result.analysisEngine ?? result.inputType)}</p>
             <p>
-              ESK/ESG Score:{" "}
+              ESG Bridge Score:{" "}
               {result.esk?.overall_score?.toFixed
                 ? result.esk.overall_score.toFixed(2)
                 : result.esg?.overall_score?.toFixed?.(2) ?? "N/A"}
             </p>
             <p>Model Status: {result.modelStatus}</p>
+            <p>Storage: {result.storage?.status ?? "not_stored"}</p>
           </div>
 
           <div className="mt-3">
@@ -169,7 +223,7 @@ export function DocumentAnalyzerPanel() {
           <div className="mt-3 space-y-2">
             <p className="text-terminal-text-muted">Claims Detected</p>
             {claims.length === 0 ? <p>No ESG claims detected in this content.</p> : null}
-            {claims.map((claim, index) => {
+            {claims.map((claim) => {
               const style = CLAIM_TYPE_STYLES[claim.type] ?? "border-terminal-border bg-terminal-surface text-terminal-text";
               const confidence = Math.max(0, Math.min(1, claim.confidence ?? 0));
 
@@ -201,7 +255,12 @@ export function DocumentAnalyzerPanel() {
       {result?.aiAnalytics ? (
         <>
           <div className="rounded-xl border border-terminal-border bg-terminal-bg/50 p-3 text-xs text-terminal-text">
-            <p className="mb-2 text-sm font-semibold text-terminal-text">AI ESG Analytics</p>
+            <div className="mb-2 flex items-center justify-between gap-3">
+              <p className="text-sm font-semibold text-terminal-text">AI Model Analytics</p>
+              <p className="text-[11px] text-terminal-text-muted">
+                Active engine: {getRouteLabel(result.aiAnalytics.analysisEngine ?? result.analysisEngine ?? result.inputType)}
+              </p>
+            </div>
             <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
               <div className="rounded border border-terminal-border p-2">
                 <p className="text-terminal-text-muted">ESG Risk Score</p>
@@ -277,7 +336,7 @@ export function DocumentAnalyzerPanel() {
                     result.aiAnalytics.greenwashingProbability > 0.5 ? "text-terminal-red" : "text-terminal-green"
                   }`}
                 >
-                  {result.aiAnalytics.greenwashingProbability > 0.5 ? "⚠ FLAGGED" : "✓ CLEAR"}
+                  {result.aiAnalytics.greenwashingProbability > 0.5 ? "FLAGGED" : "CLEAR"}
                 </p>
               </div>
             </div>
@@ -328,6 +387,37 @@ export function DocumentAnalyzerPanel() {
           AI analysis unavailable. Please retry.
         </div>
       ) : null}
+
+      <div className="rounded-xl border border-terminal-border bg-terminal-bg/50 p-3 text-xs text-terminal-text">
+        <div className="mb-2 flex items-center justify-between gap-3">
+          <p className="text-sm font-semibold text-terminal-text">Recent Analyzer Runs</p>
+          <p className="text-[11px] text-terminal-text-muted">{historyLoading ? "Loading..." : `${history.length} stored`}</p>
+        </div>
+
+        {history.length === 0 ? (
+          <p className="text-terminal-text-muted">No stored runs available. Configure Supabase backend credentials to persist analysis history.</p>
+        ) : (
+          <div className="space-y-2">
+            {history.map((item) => (
+              <div key={item.id} className="rounded border border-terminal-border bg-terminal-surface/40 p-2">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <p className="font-medium text-terminal-text">{getRouteLabel(item.analysis_engine)}</p>
+                  <p className="text-[11px] text-terminal-text-muted">{new Date(item.created_at).toLocaleString()}</p>
+                </div>
+                <div className="mt-1 grid gap-1 sm:grid-cols-2">
+                  <p>Input: {item.input_type}</p>
+                  <p>Model Status: {item.model_status}</p>
+                  <p>Content Length: {item.content_length}</p>
+                  <p>ESG Risk Score: {item.ai_analytics?.esgRiskScore ?? "N/A"}</p>
+                </div>
+                <p className="mt-1 text-terminal-text-muted">
+                  {item.source?.url || item.extraction?.summary || "Stored analyzer run"}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </section>
   );
 }

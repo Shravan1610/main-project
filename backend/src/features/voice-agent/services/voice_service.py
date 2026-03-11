@@ -1,14 +1,9 @@
 from __future__ import annotations
 
-import asyncio
 from dataclasses import dataclass
 
+from src.shared.clients import get_http_client
 from src.shared.config import get_settings
-
-try:
-    from deepgram import DeepgramClient
-except ModuleNotFoundError:  # optional dependency in local/dev environments
-    DeepgramClient = None
 
 
 @dataclass(frozen=True)
@@ -53,50 +48,43 @@ def _guess_tool_suggestions(transcript: str, selected_tools: list[str]) -> list[
     return suggestions[:2]
 
 
-def _transcribe_sync(audio_bytes: bytes, model: str, mimetype: str | None) -> str:
-    if DeepgramClient is None:
-        raise ValueError("Deepgram SDK is not installed. Run `pip install -r requirements.txt`.")
-
+async def create_phone_call(phone_number: str) -> dict:
+    """Create an outbound phone call via the VAPI REST API."""
     settings = get_settings()
-    if not settings.deepgram_api_key:
-        raise ValueError("Missing DEEPGRAM_API_KEY in backend configuration.")
 
-    client = DeepgramClient(api_key=settings.deepgram_api_key)
-    response = client.listen.v1.media.transcribe_file(
-        request=audio_bytes,
-        model=model,
-        smart_format=True,
-        punctuate=True,
-        mimetype=mimetype,
-    )
+    if not settings.vapi_api_key:
+        raise ValueError("Missing VAPI_API_KEY in backend configuration.")
+    if not settings.vapi_assistant_id:
+        raise ValueError("Missing VAPI_ASSISTANT_ID in backend configuration.")
 
-    results = getattr(response, "results", None)
-    if not results or not getattr(results, "channels", None):
-        return ""
+    client = get_http_client()
 
-    alternatives = results.channels[0].alternatives if results.channels else []
-    if not alternatives:
-        return ""
-
-    transcript = alternatives[0].transcript or ""
-    return str(transcript).strip()
-
-
-async def transcribe_audio_with_tools(
-    audio_bytes: bytes,
-    selected_tools: list[str],
-    mimetype: str | None,
-) -> dict:
-    transcript = await asyncio.to_thread(
-        _transcribe_sync,
-        audio_bytes,
-        "nova-3",
-        mimetype,
-    )
-    suggestions = _guess_tool_suggestions(transcript, selected_tools)
-
-    return {
-        "transcript": transcript,
-        "toolSuggestions": suggestions,
-        "selectedTools": selected_tools,
+    payload: dict = {
+        "assistantId": settings.vapi_assistant_id,
+        "customer": {
+            "number": phone_number,
+        },
     }
+
+    if settings.vapi_phone_number_id:
+        payload["phoneNumberId"] = settings.vapi_phone_number_id
+
+    response = await client.post(
+        "https://api.vapi.ai/call/phone",
+        json=payload,
+        headers={
+            "Authorization": f"Bearer {settings.vapi_api_key}",
+            "Content-Type": "application/json",
+        },
+        timeout=15.0,
+    )
+
+    if response.status_code >= 400:
+        detail = response.text
+        try:
+            detail = response.json().get("message", detail)
+        except Exception:
+            pass
+        raise ValueError(f"VAPI API error ({response.status_code}): {detail}")
+
+    return response.json()
