@@ -26,7 +26,7 @@ import { LiveWebcamsDashboard } from "@/features/live-webcams/components";
 
 import { DocumentAnalyzerPanel } from "@/features/document-analyzer/components";
 import { DigitalTrailPanel } from "@/features/digital-trail/components";
-
+import { EvidenceCollectionPanel } from "@/features/evidence-collection/components";
 import { LayerPanel } from "@/features/layer-controls/components";
 import { useLayers } from "@/features/layer-controls/hooks";
 
@@ -64,6 +64,8 @@ export default function HomePage() {
 
   const [activeNavTab, setActiveNavTab] = useState<
     "monitor" | "document-analyzer" | "digital-trail" | "verification"
+  const [activeNavTab, setActiveNavTab] = useState<
+    "monitor" | "document-analyzer" | "digital-trail" | "automated-evidence-collection-system"
   >("monitor");
 
   const activeEntityId = selectedEntityIds[selectedEntityIds.length - 1];
@@ -225,11 +227,17 @@ export default function HomePage() {
             onClick={() => setActiveNavTab("verification")}
             className={`rounded border px-3 py-1 text-xs uppercase tracking-wide transition-colors ${
               activeNavTab === "verification"
+          <button
+            type="button"
+            onClick={() => setActiveNavTab("automated-evidence-collection-system")}
+            className={`rounded border px-3 py-1 text-xs uppercase tracking-wide transition-colors ${
+              activeNavTab === "automated-evidence-collection-system"
                 ? "border-cyan-400/60 bg-cyan-500/15 text-cyan-200"
                 : "border-terminal-border text-terminal-text-dim hover:bg-terminal-border/35"
             }`}
           >
             Verification
+            Automated Evidence Collection System
           </button>
         </div>
       }
@@ -330,6 +338,8 @@ export default function HomePage() {
           <DigitalTrailPanel />
         ) : activeNavTab === "verification" ? (
           <VerificationPortal />
+        ) : activeNavTab === "automated-evidence-collection-system" ? (
+          <EvidenceCollectionPanel />
         ) : (
           <div className="space-y-4">
 

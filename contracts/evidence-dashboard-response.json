@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "EvidenceDashboardResponse",
+  "description": "Response from GET /evidence/dashboard/summary",
+  "type": "object",
+  "required": ["metrics", "recent_documents", "recent_review_tasks", "recent_claims"],
+  "properties": {
+    "metrics": {
+      "type": "object",
+      "required": ["total_documents", "total_activity_records", "pending_review_tasks", "approved_records", "rejected_records", "traceable_claim_ratio"],
+      "properties": {
+        "total_documents": { "type": "integer" },
+        "total_activity_records": { "type": "integer" },
+        "pending_review_tasks": { "type": "integer" },
+        "approved_records": { "type": "integer" },
+        "rejected_records": { "type": "integer" },
+        "traceable_claim_ratio": { "type": "number" },
+        "average_review_turnaround_minutes": { "type": ["number", "null"] }
+      }
+    },
+    "recent_documents": { "type": "array", "items": { "type": "object" } },
+    "recent_review_tasks": { "type": "array", "items": { "type": "object" } },
+    "recent_claims": { "type": "array", "items": { "type": "object" } }
+  }
+}

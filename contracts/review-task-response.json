@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ReviewTaskResponse",
+  "description": "Response from PATCH /evidence/review-tasks/{task_id}",
+  "type": "object",
+  "required": ["review_task", "activity_record", "approval_decision", "audit_event"],
+  "properties": {
+    "review_task": { "type": "object" },
+    "activity_record": { "type": "object" },
+    "approval_decision": {
+      "type": "object",
+      "required": ["id", "review_task_id", "activity_record_id", "reviewer_id", "decision", "created_at"],
+      "properties": {
+        "id": { "type": "string" },
+        "review_task_id": { "type": "string" },
+        "activity_record_id": { "type": "string" },
+        "reviewer_id": { "type": "string" },
+        "decision": { "type": "string", "enum": ["approved", "rejected", "superseded"] },
+        "notes": { "type": ["string", "null"] },
+        "overrides": { "type": "object" },
+        "created_at": { "type": "string" }
+      }
+    },
+    "audit_event": { "type": "object" }
+  }
+}

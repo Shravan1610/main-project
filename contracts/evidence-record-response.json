@@ -1,0 +1,64 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "EvidenceRecordResponse",
+  "description": "Response from POST /evidence/extractions/{document_id}/run",
+  "type": "object",
+  "required": ["document", "extraction", "activity_record", "review_task", "audit_event"],
+  "properties": {
+    "document": { "type": "object" },
+    "extraction": {
+      "type": "object",
+      "required": ["id", "document_id", "version", "confidence_score", "extracted_fields", "created_at"],
+      "properties": {
+        "id": { "type": "string" },
+        "document_id": { "type": "string" },
+        "version": { "type": "integer" },
+        "model_name": { "type": "string" },
+        "confidence_score": { "type": "number" },
+        "extracted_fields": { "type": "object" },
+        "created_at": { "type": "string" }
+      }
+    },
+    "activity_record": {
+      "type": "object",
+      "required": ["id", "organization_id", "document_type", "activity_type", "confidence_score", "source_document_id", "reviewer_status"],
+      "properties": {
+        "id": { "type": "string" },
+        "organization_id": { "type": "string" },
+        "facility_id": { "type": ["string", "null"] },
+        "supplier_id": { "type": ["string", "null"] },
+        "period_start": { "type": ["string", "null"] },
+        "period_end": { "type": ["string", "null"] },
+        "document_type": { "type": "string" },
+        "activity_type": { "type": "string" },
+        "quantity": { "type": ["number", "null"] },
+        "unit": { "type": ["string", "null"] },
+        "currency": { "type": ["string", "null"] },
+        "region": { "type": ["string", "null"] },
+        "confidence_score": { "type": "number" },
+        "source_document_id": { "type": "string" },
+        "reviewer_status": { "type": "string", "enum": ["needs_review", "approved", "rejected", "superseded"] },
+        "lifecycle_status": { "type": "string" },
+        "blocked_reasons": { "type": "array", "items": { "type": "string" } },
+        "created_at": { "type": "string" },
+        "updated_at": { "type": "string" }
+      }
+    },
+    "review_task": {
+      "type": "object",
+      "required": ["id", "activity_record_id", "status", "created_at"],
+      "properties": {
+        "id": { "type": "string" },
+        "activity_record_id": { "type": "string" },
+        "status": { "type": "string" },
+        "notes": { "type": ["string", "null"] },
+        "created_at": { "type": "string" },
+        "updated_at": { "type": "string" },
+        "resolved_at": { "type": ["string", "null"] },
+        "reviewer_id": { "type": ["string", "null"] },
+        "decision": { "type": ["string", "null"] }
+      }
+    },
+    "audit_event": { "type": "object" }
+  }
+}
