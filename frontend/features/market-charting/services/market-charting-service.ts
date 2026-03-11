@@ -331,15 +331,22 @@ export async function getMarketDetail(
         limit: String(candleLimitForTimeframe(timeframe)),
       });
 
+      if (syncedRows.length === 0) {
+        throw new Error(
+          `Market sync completed but no candle data was stored in Supabase for ${symbol} (${timeframe}).`,
+        );
+      }
+
       return {
         instrument: syncedInstrument ?? instrument,
         candles: syncedRows.map(mapCandle),
       };
-    } catch {
-      return {
-        instrument,
-        candles: [],
-      };
+    } catch (error) {
+      throw new Error(
+        error instanceof Error
+          ? error.message
+          : `Market sync failed for ${symbol} (${timeframe}).`,
+      );
     }
   }
 
