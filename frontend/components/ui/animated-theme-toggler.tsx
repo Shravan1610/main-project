@@ -86,7 +86,12 @@ export function AnimatedThemeToggler({
       )}
       {...props}
     >
-      {resolvedTheme ? (isDark ? <Sun size={16} /> : <Moon size={16} />) : <Moon size={16} />}
+      <span className="block dark:hidden">
+        <Moon size={16} />
+      </span>
+      <span className="hidden dark:block">
+        <Sun size={16} />
+      </span>
       <span className="sr-only">Toggle theme</span>
     </button>
   );

@@ -9,12 +9,15 @@ __pycache__/
 .env
 .env.local
 .env.*.local
+.venv/
+backend/.venv/
 
 # Build outputs
 .next/
 out/
 dist/
 build/
+*.tsbuildinfo
 
 # IDE
 .vscode/

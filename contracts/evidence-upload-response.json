@@ -1,0 +1,47 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "EvidenceUploadResponse",
+  "description": "Response from POST /evidence/documents/upload and POST /evidence/documents/email-ingest",
+  "type": "object",
+  "required": ["document", "audit_event"],
+  "properties": {
+    "document": {
+      "type": "object",
+      "required": ["id", "organization_id", "document_type", "status", "created_at"],
+      "properties": {
+        "id": { "type": "string" },
+        "organization_id": { "type": "string" },
+        "facility_id": { "type": ["string", "null"] },
+        "supplier_id": { "type": ["string", "null"] },
+        "document_type": { "type": "string", "enum": ["utility_bill", "fuel_invoice", "renewable_certificate"] },
+        "source_system": { "type": "string" },
+        "source_channel": { "type": "string" },
+        "source_reference": { "type": ["string", "null"] },
+        "file_name": { "type": "string" },
+        "content_type": { "type": ["string", "null"] },
+        "file_size": { "type": "integer" },
+        "sha256": { "type": "string" },
+        "period_start": { "type": ["string", "null"] },
+        "period_end": { "type": ["string", "null"] },
+        "region": { "type": ["string", "null"] },
+        "currency": { "type": ["string", "null"] },
+        "status": { "type": "string", "enum": ["ingested", "extracted", "mapped", "needs_review", "approved", "rejected", "superseded"] },
+        "created_at": { "type": "string" },
+        "updated_at": { "type": "string" }
+      }
+    },
+    "audit_event": {
+      "type": "object",
+      "required": ["id", "event_type", "actor_id", "entity_type", "entity_id", "timestamp"],
+      "properties": {
+        "id": { "type": "string" },
+        "event_type": { "type": "string" },
+        "actor_id": { "type": "string" },
+        "entity_type": { "type": "string" },
+        "entity_id": { "type": "string" },
+        "payload": { "type": "object" },
+        "timestamp": { "type": "string" }
+      }
+    }
+  }
+}

@@ -31,6 +31,9 @@ export function useApi<TData>(
 
     async function run() {
       if (pauseWhenHidden && typeof document !== "undefined" && document.visibilityState === "hidden") {
+        if (!isCancelled) {
+          setLoading(false);
+        }
         if (refreshIntervalMs > 0 && !isCancelled) {
           timer = setTimeout(run, refreshIntervalMs);
         }

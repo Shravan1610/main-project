@@ -2,6 +2,7 @@ import { API_BASE_URL } from "@/shared/constants";
 
 type Primitive = string | number | boolean | null | undefined;
 type QueryParams = Record<string, Primitive>;
+const DEFAULT_REQUEST_TIMEOUT_MS = 12_000;
 
 export class ApiError extends Error {
   status: number;
@@ -35,12 +36,24 @@ function buildUrl(path: string, params?: QueryParams): string {
 }
 
 async function request<TResponse>(path: string, init?: RequestInit, params?: QueryParams): Promise<TResponse> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), DEFAULT_REQUEST_TIMEOUT_MS);
+
   const response = await fetch(buildUrl(path, params), {
     ...init,
+    signal: controller.signal,
     headers: {
       "Content-Type": "application/json",
       ...(init?.headers ?? {}),
     },
+  }).catch((error) => {
+    if (error instanceof DOMException && error.name === "AbortError") {
+      throw new ApiError("Request timed out", 408, null);
+    }
+
+    throw error;
+  }).finally(() => {
+    clearTimeout(timeout);
   });
 
   const payload = await response.json().catch(() => null);
