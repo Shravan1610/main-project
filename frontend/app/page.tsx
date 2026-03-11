@@ -5,46 +5,73 @@ import dynamic from "next/dynamic";
 
 import { AppShell } from "@/features/app-shell/components";
 import { useAppState } from "@/features/app-shell/hooks";
+
 import { CompareView } from "@/features/comparison/components";
 import { compareEntities } from "@/features/comparison/services";
+
 import { SearchBar } from "@/features/entity-search/components";
 import type { SearchResult } from "@/features/entity-search/types";
+
 import { InsightPanel } from "@/features/insight-panel/components";
+
 import { useMap } from "@/features/map-intelligence/hooks";
 import { fetchMapLayers } from "@/features/map-intelligence/services";
+import type { MapProps } from "@/features/map-intelligence/types";
+
 import { CryptoFeedSection } from "@/features/crypto-feed/components";
 import { MarketFeedSection } from "@/features/market-feed/components";
 import { NewsFeedSection } from "@/features/news-feed/components";
+
 import { LiveWebcamsDashboard } from "@/features/live-webcams/components";
+
 import { DocumentAnalyzerPanel } from "@/features/document-analyzer/components";
 import { DigitalTrailPanel } from "@/features/digital-trail/components";
 import { EvidenceCollectionPanel } from "@/features/evidence-collection/components";
 import { LayerPanel } from "@/features/layer-controls/components";
 import { useLayers } from "@/features/layer-controls/hooks";
-import type { MapProps } from "@/features/map-intelligence/types";
+
 import type { EntityAnalysis } from "@/features/insight-panel/types";
+
 import { useApi } from "@/shared/hooks";
 
+/* Phase-6 Portal */
+
+import { VerificationPortal } from "@/features/integrity-ledger";
+
 const WorldMap = dynamic<MapProps>(
-  () => import("@/features/map-intelligence/components/world-map-dual").then((module) => module.WorldMap),
-  { ssr: false },
+  () =>
+    import("@/features/map-intelligence/components/world-map-dual").then(
+      (module) => module.WorldMap
+    ),
+  { ssr: false }
 );
 
 export default function HomePage() {
   const { selectedEntityIds, addEntity, removeEntity } = useAppState();
   const { viewport, flyTo } = useMap();
   const { layers, toggleLayer } = useLayers();
-  const [entityLookup, setEntityLookup] = useState<Record<string, SearchResult>>({});
+
+  const [entityLookup, setEntityLookup] = useState<
+    Record<string, SearchResult>
+  >({});
+
   const [compareData, setCompareData] = useState<EntityAnalysis[]>([]);
   const [compareLoading, setCompareLoading] = useState(false);
   const [compareError, setCompareError] = useState<string | null>(null);
   const [showCompareView, setShowCompareView] = useState(false);
+
+  /* NEW TAB */
+
+  const [activeNavTab, setActiveNavTab] = useState<
+    "monitor" | "document-analyzer" | "digital-trail" | "verification"
   const [activeNavTab, setActiveNavTab] = useState<
     "monitor" | "document-analyzer" | "digital-trail" | "automated-evidence-collection-system"
   >("monitor");
 
   const activeEntityId = selectedEntityIds[selectedEntityIds.length - 1];
+
   const loadLayers = useCallback(() => fetchMapLayers(), []);
+
   const { data: layerData } = useApi(loadLayers, {
     initialData: { exchanges: [], climate: [], news: [] },
     refreshIntervalMs: 45000,
@@ -58,15 +85,15 @@ export default function HomePage() {
       climate: layers.some((item) => item.id === "climate" && item.enabled),
       news: layers.some((item) => item.id === "news" && item.enabled),
     }),
-    [layers],
+    [layers]
   );
 
   const entityMarkers = useMemo(
-    () => selectedEntityIds.flatMap((entityId) => {
+    () =>
+      selectedEntityIds.flatMap((entityId) => {
         const entity = entityLookup[entityId];
-        if (!entity?.coordinates) {
-          return [];
-        }
+
+        if (!entity?.coordinates) return [];
 
         return [
           {
@@ -77,13 +104,11 @@ export default function HomePage() {
           },
         ];
       }),
-    [entityLookup, selectedEntityIds],
+    [entityLookup, selectedEntityIds]
   );
 
   const allLayerMarkers = useMemo(() => {
-    if (!layerData) {
-      return [];
-    }
+    if (!layerData) return [];
 
     return [
       ...layerData.exchanges,
@@ -94,7 +119,7 @@ export default function HomePage() {
 
   const markers = useMemo(
     () => [...entityMarkers, ...allLayerMarkers],
-    [entityMarkers, allLayerMarkers],
+    [entityMarkers, allLayerMarkers]
   );
 
   const activeLayers = useMemo(
@@ -106,12 +131,14 @@ export default function HomePage() {
       heatmap: layers.some((l) => l.id === "heatmap" && l.enabled),
       "risk-overlay": layers.some((l) => l.id === "risk-overlay" && l.enabled),
     }),
-    [layerEnabled, layers],
+    [layerEnabled, layers]
   );
 
   const handleSelect = (result: SearchResult) => {
     addEntity(result.id);
+
     setShowCompareView(false);
+
     setEntityLookup((previous) => ({
       ...previous,
       [result.id]: result,
@@ -123,19 +150,23 @@ export default function HomePage() {
   };
 
   const handleCompare = useCallback(async () => {
-    if (selectedEntityIds.length < 2) {
-      return;
-    }
+    if (selectedEntityIds.length < 2) return;
 
     setShowCompareView(true);
     setCompareLoading(true);
     setCompareError(null);
 
     try {
-      const response = await compareEntities({ entities: selectedEntityIds });
+      const response = await compareEntities({
+        entities: selectedEntityIds,
+      });
+
       setCompareData(response.entities);
     } catch (error) {
-      setCompareError(error instanceof Error ? error.message : "Compare failed");
+      setCompareError(
+        error instanceof Error ? error.message : "Compare failed"
+      );
+
       setCompareData([]);
     } finally {
       setCompareLoading(false);
@@ -146,6 +177,9 @@ export default function HomePage() {
     <AppShell
       navSlot={
         <div className="flex flex-wrap gap-2">
+
+          {/* Monitor */}
+
           <button
             type="button"
             onClick={() => setActiveNavTab("monitor")}
@@ -157,6 +191,9 @@ export default function HomePage() {
           >
             Monitor
           </button>
+
+          {/* Document Analyzer */}
+
           <button
             type="button"
             onClick={() => setActiveNavTab("document-analyzer")}
@@ -168,6 +205,9 @@ export default function HomePage() {
           >
             Document Analyzer
           </button>
+
+          {/* Digital Trail */}
+
           <button
             type="button"
             onClick={() => setActiveNavTab("digital-trail")}
@@ -179,6 +219,14 @@ export default function HomePage() {
           >
             Digital Trail
           </button>
+
+          {/* Phase-6 Verification */}
+
+          <button
+            type="button"
+            onClick={() => setActiveNavTab("verification")}
+            className={`rounded border px-3 py-1 text-xs uppercase tracking-wide transition-colors ${
+              activeNavTab === "verification"
           <button
             type="button"
             onClick={() => setActiveNavTab("automated-evidence-collection-system")}
@@ -188,14 +236,25 @@ export default function HomePage() {
                 : "border-terminal-border text-terminal-text-dim hover:bg-terminal-border/35"
             }`}
           >
+            Verification
             Automated Evidence Collection System
           </button>
         </div>
       }
-      mapSlot={<WorldMap viewport={viewport} markers={markers} activeLayers={activeLayers} />}
+
+      mapSlot={
+        <WorldMap
+          viewport={viewport}
+          markers={markers}
+          activeLayers={activeLayers}
+        />
+      }
+
       layerControlsSlot={<LayerPanel layers={layers} onToggle={toggleLayer} />}
+
       sidePanelSlot={
         <div className="flex h-full flex-col gap-3">
+
           <SearchBar onSelect={handleSelect} />
 
           <div className="rounded border border-terminal-border bg-terminal-surface p-2">
@@ -203,7 +262,9 @@ export default function HomePage() {
               <p className="text-xs text-terminal-text-dim">
                 Compare {selectedEntityIds.length > 0 ? `(${selectedEntityIds.length})` : ""}
               </p>
+
               <div className="flex items-center gap-2">
+
                 <button
                   type="button"
                   onClick={() => {
@@ -213,20 +274,23 @@ export default function HomePage() {
                     selectedEntityIds.forEach((id) => removeEntity(id));
                   }}
                   disabled={selectedEntityIds.length === 0 || compareLoading}
-                  className="rounded border border-terminal-border px-2 py-1 text-xs text-terminal-text disabled:cursor-not-allowed disabled:opacity-45"
+                  className="rounded border border-terminal-border px-2 py-1 text-xs text-terminal-text disabled:opacity-45"
                 >
                   Clear
                 </button>
+
                 <button
                   type="button"
                   onClick={handleCompare}
                   disabled={selectedEntityIds.length < 2 || compareLoading}
-                  className="rounded border border-terminal-border px-2 py-1 text-xs text-terminal-text disabled:cursor-not-allowed disabled:opacity-45"
+                  className="rounded border border-terminal-border px-2 py-1 text-xs text-terminal-text disabled:opacity-45"
                 >
                   {compareLoading ? "Comparing..." : "Compare"}
                 </button>
+
               </div>
             </div>
+
             <div className="flex flex-wrap gap-2">
               {selectedEntityIds.map((id) => (
                 <button
@@ -238,40 +302,55 @@ export default function HomePage() {
                   {id} ✕
                 </button>
               ))}
-              {selectedEntityIds.length === 0 ? <p className="text-xs text-terminal-text-dim">No entities selected.</p> : null}
+
+              {selectedEntityIds.length === 0 && (
+                <p className="text-xs text-terminal-text-dim">
+                  No entities selected.
+                </p>
+              )}
             </div>
           </div>
 
           <div className="min-h-0 flex-1 overflow-y-auto rounded border border-terminal-border bg-terminal-surface p-3">
+
             {showCompareView ? (
               compareError ? (
                 <p className="text-xs text-terminal-red">{compareError}</p>
               ) : compareLoading ? (
-                <p className="text-sm text-terminal-text-dim">Preparing comparison...</p>
+                <p className="text-sm text-terminal-text-dim">
+                  Preparing comparison...
+                </p>
               ) : (
                 <CompareView entities={compareData} />
               )
             ) : (
               <InsightPanel entityId={activeEntityId} />
             )}
+
           </div>
         </div>
       }
+
       feedSlot={
         activeNavTab === "document-analyzer" ? (
           <DocumentAnalyzerPanel />
         ) : activeNavTab === "digital-trail" ? (
           <DigitalTrailPanel />
+        ) : activeNavTab === "verification" ? (
+          <VerificationPortal />
         ) : activeNavTab === "automated-evidence-collection-system" ? (
           <EvidenceCollectionPanel />
         ) : (
           <div className="space-y-4">
+
             <div className="grid gap-4 lg:grid-cols-3">
               <NewsFeedSection />
               <MarketFeedSection />
               <CryptoFeedSection />
             </div>
+
             <LiveWebcamsDashboard />
+
           </div>
         )
       }
