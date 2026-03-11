@@ -19,7 +19,12 @@ def load_module(relative_path: str) -> ModuleType:
     module = importlib.util.module_from_spec(spec)
     # Register before execution so decorators/introspection can resolve __module__.
     sys.modules[module_name] = module
-    spec.loader.exec_module(module)
+    try:
+        spec.loader.exec_module(module)
+    except Exception:
+        # Remove partially-initialized module to avoid confusing import state.
+        sys.modules.pop(module_name, None)
+        raise
     return module
 
 

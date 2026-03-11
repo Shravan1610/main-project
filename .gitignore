@@ -16,7 +16,8 @@ out/
 dist/
 build/
 
-# IDE
+# TypeScript build info
+*.tsbuildinfo
 .vscode/
 .idea/
 *.swp
