@@ -1,13 +1,15 @@
-"""
-backend/src/api/routes/compare_routes.py
-POST /compare endpoint — compares up to 3 entities side-by-side.
+from pydantic import BaseModel, Field
+from fastapi import APIRouter
 
-Owner: Afham
-Task: AF-1-05
-Phase: 1
+from src.api.controllers.compare_controller import compare_entities
 
-Expected functions:
-  router — APIRouter with POST /compare accepting body {entities: string[]},
-           delegates to compare_controller, returns CompareResponse.
-"""
-# Stub — implement in AF-1-05
+router = APIRouter()
+
+
+class CompareRequest(BaseModel):
+    entities: list[str] = Field(default_factory=list, min_length=1, max_length=3)
+
+
+@router.post("/compare")
+async def compare(payload: CompareRequest) -> dict:
+    return await compare_entities(payload.entities)

@@ -1,17 +1,19 @@
-"""
-backend/src/features/feed-builder/utils/aggregator.py
-Merges and sorts feed items by relevance and time.
+from datetime import datetime
+from typing import Any
 
-Owner: Afham
-Task: AF-2-21
-Phase: 2
 
-Expected functions:
-  sort_by_relevance(items: list, key: str = "relevance_score") -> list
-    — Sorts feed items by relevance score descending.
-  sort_by_time(items: list, key: str = "published_at") -> list
-    — Sorts feed items by timestamp descending (newest first).
-  merge_feeds(stocks: list, news: list, crypto: list) -> FeedResponse
-    — Combines all feeds into a single FeedResponse with updated_at timestamp.
-"""
-# Stub — implement in AF-2-21
+def sort_by_relevance(items: list[dict[str, Any]], key: str = "relevance_score") -> list[dict[str, Any]]:
+    return sorted(items, key=lambda item: float(item.get(key, 0.0)), reverse=True)
+
+
+def sort_by_time(items: list[dict[str, Any]], key: str = "published_at") -> list[dict[str, Any]]:
+    return sorted(items, key=lambda item: str(item.get(key, "")), reverse=True)
+
+
+def merge_feeds(stocks: list[dict], news: list[dict], crypto: list[dict]) -> dict:
+    return {
+        "stocks": stocks,
+        "news": news,
+        "crypto": crypto,
+        "updated_at": datetime.utcnow().isoformat(),
+    }

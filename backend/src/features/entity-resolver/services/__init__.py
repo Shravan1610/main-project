@@ -1,1 +1,6 @@
-"""backend.src.features.entity_resolver.services — Entity lookup services."""
+__all__ = [
+    "resolver_service",
+    "company_lookup",
+    "ticker_lookup",
+    "crypto_lookup",
+]

@@ -1,13 +1,19 @@
-"""
-backend/src/features/entity-resolver/schemas/entity_schema.py
-Pydantic models for entity search results.
+from enum import Enum
 
-Owner: Afham
-Task: AF-1-13
-Phase: 1
+from pydantic import BaseModel
 
-Expected classes:
-  EntityType(str, Enum) — "company", "stock", "crypto"
-  EntityResult(BaseModel) — id, name, type, ticker, description, coordinates, logo_url
-"""
-# Stub — implement in AF-1-13
+
+class EntityType(str, Enum):
+    company = "company"
+    stock = "stock"
+    crypto = "crypto"
+
+
+class EntityResult(BaseModel):
+    id: str
+    name: str
+    type: EntityType
+    ticker: str | None = None
+    description: str | None = None
+    coordinates: dict[str, float] | None = None
+    logo_url: str | None = None

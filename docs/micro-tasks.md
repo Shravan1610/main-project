@@ -68,39 +68,39 @@
 
 | ID | Task | Description | Output | Status |
 |----|------|-------------|--------|--------|
-| SH-1-01 | Write frontend/app/layout.tsx | Root layout with HTML structure, font, metadata, providers | layout.tsx | ⬜ |
-| SH-1-02 | Write frontend/app/page.tsx | Main page composing AppShell with map + panels + feeds | page.tsx | ⬜ |
-| SH-1-03 | Write frontend/app/globals.css | Tailwind directives + terminal theme base styles | globals.css | ⬜ |
-| SH-1-04 | Write frontend/shared/api/client.ts | API client with base URL, error handling, typed methods | client.ts | ⬜ |
-| SH-1-05 | Write frontend/shared/api/index.ts | Barrel export for API module | index.ts | ⬜ |
-| SH-1-06 | Write frontend/shared/constants/index.ts | App-wide constants (API URL, map defaults, score ranges) | index.ts | ⬜ |
-| SH-1-07 | Write frontend/shared/hooks/use-api.ts | Generic data-fetching hook with loading/error states | use-api.ts | ⬜ |
-| SH-1-08 | Write frontend/shared/hooks/index.ts | Barrel export for hooks | index.ts | ⬜ |
-| SH-1-09 | Write frontend/shared/utils/format.ts | Number/date/score formatting utilities | format.ts | ⬜ |
-| SH-1-10 | Write frontend/shared/utils/index.ts | Barrel export for utils | index.ts | ⬜ |
-| SH-1-11 | Write frontend/shared/lib/cn.ts | Tailwind class merge utility (clsx + twMerge) | cn.ts | ⬜ |
-| SH-1-12 | Write frontend/shared/lib/index.ts | Barrel export for lib | index.ts | ⬜ |
-| SH-1-13 | Write frontend/features/app-shell/components/app-shell.tsx | Main app container: header + map area + side panel + footer | app-shell.tsx | ⬜ |
-| SH-1-14 | Write frontend/features/app-shell/components/header.tsx | Top bar: logo + search slot + compare tray slot | header.tsx | ⬜ |
-| SH-1-15 | Write frontend/features/app-shell/components/index.ts | Barrel export | index.ts | ⬜ |
-| SH-1-16 | Write frontend/features/app-shell/hooks/use-app-state.ts | Global app state: selected entities, compare mode, active layers | use-app-state.ts | ⬜ |
-| SH-1-17 | Write frontend/features/app-shell/hooks/index.ts | Barrel export | index.ts | ⬜ |
-| SH-1-18 | Write frontend/features/app-shell/utils/index.ts | Barrel export (placeholder) | index.ts | ⬜ |
-| SH-1-19 | Write backend/src/main.py | FastAPI app with CORS, route registration, health check | main.py | ⬜ |
-| SH-1-20 | Write backend/src/shared/config/settings.py | Pydantic Settings class loading from env | settings.py | ⬜ |
-| SH-1-21 | Write backend/src/shared/config/api_keys.py | API key accessors with validation | api_keys.py | ⬜ |
-| SH-1-22 | Write backend/src/shared/config/__init__.py | Config barrel export | __init__.py | ⬜ |
-| SH-1-23 | Write backend/src/shared/utils/error_handler.py | Exception handler middleware for FastAPI | error_handler.py | ⬜ |
-| SH-1-24 | Write backend/src/shared/utils/response_builder.py | Standardized response builder matching contracts | response_builder.py | ⬜ |
-| SH-1-25 | Write backend/src/shared/utils/logger.py | Structured logger setup | logger.py | ⬜ |
-| SH-1-26 | Write backend/src/shared/utils/__init__.py | Utils barrel export | __init__.py | ⬜ |
-| SH-1-27 | Write backend/src/shared/schemas/base_schema.py | Base Pydantic models (Coordinates, Marker, etc.) | base_schema.py | ⬜ |
-| SH-1-28 | Write backend/src/shared/schemas/error_schema.py | Error response Pydantic model | error_schema.py | ⬜ |
-| SH-1-29 | Write backend/src/shared/schemas/__init__.py | Schema barrel export | __init__.py | ⬜ |
-| SH-1-30 | Write backend/src/shared/clients/http_client.py | Async httpx client with retry/timeout | http_client.py | ⬜ |
-| SH-1-31 | Write backend/src/shared/clients/cache_client.py | Simple in-memory cache with TTL | cache_client.py | ⬜ |
-| SH-1-32 | Write backend/src/shared/clients/__init__.py | Clients barrel export | __init__.py | ⬜ |
-| SH-1-33 | Write backend/src/shared/__init__.py | Shared barrel export | __init__.py | ⬜ |
+| SH-1-01 | Write frontend/app/layout.tsx | Root layout with HTML structure, font, metadata, providers | layout.tsx | ✅ |
+| SH-1-02 | Write frontend/app/page.tsx | Main page composing AppShell with map + panels + feeds | page.tsx | ✅ |
+| SH-1-03 | Write frontend/app/globals.css | Tailwind directives + terminal theme base styles | globals.css | ✅ |
+| SH-1-04 | Write frontend/shared/api/client.ts | API client with base URL, error handling, typed methods | client.ts | ✅ |
+| SH-1-05 | Write frontend/shared/api/index.ts | Barrel export for API module | index.ts | ✅ |
+| SH-1-06 | Write frontend/shared/constants/index.ts | App-wide constants (API URL, map defaults, score ranges) | index.ts | ✅ |
+| SH-1-07 | Write frontend/shared/hooks/use-api.ts | Generic data-fetching hook with loading/error states | use-api.ts | ✅ |
+| SH-1-08 | Write frontend/shared/hooks/index.ts | Barrel export for hooks | index.ts | ✅ |
+| SH-1-09 | Write frontend/shared/utils/format.ts | Number/date/score formatting utilities | format.ts | ✅ |
+| SH-1-10 | Write frontend/shared/utils/index.ts | Barrel export for utils | index.ts | ✅ |
+| SH-1-11 | Write frontend/shared/lib/cn.ts | Tailwind class merge utility (clsx + twMerge) | cn.ts | ✅ |
+| SH-1-12 | Write frontend/shared/lib/index.ts | Barrel export for lib | index.ts | ✅ |
+| SH-1-13 | Write frontend/features/app-shell/components/app-shell.tsx | Main app container: header + map area + side panel + footer | app-shell.tsx | ✅ |
+| SH-1-14 | Write frontend/features/app-shell/components/header.tsx | Top bar: logo + search slot + compare tray slot | header.tsx | ✅ |
+| SH-1-15 | Write frontend/features/app-shell/components/index.ts | Barrel export | index.ts | ✅ |
+| SH-1-16 | Write frontend/features/app-shell/hooks/use-app-state.ts | Global app state: selected entities, compare mode, active layers | use-app-state.ts | ✅ |
+| SH-1-17 | Write frontend/features/app-shell/hooks/index.ts | Barrel export | index.ts | ✅ |
+| SH-1-18 | Write frontend/features/app-shell/utils/index.ts | Barrel export (placeholder) | index.ts | ✅ |
+| SH-1-19 | Write backend/src/main.py | FastAPI app with CORS, route registration, health check | main.py | ✅ |
+| SH-1-20 | Write backend/src/shared/config/settings.py | Pydantic Settings class loading from env | settings.py | ✅ |
+| SH-1-21 | Write backend/src/shared/config/api_keys.py | API key accessors with validation | api_keys.py | ✅ |
+| SH-1-22 | Write backend/src/shared/config/__init__.py | Config barrel export | __init__.py | ✅ |
+| SH-1-23 | Write backend/src/shared/utils/error_handler.py | Exception handler middleware for FastAPI | error_handler.py | ✅ |
+| SH-1-24 | Write backend/src/shared/utils/response_builder.py | Standardized response builder matching contracts | response_builder.py | ✅ |
+| SH-1-25 | Write backend/src/shared/utils/logger.py | Structured logger setup | logger.py | ✅ |
+| SH-1-26 | Write backend/src/shared/utils/__init__.py | Utils barrel export | __init__.py | ✅ |
+| SH-1-27 | Write backend/src/shared/schemas/base_schema.py | Base Pydantic models (Coordinates, Marker, etc.) | base_schema.py | ✅ |
+| SH-1-28 | Write backend/src/shared/schemas/error_schema.py | Error response Pydantic model | error_schema.py | ✅ |
+| SH-1-29 | Write backend/src/shared/schemas/__init__.py | Schema barrel export | __init__.py | ✅ |
+| SH-1-30 | Write backend/src/shared/clients/http_client.py | Async httpx client with retry/timeout | http_client.py | ✅ |
+| SH-1-31 | Write backend/src/shared/clients/cache_client.py | Simple in-memory cache with TTL | cache_client.py | ✅ |
+| SH-1-32 | Write backend/src/shared/clients/__init__.py | Clients barrel export | __init__.py | ✅ |
+| SH-1-33 | Write backend/src/shared/__init__.py | Shared barrel export | __init__.py | ✅ |
 
 ## Srijan — Phase 1 (Map + Layers + Theme)
 
@@ -194,48 +194,48 @@
 
 | ID | Task | Description | Output | Status |
 |----|------|-------------|--------|--------|
-| AF-1-01 | Write api/routes/__init__.py | Import and register all route modules | __init__.py | ⬜ |
-| AF-1-02 | Write api/routes/health_routes.py | GET /health endpoint | health_routes.py | ⬜ |
-| AF-1-03 | Write api/routes/search_routes.py | GET /search with query param | search_routes.py | ⬜ |
-| AF-1-04 | Write api/routes/analyze_routes.py | GET /analyze with entity param | analyze_routes.py | ⬜ |
-| AF-1-05 | Write api/routes/compare_routes.py | POST /compare with entity list body | compare_routes.py | ⬜ |
-| AF-1-06 | Write api/routes/feed_routes.py | GET /feeds | feed_routes.py | ⬜ |
-| AF-1-07 | Write api/routes/layer_routes.py | GET /layers | layer_routes.py | ⬜ |
-| AF-1-08 | Write api/controllers/__init__.py | Controller barrel | __init__.py | ⬜ |
-| AF-1-09 | Write api/controllers/search_controller.py | Search orchestration: resolve → return matches | search_controller.py | ⬜ |
-| AF-1-10 | Write api/controllers/analyze_controller.py | Analyze orchestration: resolve → market + news + climate + ESG → score | analyze_controller.py | ⬜ |
-| AF-1-11 | Write api/controllers/compare_controller.py | Compare orchestration: batch analyze | compare_controller.py | ⬜ |
-| AF-1-12 | Write api/controllers/feed_controller.py | Feed orchestration: aggregate latest data | feed_controller.py | ⬜ |
-| AF-1-13 | Write api/controllers/layer_controller.py | Layer orchestration: aggregate marker data | layer_controller.py | ⬜ |
-| AF-1-14 | Write entity-resolver/schemas/entity_schema.py | Pydantic models for entity | entity_schema.py | ⬜ |
-| AF-1-15 | Write entity-resolver/services/resolver_service.py | Main resolver: query → entity type + data | resolver_service.py | ⬜ |
-| AF-1-16 | Write entity-resolver/services/company_lookup.py | Company name → info + coordinates | company_lookup.py | ⬜ |
-| AF-1-17 | Write entity-resolver/services/ticker_lookup.py | Ticker → stock info + exchange coordinates | ticker_lookup.py | ⬜ |
-| AF-1-18 | Write entity-resolver/services/crypto_lookup.py | Crypto symbol → info | crypto_lookup.py | ⬜ |
-| AF-1-19 | Write entity-resolver/utils/normalization.py | Query normalization helpers | normalization.py | ⬜ |
-| AF-1-20 | Write market-intel/schemas/market_schema.py | Pydantic models for market data | market_schema.py | ⬜ |
-| AF-1-21 | Write market-intel/services/market_service.py | Main market data aggregator | market_service.py | ⬜ |
-| AF-1-22 | Write market-intel/services/stock_data.py | Stock API integration | stock_data.py | ⬜ |
-| AF-1-23 | Write market-intel/services/crypto_data.py | Crypto API integration | crypto_data.py | ⬜ |
-| AF-1-24 | Write market-intel/utils/formatters.py | Price/percentage formatting | formatters.py | ⬜ |
-| AF-1-25 | Write news-intel/schemas/news_schema.py | Pydantic models for news data | news_schema.py | ⬜ |
-| AF-1-26 | Write news-intel/services/news_service.py | Main news aggregator | news_service.py | ⬜ |
-| AF-1-27 | Write news-intel/services/news_geocoder.py | Geocode news articles | news_geocoder.py | ⬜ |
-| AF-1-28 | Write news-intel/services/news_tagger.py | Tag news: risk/opportunity/regulation/disaster | news_tagger.py | ⬜ |
-| AF-1-29 | Write news-intel/utils/filters.py | News filtering and deduplication | filters.py | ⬜ |
-| AF-1-30 | Write climate-intel/schemas/climate_schema.py | Pydantic models for climate data | climate_schema.py | ⬜ |
-| AF-1-31 | Write climate-intel/services/climate_service.py | Main climate data aggregator | climate_service.py | ⬜ |
-| AF-1-32 | Write climate-intel/services/weather_events.py | Fetch severe weather events by region | weather_events.py | ⬜ |
-| AF-1-33 | Write climate-intel/services/vulnerability_scorer.py | Compute climate vulnerability by location | vulnerability_scorer.py | ⬜ |
-| AF-1-34 | Write climate-intel/utils/geo_helpers.py | Geo distance, coordinate helpers | geo_helpers.py | ⬜ |
-| AF-1-35 | Write feed-builder/schemas/feed_schema.py | Pydantic models for feed responses | feed_schema.py | ⬜ |
-| AF-1-36 | Write feed-builder/services/feed_service.py | Main feed aggregator | feed_service.py | ⬜ |
-| AF-1-37 | Write feed-builder/services/news_feed.py | Latest news for feed | news_feed.py | ⬜ |
-| AF-1-38 | Write feed-builder/services/stock_feed.py | Latest stock tickers for feed | stock_feed.py | ⬜ |
-| AF-1-39 | Write feed-builder/services/crypto_feed.py | Latest crypto tickers for feed | crypto_feed.py | ⬜ |
-| AF-1-40 | Write feed-builder/utils/aggregator.py | Feed combination and sorting | aggregator.py | ⬜ |
-| AF-1-41 | Write all feature __init__.py files | Barrel exports for each feature package | 6x __init__.py | ⬜ |
-| AF-1-42 | Write all services __init__.py files | Barrel exports for each services package | 6x __init__.py | ⬜ |
+| AF-1-01 | Write api/routes/__init__.py | Import and register all route modules | __init__.py | ✅ |
+| AF-1-02 | Write api/routes/health_routes.py | GET /health endpoint | health_routes.py | ✅ |
+| AF-1-03 | Write api/routes/search_routes.py | GET /search with query param | search_routes.py | ✅ |
+| AF-1-04 | Write api/routes/analyze_routes.py | GET /analyze with entity param | analyze_routes.py | ✅ |
+| AF-1-05 | Write api/routes/compare_routes.py | POST /compare with entity list body | compare_routes.py | ✅ |
+| AF-1-06 | Write api/routes/feed_routes.py | GET /feeds | feed_routes.py | ✅ |
+| AF-1-07 | Write api/routes/layer_routes.py | GET /layers | layer_routes.py | ✅ |
+| AF-1-08 | Write api/controllers/__init__.py | Controller barrel | __init__.py | ✅ |
+| AF-1-09 | Write api/controllers/search_controller.py | Search orchestration: resolve → return matches | search_controller.py | ✅ |
+| AF-1-10 | Write api/controllers/analyze_controller.py | Analyze orchestration: resolve → market + news + climate + ESG → score | analyze_controller.py | ✅ |
+| AF-1-11 | Write api/controllers/compare_controller.py | Compare orchestration: batch analyze | compare_controller.py | ✅ |
+| AF-1-12 | Write api/controllers/feed_controller.py | Feed orchestration: aggregate latest data | feed_controller.py | ✅ |
+| AF-1-13 | Write api/controllers/layer_controller.py | Layer orchestration: aggregate marker data | layer_controller.py | ✅ |
+| AF-1-14 | Write entity-resolver/schemas/entity_schema.py | Pydantic models for entity | entity_schema.py | ✅ |
+| AF-1-15 | Write entity-resolver/services/resolver_service.py | Main resolver: query → entity type + data | resolver_service.py | ✅ |
+| AF-1-16 | Write entity-resolver/services/company_lookup.py | Company name → info + coordinates | company_lookup.py | ✅ |
+| AF-1-17 | Write entity-resolver/services/ticker_lookup.py | Ticker → stock info + exchange coordinates | ticker_lookup.py | ✅ |
+| AF-1-18 | Write entity-resolver/services/crypto_lookup.py | Crypto symbol → info | crypto_lookup.py | ✅ |
+| AF-1-19 | Write entity-resolver/utils/normalization.py | Query normalization helpers | normalization.py | ✅ |
+| AF-1-20 | Write market-intel/schemas/market_schema.py | Pydantic models for market data | market_schema.py | ✅ |
+| AF-1-21 | Write market-intel/services/market_service.py | Main market data aggregator | market_service.py | ✅ |
+| AF-1-22 | Write market-intel/services/stock_data.py | Stock API integration | stock_data.py | ✅ |
+| AF-1-23 | Write market-intel/services/crypto_data.py | Crypto API integration | crypto_data.py | ✅ |
+| AF-1-24 | Write market-intel/utils/formatters.py | Price/percentage formatting | formatters.py | ✅ |
+| AF-1-25 | Write news-intel/schemas/news_schema.py | Pydantic models for news data | news_schema.py | ✅ |
+| AF-1-26 | Write news-intel/services/news_service.py | Main news aggregator | news_service.py | ✅ |
+| AF-1-27 | Write news-intel/services/news_geocoder.py | Geocode news articles | news_geocoder.py | ✅ |
+| AF-1-28 | Write news-intel/services/news_tagger.py | Tag news: risk/opportunity/regulation/disaster | news_tagger.py | ✅ |
+| AF-1-29 | Write news-intel/utils/filters.py | News filtering and deduplication | filters.py | ✅ |
+| AF-1-30 | Write climate-intel/schemas/climate_schema.py | Pydantic models for climate data | climate_schema.py | ✅ |
+| AF-1-31 | Write climate-intel/services/climate_service.py | Main climate data aggregator | climate_service.py | ✅ |
+| AF-1-32 | Write climate-intel/services/weather_events.py | Fetch severe weather events by region | weather_events.py | ✅ |
+| AF-1-33 | Write climate-intel/services/vulnerability_scorer.py | Compute climate vulnerability by location | vulnerability_scorer.py | ✅ |
+| AF-1-34 | Write climate-intel/utils/geo_helpers.py | Geo distance, coordinate helpers | geo_helpers.py | ✅ |
+| AF-1-35 | Write feed-builder/schemas/feed_schema.py | Pydantic models for feed responses | feed_schema.py | ✅ |
+| AF-1-36 | Write feed-builder/services/feed_service.py | Main feed aggregator | feed_service.py | ✅ |
+| AF-1-37 | Write feed-builder/services/news_feed.py | Latest news for feed | news_feed.py | ✅ |
+| AF-1-38 | Write feed-builder/services/stock_feed.py | Latest stock tickers for feed | stock_feed.py | ✅ |
+| AF-1-39 | Write feed-builder/services/crypto_feed.py | Latest crypto tickers for feed | crypto_feed.py | ✅ |
+| AF-1-40 | Write feed-builder/utils/aggregator.py | Feed combination and sorting | aggregator.py | ✅ |
+| AF-1-41 | Write all feature __init__.py files | Barrel exports for each feature package | 6x __init__.py | ✅ |
+| AF-1-42 | Write all services __init__.py files | Barrel exports for each services package | 6x __init__.py | ✅ |
 
 ## Shravan — Phase 1 (ESG + Scoring Backend)
 

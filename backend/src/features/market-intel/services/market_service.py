@@ -1,14 +1,16 @@
-"""
-backend/src/features/market-intel/services/market_service.py
-Main service: fetches market data for a given entity.
+def get_market_data(entity: dict) -> dict:
+    entity_type = entity.get("type")
+    ticker = entity.get("ticker") or entity.get("id") or "UNKNOWN"
 
-Owner: Afham
-Task: AF-2-02
-Phase: 2
+    if entity_type == "crypto":
+        return {
+            "entity_id": entity.get("id", ticker),
+            "stock": None,
+            "crypto": {"symbol": ticker, "price": 0.0, "change_24h": 0.0},
+        }
 
-Expected functions:
-  get_market_data(entity: EntityResult) -> MarketData
-    — Routes to stock_data or crypto_data based on entity type,
-      returns unified MarketData response.
-"""
-# Stub — implement in AF-2-02
+    return {
+        "entity_id": entity.get("id", ticker),
+        "stock": {"ticker": ticker, "price": 0.0, "change": 0.0, "change_percent": 0.0},
+        "crypto": None,
+    }

@@ -1,14 +1,7 @@
-"""
-backend/src/api/controllers/compare_controller.py
-Orchestrates multiple analyze flows for side-by-side entity comparison.
+from src.api.controllers.analyze_controller import analyze_entity
 
-Owner: Afham
-Task: AF-1-10
-Phase: 1
 
-Expected functions:
-  compare_entities(entity_ids: list[str]) -> CompareResponse
-    — Runs analyze_entity for each entity (up to 3), aggregates results
-      per compare-response.json contract.
-"""
-# Stub — implement in AF-1-10
+async def compare_entities(entity_ids: list[str]) -> dict:
+    entities = [entity_id for entity_id in entity_ids[:3] if entity_id.strip()]
+    analyzed = [await analyze_entity(entity_id) for entity_id in entities]
+    return {"entities": analyzed}

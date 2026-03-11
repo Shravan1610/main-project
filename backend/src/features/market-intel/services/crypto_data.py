@@ -1,13 +1,9 @@
-"""
-backend/src/features/market-intel/services/crypto_data.py
-Fetches crypto data from CoinGecko or similar API.
-
-Owner: Afham
-Task: AF-2-04
-Phase: 2
-
-Expected functions:
-  fetch_crypto_quote(symbol: str) -> CryptoQuote
-    — Calls external crypto API, parses response into CryptoQuote model.
-"""
-# Stub — implement in AF-2-04
+def fetch_crypto_quote(symbol: str) -> dict:
+    normalized = symbol.strip().upper() or "UNKNOWN"
+    return {
+        "symbol": normalized,
+        "price": 0.0,
+        "change_24h": 0.0,
+        "market_cap": None,
+        "volume_24h": None,
+    }

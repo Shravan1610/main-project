@@ -1,15 +1,24 @@
-"""
-backend/src/features/news-intel/schemas/news_schema.py
-Pydantic models for news articles and categories.
+from enum import Enum
+from datetime import datetime
 
-Owner: Afham
-Task: AF-2-06
-Phase: 2
+from pydantic import BaseModel
 
-Expected classes:
-  NewsCategory(str, Enum) — "risk", "opportunity", "regulation", "disaster", "general"
-  NewsArticle(BaseModel) — id, title, summary, url, source, published_at,
-                           category: NewsCategory, coordinates: tuple[float, float] | None,
-                           relevance_score: float
-"""
-# Stub — implement in AF-2-06
+
+class NewsCategory(str, Enum):
+    risk = "risk"
+    opportunity = "opportunity"
+    regulation = "regulation"
+    disaster = "disaster"
+    general = "general"
+
+
+class NewsArticle(BaseModel):
+    id: str
+    title: str
+    summary: str | None = None
+    url: str | None = None
+    source: str | None = None
+    published_at: datetime | None = None
+    category: NewsCategory = NewsCategory.general
+    coordinates: tuple[float, float] | None = None
+    relevance_score: float = 0.0

@@ -1,13 +1,14 @@
-"""
-backend/src/features/entity-resolver/services/crypto_lookup.py
-Looks up crypto assets by symbol or name.
+def lookup_crypto(query: str) -> list[dict]:
+    normalized = query.strip().upper()
+    if not normalized:
+        return []
 
-Owner: Afham
-Task: AF-1-17
-Phase: 1
-
-Expected functions:
-  lookup_crypto(query: str) -> list[EntityResult]
-    — Searches for crypto assets matching the query string.
-"""
-# Stub — implement in AF-1-17
+    return [
+        {
+            "id": normalized,
+            "name": normalized,
+            "type": "crypto",
+            "ticker": normalized,
+            "coordinates": {"lat": 0.0, "lng": 0.0},
+        }
+    ]

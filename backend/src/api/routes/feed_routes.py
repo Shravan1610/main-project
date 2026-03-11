@@ -1,13 +1,10 @@
-"""
-backend/src/api/routes/feed_routes.py
-GET /feeds endpoint — returns homepage feeds (news, stocks, crypto).
+from fastapi import APIRouter
 
-Owner: Afham
-Task: AF-1-06
-Phase: 1
+from src.api.controllers.feed_controller import get_homepage_feeds
 
-Expected functions:
-  router — APIRouter with GET /feeds,
-           delegates to feed_controller, returns FeedResponse.
-"""
-# Stub — implement in AF-1-06
+router = APIRouter()
+
+
+@router.get("/feeds")
+async def feeds() -> dict:
+    return await get_homepage_feeds()

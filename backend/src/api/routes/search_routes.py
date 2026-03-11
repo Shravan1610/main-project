@@ -1,13 +1,10 @@
-"""
-backend/src/api/routes/search_routes.py
-GET /search?q={query} endpoint — searches entities by name/ticker/symbol.
+from fastapi import APIRouter, Query
 
-Owner: Afham
-Task: AF-1-03
-Phase: 1
+from src.api.controllers.search_controller import search_entities
 
-Expected functions:
-  router — APIRouter with GET /search accepting query param 'q',
-           delegates to search_controller, returns SearchResponse.
-"""
-# Stub — implement in AF-1-03
+router = APIRouter()
+
+
+@router.get("/search")
+async def search(q: str = Query(..., min_length=1)) -> dict:
+    return await search_entities(q)

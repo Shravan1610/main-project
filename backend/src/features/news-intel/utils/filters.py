@@ -1,15 +1,15 @@
-"""
-backend/src/features/news-intel/utils/filters.py
-Filters duplicate news and scores relevance.
+def filter_duplicates(articles: list[dict]) -> list[dict]:
+    seen_titles: set[str] = set()
+    output: list[dict] = []
+    for article in articles:
+        title = str(article.get("title", "")).strip().lower()
+        if not title or title in seen_titles:
+            continue
+        seen_titles.add(title)
+        output.append(article)
+    return output
 
-Owner: Afham
-Task: AF-2-10
-Phase: 2
 
-Expected functions:
-  filter_duplicates(articles: list[NewsArticle]) -> list[NewsArticle]
-    — Removes duplicate articles based on title similarity.
-  score_relevance(article: NewsArticle, entity_name: str) -> float
-    — Scores 0.0-1.0 how relevant an article is to the given entity.
-"""
-# Stub — implement in AF-2-10
+def score_relevance(article: dict, entity_name: str) -> float:
+    title = str(article.get("title", "")).lower()
+    return 1.0 if entity_name.lower() in title else 0.5

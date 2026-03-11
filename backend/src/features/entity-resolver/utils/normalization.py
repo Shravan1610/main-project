@@ -1,13 +1,16 @@
-"""
-backend/src/features/entity-resolver/utils/normalization.py
-Normalizes entity names and deduplicates search results.
+def normalize_name(name: str) -> str:
+    return " ".join(name.strip().lower().split())
 
-Owner: Afham
-Task: AF-1-18
-Phase: 1
 
-Expected functions:
-  normalize_name(name: str) -> str — Strips whitespace, lowercases, removes suffixes like Inc/Ltd.
-  deduplicate_entities(entities: list[EntityResult]) -> list[EntityResult] — Removes duplicate entities by id.
-"""
-# Stub — implement in AF-1-18
+def deduplicate_entities(entities: list[dict]) -> list[dict]:
+    seen: set[str] = set()
+    deduped: list[dict] = []
+
+    for entity in entities:
+        entity_id = str(entity.get("id", "")).strip()
+        if not entity_id or entity_id in seen:
+            continue
+        seen.add(entity_id)
+        deduped.append(entity)
+
+    return deduped

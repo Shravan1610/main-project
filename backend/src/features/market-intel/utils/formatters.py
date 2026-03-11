@@ -1,14 +1,16 @@
-"""
-backend/src/features/market-intel/utils/formatters.py
-Formats prices, percentages, and market cap values for display.
+def format_price(value: float, currency: str = "USD") -> str:
+    symbol = "$" if currency.upper() == "USD" else ""
+    return f"{symbol}{value:,.2f}"
 
-Owner: Afham
-Task: AF-2-05
-Phase: 2
 
-Expected functions:
-  format_price(value: float, currency: str = "USD") -> str — "$1,234.56"
-  format_percent(value: float) -> str — "+2.34%" or "-1.56%"
-  format_market_cap(value: float) -> str — "$1.2B", "$450M"
-"""
-# Stub — implement in AF-2-05
+def format_percent(value: float) -> str:
+    prefix = "+" if value >= 0 else ""
+    return f"{prefix}{value:.2f}%"
+
+
+def format_market_cap(value: float) -> str:
+    if value >= 1_000_000_000:
+        return f"${value / 1_000_000_000:.1f}B"
+    if value >= 1_000_000:
+        return f"${value / 1_000_000:.1f}M"
+    return f"${value:,.0f}"

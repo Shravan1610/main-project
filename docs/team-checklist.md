@@ -24,6 +24,12 @@
 - [ ] Set up API keys in `backend/.env` *(template copied; real keys still required)*
 - [ ] Review each team member’s branch naming *(blocked: only `main` exists locally/remotely)*
 
+Shravan implementation progress (Phase 1):
+- [x] SH-1-01 to SH-1-33 scaffolding completed across `frontend/app/`, `frontend/shared/`, `frontend/features/app-shell/`, `backend/src/main.py`, and `backend/src/shared/`
+- [x] Shared frontend/backend foundation and barrel exports are in place for team integration
+- [x] Frontend and backend compile/type checks pass for completed Phase 1 scope
+- [ ] SH-1-34 to SH-1-46 (ESG + scoring backend) pending
+
 Verification notes (2026-03-11):
 - Contracts validated with `jq` (`contracts/*.json` all passed).
 - Frontend dependency install completed; `npm run dev` now boots after switching to `next.config.mjs` (the `/` page still returns 500 due existing page implementation issues).
@@ -68,6 +74,12 @@ Sai implementation progress (Phase 1):
 - [ ] Climate API key (OpenWeatherMap) — test a call
 - [ ] Understand all 5 endpoint contracts
 - [ ] Review entity-resolver expected behavior
+
+Afham implementation progress (Phase 1):
+- [x] AF-1-01 to AF-1-42 scaffolding completed across `api/`, `entity-resolver/`, `market-intel/`, `news-intel/`, `climate-intel/`, and `feed-builder/`
+- [x] Route/controller wiring added for `/search`, `/analyze`, `/compare`, `/feeds`, `/layers`
+- [x] Backend compile checks pass for `src/api`, `src/features`, and `src/main.py`
+- [ ] Real external API integration and data enrichment (Phase 2)
 
 ---
 

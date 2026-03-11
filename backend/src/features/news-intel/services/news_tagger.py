@@ -1,15 +1,20 @@
-"""
-backend/src/features/news-intel/services/news_tagger.py
-Tags news articles as risk/opportunity/regulation/disaster/general.
+def tag_article(article: dict) -> str:
+    text = f"{article.get('title', '')} {article.get('summary', '')}".lower()
+    if "risk" in text:
+        return "risk"
+    if "regulation" in text:
+        return "regulation"
+    if "disaster" in text:
+        return "disaster"
+    if "opportunity" in text:
+        return "opportunity"
+    return "general"
 
-Owner: Afham
-Task: AF-2-08
-Phase: 2
 
-Expected functions:
-  tag_article(article: dict) -> NewsCategory
-    — Analyzes article title/summary keywords to assign a category tag.
-  tag_articles(articles: list[dict]) -> list[NewsArticle]
-    — Batch-tags a list of raw articles.
-"""
-# Stub — implement in AF-2-08
+def tag_articles(articles: list[dict]) -> list[dict]:
+    tagged: list[dict] = []
+    for article in articles:
+        enriched = dict(article)
+        enriched["category"] = tag_article(enriched)
+        tagged.append(enriched)
+    return tagged

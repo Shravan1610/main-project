@@ -1,14 +1,17 @@
-"""
-backend/src/features/entity-resolver/services/resolver_service.py
-Main resolver: takes a search query, returns matched entities across all types.
+from typing import Any
 
-Owner: Afham
-Task: AF-1-14
-Phase: 1
 
-Expected functions:
-  resolve_entities(query: str) -> list[EntityResult]
-    — Fans out to company_lookup, ticker_lookup, crypto_lookup,
-      deduplicates, ranks, and returns top matches.
-"""
-# Stub — implement in AF-1-14
+def resolve_entities(query: str) -> list[dict[str, Any]]:
+    normalized = query.strip()
+    if not normalized:
+        return []
+
+    return [
+        {
+            "id": normalized.upper(),
+            "name": normalized.title(),
+            "type": "company",
+            "ticker": normalized[:5].upper(),
+            "coordinates": {"lat": 37.7749, "lng": -122.4194},
+        }
+    ]

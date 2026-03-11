@@ -1,16 +1,28 @@
-"""
-backend/src/features/climate-intel/schemas/climate_schema.py
-Pydantic models for climate data and vulnerability levels.
+from enum import Enum
 
-Owner: Afham
-Task: AF-2-11
-Phase: 2
+from pydantic import BaseModel
 
-Expected classes:
-  VulnerabilityLevel(str, Enum) — "low", "moderate", "high", "critical"
-  WeatherEvent(BaseModel) — id, type, severity, coordinates, description, timestamp
-  ClimateData(BaseModel) — coordinates, vulnerability: VulnerabilityLevel,
-                           vulnerability_score: float, events: list[WeatherEvent],
-                           temperature_trend: float | None, risk_factors: list[str]
-"""
-# Stub — implement in AF-2-11
+
+class VulnerabilityLevel(str, Enum):
+    low = "low"
+    moderate = "moderate"
+    high = "high"
+    critical = "critical"
+
+
+class WeatherEvent(BaseModel):
+    id: str
+    type: str
+    severity: str
+    coordinates: tuple[float, float]
+    description: str | None = None
+    timestamp: str | None = None
+
+
+class ClimateData(BaseModel):
+    coordinates: tuple[float, float]
+    vulnerability: VulnerabilityLevel = VulnerabilityLevel.moderate
+    vulnerability_score: float = 50.0
+    events: list[WeatherEvent] = []
+    temperature_trend: float | None = None
+    risk_factors: list[str] = []

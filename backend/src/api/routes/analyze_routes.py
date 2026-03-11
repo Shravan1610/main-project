@@ -1,13 +1,10 @@
-"""
-backend/src/api/routes/analyze_routes.py
-GET /analyze?entity={id} endpoint — full entity analysis with scores.
+from fastapi import APIRouter, Query
 
-Owner: Afham
-Task: AF-1-04
-Phase: 1
+from src.api.controllers.analyze_controller import analyze_entity
 
-Expected functions:
-  router — APIRouter with GET /analyze accepting query param 'entity',
-           delegates to analyze_controller, returns AnalyzeResponse.
-"""
-# Stub — implement in AF-1-04
+router = APIRouter()
+
+
+@router.get("/analyze")
+async def analyze(entity: str = Query(..., min_length=1)) -> dict:
+    return await analyze_entity(entity)

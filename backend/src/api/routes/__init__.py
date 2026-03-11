@@ -1,12 +1,19 @@
-"""
-backend/src/api/routes/__init__.py
-Routes package — registers all route modules onto the FastAPI app.
+"""Route registry for FastAPI."""
 
-Owner: Afham
-Task: AF-1-01
-Phase: 1
+from fastapi import FastAPI
 
-Expected functions:
-  register_routes(app) — Includes all route routers onto the FastAPI app instance.
-"""
-# Stub — implement in AF-1-01
+from src.api.routes.analyze_routes import router as analyze_router
+from src.api.routes.compare_routes import router as compare_router
+from src.api.routes.feed_routes import router as feed_router
+from src.api.routes.health_routes import router as health_router
+from src.api.routes.layer_routes import router as layer_router
+from src.api.routes.search_routes import router as search_router
+
+
+def register_routes(app: FastAPI) -> None:
+    app.include_router(health_router)
+    app.include_router(search_router)
+    app.include_router(analyze_router)
+    app.include_router(compare_router)
+    app.include_router(feed_router)
+    app.include_router(layer_router)

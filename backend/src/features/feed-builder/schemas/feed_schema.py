@@ -1,16 +1,35 @@
-"""
-backend/src/features/feed-builder/schemas/feed_schema.py
-Pydantic models for homepage feed responses.
+from datetime import datetime
 
-Owner: Afham
-Task: AF-2-16
-Phase: 2
+from pydantic import BaseModel
 
-Expected classes:
-  StockFeedItem(BaseModel) — ticker, name, price, change_percent, market_cap
-  NewsFeedItem(BaseModel) — title, summary, url, source, published_at, category
-  CryptoFeedItem(BaseModel) — symbol, name, price, change_24h, market_cap
-  FeedResponse(BaseModel) — stocks: list[StockFeedItem], news: list[NewsFeedItem],
-                            crypto: list[CryptoFeedItem], updated_at: datetime
-"""
-# Stub — implement in AF-2-16
+
+class StockFeedItem(BaseModel):
+    ticker: str
+    name: str
+    price: float
+    change_percent: float = 0.0
+    market_cap: float | None = None
+
+
+class NewsFeedItem(BaseModel):
+    title: str
+    summary: str | None = None
+    url: str | None = None
+    source: str | None = None
+    published_at: datetime | None = None
+    category: str = "general"
+
+
+class CryptoFeedItem(BaseModel):
+    symbol: str
+    name: str
+    price: float
+    change_24h: float = 0.0
+    market_cap: float | None = None
+
+
+class FeedResponse(BaseModel):
+    stocks: list[StockFeedItem] = []
+    news: list[NewsFeedItem] = []
+    crypto: list[CryptoFeedItem] = []
+    updated_at: datetime = datetime.utcnow()

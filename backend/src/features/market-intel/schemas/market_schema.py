@@ -1,14 +1,28 @@
-"""
-backend/src/features/market-intel/schemas/market_schema.py
-Pydantic models for market data responses.
+from datetime import datetime
 
-Owner: Afham
-Task: AF-2-01
-Phase: 2
+from pydantic import BaseModel
 
-Expected classes:
-  StockQuote(BaseModel) — ticker, price, change, change_percent, volume, market_cap, timestamp
-  CryptoQuote(BaseModel) — symbol, price, change_24h, market_cap, volume_24h, timestamp
-  MarketData(BaseModel) — entity_id, stock: StockQuote | None, crypto: CryptoQuote | None
-"""
-# Stub — implement in AF-2-01
+
+class StockQuote(BaseModel):
+    ticker: str
+    price: float
+    change: float = 0.0
+    change_percent: float = 0.0
+    volume: float | None = None
+    market_cap: float | None = None
+    timestamp: datetime = datetime.utcnow()
+
+
+class CryptoQuote(BaseModel):
+    symbol: str
+    price: float
+    change_24h: float = 0.0
+    market_cap: float | None = None
+    volume_24h: float | None = None
+    timestamp: datetime = datetime.utcnow()
+
+
+class MarketData(BaseModel):
+    entity_id: str
+    stock: StockQuote | None = None
+    crypto: CryptoQuote | None = None

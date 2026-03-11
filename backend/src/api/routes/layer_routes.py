@@ -1,13 +1,10 @@
-"""
-backend/src/api/routes/layer_routes.py
-GET /layers endpoint — returns map layer data (news, climate, market markers).
+from fastapi import APIRouter
 
-Owner: Afham
-Task: AF-1-07
-Phase: 1
+from src.api.controllers.layer_controller import get_map_layers
 
-Expected functions:
-  router — APIRouter with GET /layers,
-           delegates to layer_controller, returns MapLayersResponse.
-"""
-# Stub — implement in AF-1-07
+router = APIRouter()
+
+
+@router.get("/layers")
+async def layers() -> dict:
+    return await get_map_layers()

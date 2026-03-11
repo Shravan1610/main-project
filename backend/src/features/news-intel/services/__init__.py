@@ -1,1 +1,1 @@
-"""backend.src.features.news_intel.services — News fetching and processing services."""
+__all__ = ["news_service", "news_geocoder", "news_tagger"]

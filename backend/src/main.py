@@ -5,7 +5,7 @@ from __future__ import annotations
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from src.api.routes.health_routes import router as health_router
+from src.api.routes import register_routes
 from src.shared.clients import close_http_client
 from src.shared.config import get_settings
 from src.shared.utils import register_error_handlers
@@ -23,7 +23,7 @@ app.add_middleware(
 )
 
 register_error_handlers(app)
-app.include_router(health_router)
+register_routes(app)
 
 
 @app.on_event("shutdown")

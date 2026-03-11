@@ -1,13 +1,14 @@
-"""
-backend/src/features/entity-resolver/services/ticker_lookup.py
-Looks up stock tickers from financial APIs.
+def lookup_ticker(query: str) -> list[dict]:
+    normalized = query.strip().upper()
+    if not normalized:
+        return []
 
-Owner: Afham
-Task: AF-1-16
-Phase: 1
-
-Expected functions:
-  lookup_ticker(query: str) -> list[EntityResult]
-    — Searches for stock tickers matching the query string.
-"""
-# Stub — implement in AF-1-16
+    return [
+        {
+            "id": normalized,
+            "name": normalized,
+            "type": "stock",
+            "ticker": normalized,
+            "coordinates": {"lat": 40.7069, "lng": -74.0113},
+        }
+    ]
