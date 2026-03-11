@@ -1,17 +1,20 @@
-"""
-backend/src/features/scoring/schemas/score_schema.py
-Pydantic models for composite score results and drivers.
+from pydantic import BaseModel, Field
 
-Owner: Shravan
-Task: SH-1-16
-Phase: 1
 
-Expected classes:
-  DriverItem(BaseModel) — label: str, impact: str ("positive"/"negative"/"neutral"), detail: str
-  ScoreDrivers(BaseModel) — sustainability: list[DriverItem],
-                            financial_risk: list[DriverItem],
-                            longterm_impact: list[DriverItem]
-  ScoreResult(BaseModel) — sustainability_score: float, financial_risk_score: float,
-                           longterm_impact_score: float, drivers: ScoreDrivers
-"""
-# Stub — implement in SH-1-16
+class DriverItem(BaseModel):
+    label: str
+    impact: str
+    detail: str = ""
+
+
+class ScoreDrivers(BaseModel):
+    sustainability: list[DriverItem] = Field(default_factory=list)
+    financial_risk: list[DriverItem] = Field(default_factory=list)
+    longterm_impact: list[DriverItem] = Field(default_factory=list)
+
+
+class ScoreResult(BaseModel):
+    sustainability_score: float
+    financial_risk_score: float
+    longterm_impact_score: float
+    drivers: ScoreDrivers

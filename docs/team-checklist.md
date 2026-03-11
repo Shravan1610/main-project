@@ -28,7 +28,7 @@ Shravan implementation progress (Phase 1):
 - [x] SH-1-01 to SH-1-33 scaffolding completed across `frontend/app/`, `frontend/shared/`, `frontend/features/app-shell/`, `backend/src/main.py`, and `backend/src/shared/`
 - [x] Shared frontend/backend foundation and barrel exports are in place for team integration
 - [x] Frontend and backend compile/type checks pass for completed Phase 1 scope
-- [ ] SH-1-34 to SH-1-46 (ESG + scoring backend) pending
+- [x] SH-1-34 to SH-1-46 (ESG + scoring backend) scaffolding completed
 
 Verification notes (2026-03-11):
 - Contracts validated with `jq` (`contracts/*.json` all passed).

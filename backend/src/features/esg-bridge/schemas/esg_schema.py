@@ -1,15 +1,24 @@
-"""
-backend/src/features/esg-bridge/schemas/esg_schema.py
-Pydantic models for ESG data from the external model.
+from enum import Enum
+from typing import Any
 
-Owner: Shravan
-Task: SH-1-12
-Phase: 1
+from pydantic import BaseModel, Field
 
-Expected classes:
-  ESGCategory(str, Enum) — "environmental", "social", "governance"
-  ESGScore(BaseModel) — category: ESGCategory, score: float, confidence: float, drivers: list[str]
-  ESGData(BaseModel) — entity_id: str, overall_score: float,
-                       scores: list[ESGScore], raw_response: dict | None
-"""
-# Stub — implement in SH-1-12
+
+class ESGCategory(str, Enum):
+    environmental = "environmental"
+    social = "social"
+    governance = "governance"
+
+
+class ESGScore(BaseModel):
+    category: ESGCategory
+    score: float
+    confidence: float = 0.5
+    drivers: list[str] = Field(default_factory=list)
+
+
+class ESGData(BaseModel):
+    entity_id: str
+    overall_score: float
+    scores: list[ESGScore] = Field(default_factory=list)
+    raw_response: dict[str, Any] | None = None

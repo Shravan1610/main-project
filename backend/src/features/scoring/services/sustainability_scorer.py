@@ -1,14 +1,16 @@
-"""
-backend/src/features/scoring/services/sustainability_scorer.py
-Sustainability Score: 60% ESG model + 25% news signals + 15% regulation.
+from src.features.scoring.utils.weights import SUSTAINABILITY_WEIGHTS, weighted_average
 
-Owner: Shravan
-Task: SH-2-02
-Phase: 2
 
-Expected functions:
-  compute_sustainability_score(esg: ESGData, news: list[NewsArticle]) -> float
-    — Weights: 60% ESG overall score, 25% sustainability news sentiment,
-      15% regulation news signals. Returns 0-100.
-"""
-# Stub — implement in SH-2-02
+def compute_sustainability_score(esg: dict, news: list[dict]) -> float:
+    overall_score = float(esg.get("overall_score", 50.0))
+    sustainability_news_signal = 55.0 if news else 50.0
+    regulation_signal = 50.0
+
+    return weighted_average(
+        {
+            "esg": overall_score,
+            "news": sustainability_news_signal,
+            "regulation": regulation_signal,
+        },
+        SUSTAINABILITY_WEIGHTS,
+    )

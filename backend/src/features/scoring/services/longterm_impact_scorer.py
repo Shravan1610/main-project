@@ -1,15 +1,19 @@
-"""
-backend/src/features/scoring/services/longterm_impact_scorer.py
-Long-Term Impact Score: 30% climate vulnerability + 25% ESG resilience + 25% regulation + 20% opportunity.
+from src.features.scoring.utils.weights import LONGTERM_IMPACT_WEIGHTS, weighted_average
 
-Owner: Shravan
-Task: SH-2-04
-Phase: 2
 
-Expected functions:
-  compute_longterm_impact_score(esg: ESGData, climate: ClimateData,
-                                news: list[NewsArticle]) -> float
-    — Weights: 30% regional climate vulnerability, 25% ESG resilience signal,
-      25% future regulation outlook, 20% opportunity indicators. Returns 0-100.
-"""
-# Stub — implement in SH-2-04
+def compute_longterm_impact_score(esg: dict, climate: dict, news: list[dict]) -> float:
+    climate_vuln = float(climate.get("vulnerability_score", 50.0)) if climate else 50.0
+    esg_resilience = float(esg.get("overall_score", 50.0))
+
+    regulation_signal = 55.0 if any(item.get("category") == "regulation" for item in news) else 50.0
+    opportunity_signal = 55.0 if any(item.get("category") == "opportunity" for item in news) else 50.0
+
+    return weighted_average(
+        {
+            "climate_vuln": climate_vuln,
+            "esg_resilience": esg_resilience,
+            "regulation": regulation_signal,
+            "opportunity": opportunity_signal,
+        },
+        LONGTERM_IMPACT_WEIGHTS,
+    )

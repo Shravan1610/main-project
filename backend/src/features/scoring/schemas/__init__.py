@@ -1,1 +1,3 @@
-"""backend.src.features.scoring.schemas — Pydantic models for score results."""
+from src.features.scoring.schemas.score_schema import DriverItem, ScoreDrivers, ScoreResult
+
+__all__ = ["DriverItem", "ScoreDrivers", "ScoreResult"]

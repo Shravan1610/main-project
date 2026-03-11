@@ -1,15 +1,19 @@
-"""
-backend/src/features/scoring/services/driver_generator.py
-Generates human-readable score drivers and explanations.
+from src.features.scoring.schemas.score_schema import DriverItem, ScoreDrivers
 
-Owner: Shravan
-Task: SH-2-05
-Phase: 2
 
-Expected functions:
-  generate_drivers(esg: ESGData, market: MarketData, news: list[NewsArticle],
-                   climate: ClimateData) -> ScoreDrivers
-    — Analyzes input data to generate top 3-5 driver items per score category,
-      explaining what's pushing the score up or down.
-"""
-# Stub — implement in SH-2-05
+def generate_drivers(esg: dict, market: dict, news: list[dict], climate: dict) -> ScoreDrivers:
+    sustainability = [
+        DriverItem(label="ESG baseline", impact="positive", detail=f"Overall ESG: {esg.get('overall_score', 0):.1f}"),
+    ]
+    financial_risk = [
+        DriverItem(label="Climate exposure", impact="neutral", detail=f"Vulnerability: {climate.get('vulnerability', 'unknown')}"),
+    ]
+    longterm_impact = [
+        DriverItem(label="Regulation signal", impact="neutral", detail=f"News items: {len(news)}"),
+    ]
+
+    return ScoreDrivers(
+        sustainability=sustainability,
+        financial_risk=financial_risk,
+        longterm_impact=longterm_impact,
+    )

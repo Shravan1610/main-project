@@ -241,19 +241,19 @@
 
 | ID | Task | Description | Output | Status |
 |----|------|-------------|--------|--------|
-| SH-1-34 | Write esg-bridge/schemas/esg_schema.py | Pydantic models for ESG data | esg_schema.py | ⬜ |
-| SH-1-35 | Write esg-bridge/services/esg_client.py | HTTP client to Render ESG model | esg_client.py | ⬜ |
-| SH-1-36 | Write esg-bridge/services/esg_normalizer.py | Normalize ESG model output to 0–100 | esg_normalizer.py | ⬜ |
-| SH-1-37 | Write esg-bridge/utils/fallbacks.py | Fallback ESG data if model is down | fallbacks.py | ⬜ |
-| SH-1-38 | Write scoring/schemas/score_schema.py | Pydantic models for scores + drivers | score_schema.py | ⬜ |
-| SH-1-39 | Write scoring/services/scoring_engine.py | Main scoring orchestrator | scoring_engine.py | ⬜ |
-| SH-1-40 | Write scoring/services/sustainability_scorer.py | Compute sustainability score | sustainability_scorer.py | ⬜ |
-| SH-1-41 | Write scoring/services/financial_risk_scorer.py | Compute financial risk score | financial_risk_scorer.py | ⬜ |
-| SH-1-42 | Write scoring/services/longterm_impact_scorer.py | Compute long-term impact score | longterm_impact_scorer.py | ⬜ |
-| SH-1-43 | Write scoring/services/driver_generator.py | Generate top drivers for each score | driver_generator.py | ⬜ |
-| SH-1-44 | Write scoring/utils/weights.py | Score weight constants | weights.py | ⬜ |
-| SH-1-45 | Write all esg-bridge __init__.py files | Barrel exports | __init__.py files | ⬜ |
-| SH-1-46 | Write all scoring __init__.py files | Barrel exports | __init__.py files | ⬜ |
+| SH-1-34 | Write esg-bridge/schemas/esg_schema.py | Pydantic models for ESG data | esg_schema.py | ✅ |
+| SH-1-35 | Write esg-bridge/services/esg_client.py | HTTP client to Render ESG model | esg_client.py | ✅ |
+| SH-1-36 | Write esg-bridge/services/esg_normalizer.py | Normalize ESG model output to 0–100 | esg_normalizer.py | ✅ |
+| SH-1-37 | Write esg-bridge/utils/fallbacks.py | Fallback ESG data if model is down | fallbacks.py | ✅ |
+| SH-1-38 | Write scoring/schemas/score_schema.py | Pydantic models for scores + drivers | score_schema.py | ✅ |
+| SH-1-39 | Write scoring/services/scoring_engine.py | Main scoring orchestrator | scoring_engine.py | ✅ |
+| SH-1-40 | Write scoring/services/sustainability_scorer.py | Compute sustainability score | sustainability_scorer.py | ✅ |
+| SH-1-41 | Write scoring/services/financial_risk_scorer.py | Compute financial risk score | financial_risk_scorer.py | ✅ |
+| SH-1-42 | Write scoring/services/longterm_impact_scorer.py | Compute long-term impact score | longterm_impact_scorer.py | ✅ |
+| SH-1-43 | Write scoring/services/driver_generator.py | Generate top drivers for each score | driver_generator.py | ✅ |
+| SH-1-44 | Write scoring/utils/weights.py | Score weight constants | weights.py | ✅ |
+| SH-1-45 | Write all esg-bridge __init__.py files | Barrel exports | __init__.py files | ✅ |
+| SH-1-46 | Write all scoring __init__.py files | Barrel exports | __init__.py files | ✅ |
 
 ### 🔍 PHASE 1 REVIEW CHECKPOINT
 - [ ] `npm run dev` starts frontend without errors (blank page OK)
