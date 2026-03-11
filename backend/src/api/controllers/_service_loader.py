@@ -1,6 +1,7 @@
 from functools import lru_cache
 import importlib.util
 from pathlib import Path
+import sys
 from types import ModuleType
 
 SRC_DIR = Path(__file__).resolve().parents[2]
@@ -16,6 +17,8 @@ def load_module(relative_path: str) -> ModuleType:
         raise ImportError(f"Unable to load module from {file_path}")
 
     module = importlib.util.module_from_spec(spec)
+    # Register before execution so decorators/introspection can resolve __module__.
+    sys.modules[module_name] = module
     spec.loader.exec_module(module)
     return module
 

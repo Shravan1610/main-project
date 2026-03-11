@@ -1,3 +1,10 @@
+export type DocumentClaim = {
+  text: string;
+  type: string;
+  category: string;
+  confidence: number;
+};
+
 export type DocumentAnalyzerResponse = {
   inputType: "document" | "url" | "webpage" | string;
   contentLength: number;
@@ -15,6 +22,7 @@ export type DocumentAnalyzerResponse = {
     entities?: Record<string, string[]>;
     summary?: string;
   };
+  claims?: DocumentClaim[];
   modelStatus: string;
   source?: {
     url?: string | null;
