@@ -1,0 +1,34 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ClaimTraceResponse",
+  "description": "Response from GET /evidence/claims/{claim_id}/trace",
+  "type": "object",
+  "required": ["claim", "documents", "evidence_records", "extractions", "review_tasks", "approval_decisions", "audit_events"],
+  "properties": {
+    "claim": {
+      "type": "object",
+      "required": ["id", "claim_type", "statement", "evidence_record_ids", "sufficiency_status", "created_at"],
+      "properties": {
+        "id": { "type": "string" },
+        "organization_id": { "type": "string" },
+        "facility_id": { "type": ["string", "null"] },
+        "claim_type": { "type": "string", "enum": ["scope1_emissions", "scope2_emissions", "renewable_electricity"] },
+        "statement": { "type": "string" },
+        "period_start": { "type": ["string", "null"] },
+        "period_end": { "type": ["string", "null"] },
+        "evidence_record_ids": { "type": "array", "items": { "type": "string" } },
+        "sufficiency_status": { "type": "string", "enum": ["complete", "incomplete"] },
+        "missing_requirements": { "type": "array", "items": { "type": "string" } },
+        "created_by": { "type": "string" },
+        "created_at": { "type": "string" },
+        "updated_at": { "type": "string" }
+      }
+    },
+    "documents": { "type": "array", "items": { "type": "object" } },
+    "evidence_records": { "type": "array", "items": { "type": "object" } },
+    "extractions": { "type": "array", "items": { "type": "object" } },
+    "review_tasks": { "type": "array", "items": { "type": "object" } },
+    "approval_decisions": { "type": "array", "items": { "type": "object" } },
+    "audit_events": { "type": "array", "items": { "type": "object" } }
+  }
+}

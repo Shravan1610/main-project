@@ -18,6 +18,7 @@ import { NewsFeedSection } from "@/features/news-feed/components";
 import { LiveWebcamsDashboard } from "@/features/live-webcams/components";
 import { DocumentAnalyzerPanel } from "@/features/document-analyzer/components";
 import { DigitalTrailPanel } from "@/features/digital-trail/components";
+import { EvidenceCollectionPanel } from "@/features/evidence-collection/components";
 import { LayerPanel } from "@/features/layer-controls/components";
 import { useLayers } from "@/features/layer-controls/hooks";
 import type { MapProps } from "@/features/map-intelligence/types";
@@ -38,7 +39,9 @@ export default function HomePage() {
   const [compareLoading, setCompareLoading] = useState(false);
   const [compareError, setCompareError] = useState<string | null>(null);
   const [showCompareView, setShowCompareView] = useState(false);
-  const [activeNavTab, setActiveNavTab] = useState<"monitor" | "document-analyzer" | "digital-trail">("monitor");
+  const [activeNavTab, setActiveNavTab] = useState<
+    "monitor" | "document-analyzer" | "digital-trail" | "automated-evidence-collection-system"
+  >("monitor");
 
   const activeEntityId = selectedEntityIds[selectedEntityIds.length - 1];
   const loadLayers = useCallback(() => fetchMapLayers(), []);
@@ -176,6 +179,17 @@ export default function HomePage() {
           >
             Digital Trail
           </button>
+          <button
+            type="button"
+            onClick={() => setActiveNavTab("automated-evidence-collection-system")}
+            className={`rounded border px-3 py-1 text-xs uppercase tracking-wide transition-colors ${
+              activeNavTab === "automated-evidence-collection-system"
+                ? "border-cyan-400/60 bg-cyan-500/15 text-cyan-200"
+                : "border-terminal-border text-terminal-text-dim hover:bg-terminal-border/35"
+            }`}
+          >
+            Automated Evidence Collection System
+          </button>
         </div>
       }
       mapSlot={<WorldMap viewport={viewport} markers={markers} activeLayers={activeLayers} />}
@@ -244,8 +258,12 @@ export default function HomePage() {
         </div>
       }
       feedSlot={
-        activeNavTab === "document-analyzer" ? <DocumentAnalyzerPanel /> : activeNavTab === "digital-trail" ? (
+        activeNavTab === "document-analyzer" ? (
+          <DocumentAnalyzerPanel />
+        ) : activeNavTab === "digital-trail" ? (
           <DigitalTrailPanel />
+        ) : activeNavTab === "automated-evidence-collection-system" ? (
+          <EvidenceCollectionPanel />
         ) : (
           <div className="space-y-4">
             <div className="grid gap-4 lg:grid-cols-3">

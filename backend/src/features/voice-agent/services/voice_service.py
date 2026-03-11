@@ -3,8 +3,12 @@ from __future__ import annotations
 import asyncio
 from dataclasses import dataclass
 
-from deepgram import DeepgramClient
 from src.shared.config import get_settings
+
+try:
+    from deepgram import DeepgramClient
+except ModuleNotFoundError:  # optional dependency in local/dev environments
+    DeepgramClient = None
 
 
 @dataclass(frozen=True)
@@ -50,6 +54,9 @@ def _guess_tool_suggestions(transcript: str, selected_tools: list[str]) -> list[
 
 
 def _transcribe_sync(audio_bytes: bytes, model: str, mimetype: str | None) -> str:
+    if DeepgramClient is None:
+        raise ValueError("Deepgram SDK is not installed. Run `pip install -r requirements.txt`.")
+
     settings = get_settings()
     if not settings.deepgram_api_key:
         raise ValueError("Missing DEEPGRAM_API_KEY in backend configuration.")
