@@ -162,7 +162,7 @@ export function DocumentAnalyzerPanel() {
               const confidence = Math.max(0, Math.min(1, claim.confidence ?? 0));
 
               return (
-                <div key={`${claim.category}-${index}`} className="rounded border border-terminal-border bg-terminal-surface/40 p-2">
+                <div key={`${claim.category}-${claim.type}-${claim.text}`} className="rounded border border-terminal-border bg-terminal-surface/40 p-2">
                   <div className="mb-1 flex flex-wrap items-center gap-2">
                     <span className="rounded border border-terminal-border px-2 py-0.5 text-[10px] uppercase tracking-wide text-terminal-text-muted">
                       {claim.category}

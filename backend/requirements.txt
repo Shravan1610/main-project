@@ -11,6 +11,11 @@ httpx==0.27.0
 deepgram-sdk>=5.0.0,<6.0.0
 beautifulsoup4==4.12.3
 playwright==1.52.0
+# NOTE: Playwright requires browser binaries to be installed separately.
+# Run the following in any environment (CI, Docker, local) where Playwright scraping is used:
+#   playwright install --with-deps chromium
+# Playwright scraping is opt-in via the PLAYWRIGHT_ENABLED=true environment variable.
+# It is disabled by default; httpx is always tried first.
 
 # Environment
 python-dotenv==1.0.1

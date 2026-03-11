@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 import importlib.util
+import ipaddress
 import os
 from pathlib import Path
 import re
+import socket
 from typing import Any
+from urllib.parse import urlparse
 
 from bs4 import BeautifulSoup
 
@@ -73,11 +76,76 @@ def _parse_html(content: str) -> str:
     return re.sub(r"\s+", " ", merged).strip()
 
 
+_MIN_CONTENT_LENGTH = 200  # characters; below this threshold Playwright is attempted
+
+
 def _is_headless_enabled() -> bool:
     return os.getenv("PLAYWRIGHT_HEADLESS", "true").strip().lower() not in {"0", "false", "no", "off"}
 
 
-async def _scrape_url_headless(url: str) -> str:
+def _is_playwright_enabled() -> bool:
+    return os.getenv("PLAYWRIGHT_ENABLED", "false").strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _validate_url_no_ssrf(url: str) -> None:
+    """Raise ValueError if the URL scheme is not http/https or resolves to a private/restricted IP."""
+    parsed = urlparse(url)
+    if parsed.scheme not in ("http", "https"):
+        raise ValueError(f"Unsupported URL scheme: {parsed.scheme!r}; only http and https are allowed")
+
+    hostname = parsed.hostname
+    if not hostname:
+        raise ValueError("URL is missing a hostname")
+
+    try:
+        addr_infos = socket.getaddrinfo(hostname, None)
+    except socket.gaierror as exc:
+        raise ValueError(f"Could not resolve hostname {hostname!r}: {exc}") from exc
+
+    for _family, _type, _proto, _canonname, addr in addr_infos:
+        ip_str = addr[0]
+        try:
+            ip = ipaddress.ip_address(ip_str)
+        except ValueError:
+            continue
+        if (
+            ip.is_private
+            or ip.is_loopback
+            or ip.is_link_local
+            or ip.is_reserved
+            or ip.is_multicast
+        ):
+            raise ValueError(f"URL resolves to a disallowed IP address: {ip}")
+
+
+async def _scrape_url(url: str) -> str:
+    """Fetch a URL's text content.
+
+    Strategy:
+    1. Always validates the URL to prevent SSRF attacks.
+    2. Tries a lightweight httpx GET first.
+    3. Only uses Playwright (headless Chromium) when PLAYWRIGHT_ENABLED=true
+       **and** the httpx response is too short to be meaningful (JS-heavy page).
+    """
+    _validate_url_no_ssrf(url)
+
+    # Step 1: cheap httpx fetch
+    httpx_text = ""
+    try:
+        client = get_http_client()
+        response = await client.get(url, follow_redirects=True)
+        response.raise_for_status()
+        httpx_text = _parse_html(response.text)
+    except Exception:
+        httpx_text = ""
+
+    if len(httpx_text) >= _MIN_CONTENT_LENGTH:
+        return httpx_text
+
+    # Step 2: Playwright fallback for JS-heavy pages (opt-in)
+    if not _is_playwright_enabled():
+        return httpx_text
+
     try:
         from playwright.async_api import async_playwright
 
@@ -85,16 +153,15 @@ async def _scrape_url_headless(url: str) -> str:
             browser = await playwright.chromium.launch(headless=_is_headless_enabled())
             context = await browser.new_context()
             page = await context.new_page()
-            await page.goto(url, wait_until="networkidle", timeout=30000)
-            html = await page.content()
-            await context.close()
-            await browser.close()
-            return _parse_html(html)
+            try:
+                await page.goto(url, wait_until="networkidle", timeout=30000)
+                html = await page.content()
+                return _parse_html(html)
+            finally:
+                await context.close()
+                await browser.close()
     except Exception:
-        client = get_http_client()
-        response = await client.get(url)
-        response.raise_for_status()
-        return _parse_html(response.text)
+        return httpx_text
 
 
 def _classify_claim(sentence: str) -> tuple[str, float]:
@@ -199,7 +266,7 @@ async def _resolve_text(input_type: str, document_bytes: bytes | None, url: str 
     if normalized == "url":
         if not url:
             return ""
-        return await _scrape_url_headless(url)
+        return await _scrape_url(url)
 
     if normalized == "webpage":
         return _parse_html(webpage or "")
