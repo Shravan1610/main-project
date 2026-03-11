@@ -141,68 +141,80 @@ export function GlobeMap({
 
   // ---- Initialize globe ---- //
   useEffect(() => {
-    if (!containerRef.current || globeRef.current) return;
+    if (!containerRef.current) return;
 
-    const w = containerRef.current.clientWidth;
-    const h = containerRef.current.clientHeight;
+    const container = containerRef.current;
+    let pauseRotation: (() => void) | null = null;
 
-    const globe = new GlobeGL(containerRef.current)
-      .globeImageUrl(
-        "https://unpkg.com/three-globe/example/img/earth-dark.jpg",
-      )
-      .bumpImageUrl(
-        "https://unpkg.com/three-globe/example/img/earth-topology.png",
-      )
-      .backgroundImageUrl(
-        "https://unpkg.com/three-globe/example/img/night-sky.png",
-      )
-      .showAtmosphere(true)
-      .atmosphereColor("#1a237e")
-      .atmosphereAltitude(0.15)
-      .width(w)
-      .height(h)
-      .pointOfView({
-        lat: viewport.center[0],
-        lng: viewport.center[1],
-        altitude: zoomToAltitude(viewport.zoom),
-      });
+    const initGlobe = (w: number, h: number) => {
+      if (globeRef.current) return;
 
-    // Optimise renderer for all devices
-    const renderer = globe.renderer();
-    const dpr = Math.min(window.devicePixelRatio, 1.5);
-    renderer.setPixelRatio(dpr);
-    renderer.setSize(w, h);
+      const globe = new GlobeGL(container)
+        .globeImageUrl(
+          "https://unpkg.com/three-globe/example/img/earth-dark.jpg",
+        )
+        .bumpImageUrl(
+          "https://unpkg.com/three-globe/example/img/earth-topology.png",
+        )
+        .backgroundImageUrl(
+          "https://unpkg.com/three-globe/example/img/night-sky.png",
+        )
+        .showAtmosphere(true)
+        .atmosphereColor("#1a237e")
+        .atmosphereAltitude(0.15)
+        .width(w)
+        .height(h)
+        .pointOfView({
+          lat: viewport.center[0],
+          lng: viewport.center[1],
+          altitude: zoomToAltitude(viewport.zoom),
+        });
 
-    // ---- Auto-rotation ---- //
-    const controls = globe.controls();
-    controls.autoRotate = true;
-    controls.autoRotateSpeed = 0.3;
+      // Optimise renderer for all devices
+      const renderer = globe.renderer();
+      const dpr = Math.min(window.devicePixelRatio, 1.5);
+      renderer.setPixelRatio(dpr);
+      renderer.setSize(w, h);
 
-    const pauseRotation = () => {
-      controls.autoRotate = false;
-      if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
-      idleTimerRef.current = setTimeout(() => {
-        controls.autoRotate = true;
-      }, 5000);
+      // ---- Auto-rotation ---- //
+      const controls = globe.controls();
+      controls.autoRotate = true;
+      controls.autoRotateSpeed = 0.3;
+
+      pauseRotation = () => {
+        controls.autoRotate = false;
+        if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+        idleTimerRef.current = setTimeout(() => {
+          controls.autoRotate = true;
+        }, 5000);
+      };
+
+      container.addEventListener("pointerdown", pauseRotation);
+      container.addEventListener("wheel", pauseRotation);
+
+      globeRef.current = globe;
     };
 
-    const el = containerRef.current;
-    el.addEventListener("pointerdown", pauseRotation);
-    el.addEventListener("wheel", pauseRotation);
-
-    globeRef.current = globe;
-
-    // ---- ResizeObserver ---- //
+    // ---- ResizeObserver: init on first real dimensions, then resize ---- //
     const ro = new ResizeObserver((entries) => {
       for (const entry of entries) {
         const { width: rw, height: rh } = entry.contentRect;
-        if (rw > 0 && rh > 0 && globeRef.current) {
-          globeRef.current.width(rw).height(rh);
-          globeRef.current.renderer().setSize(rw, rh);
+        if (rw > 0 && rh > 0) {
+          if (!globeRef.current) {
+            initGlobe(rw, rh);
+          } else {
+            globeRef.current.width(rw).height(rh);
+            globeRef.current.renderer().setSize(rw, rh);
+          }
         }
       }
     });
-    ro.observe(containerRef.current);
+    ro.observe(container);
+
+    // Try to init immediately if container already has dimensions
+    const w = container.clientWidth;
+    const h = container.clientHeight;
+    if (w > 0 && h > 0) initGlobe(w, h);
 
     // ---- Fetch world GeoJSON ---- //
     if (!worldGeoJsonCache) {
@@ -216,13 +228,13 @@ export function GlobeMap({
 
     return () => {
       ro.disconnect();
-      el.removeEventListener("pointerdown", pauseRotation);
-      el.removeEventListener("wheel", pauseRotation);
+      if (pauseRotation) {
+        container.removeEventListener("pointerdown", pauseRotation);
+        container.removeEventListener("wheel", pauseRotation);
+      }
       if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
-      if (containerRef.current) {
-        while (containerRef.current.firstChild) {
-          containerRef.current.removeChild(containerRef.current.firstChild);
-        }
+      while (container.firstChild) {
+        container.removeChild(container.firstChild);
       }
       globeRef.current = null;
     };

@@ -25,7 +25,7 @@ export function AppShell({
       <Header searchSlot={searchSlot} compareTraySlot={compareTraySlot} navSlot={navSlot} />
 
       <section className="grid flex-1 gap-4 xl:grid-cols-[1fr_360px]">
-        <div className="terminal-surface relative min-h-[520px] p-2 md:p-3">
+        <div className="terminal-surface relative h-[520px] min-h-[520px] p-2 md:p-3">
           {layerControlsSlot ? <div className="absolute left-4 top-4 z-10">{layerControlsSlot}</div> : null}
           {mapSlot ?? (
             <div className="flex h-full min-h-[360px] items-center justify-center text-sm text-terminal-text-dim">
