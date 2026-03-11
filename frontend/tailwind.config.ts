@@ -10,17 +10,17 @@ const config: Config = {
     extend: {
       colors: {
         terminal: {
-          bg: "#0f1115",
-          surface: "#161a22",
-          border: "#2a3140",
-          green: "#84dba0",
-          "green-dim": "#6fc08b",
-          cyan: "#88c6f5",
-          amber: "#e9bc74",
-          red: "#ea7b78",
-          text: "#d8dee9",
-          "text-dim": "#a5afc1",
-          "text-muted": "#7f899f",
+          bg: "rgb(var(--terminal-bg) / <alpha-value>)",
+          surface: "rgb(var(--terminal-surface) / <alpha-value>)",
+          border: "rgb(var(--terminal-border) / <alpha-value>)",
+          green: "rgb(var(--terminal-green) / <alpha-value>)",
+          "green-dim": "rgb(var(--terminal-green-dim) / <alpha-value>)",
+          cyan: "rgb(var(--terminal-cyan) / <alpha-value>)",
+          amber: "rgb(var(--terminal-amber) / <alpha-value>)",
+          red: "rgb(var(--terminal-red) / <alpha-value>)",
+          text: "rgb(var(--terminal-text) / <alpha-value>)",
+          "text-dim": "rgb(var(--terminal-text-dim) / <alpha-value>)",
+          "text-muted": "rgb(var(--terminal-text-muted) / <alpha-value>)",
         },
       },
       fontFamily: {

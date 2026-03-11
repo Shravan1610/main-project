@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
 import "./globals.css";
-import "leaflet/dist/leaflet.css";
+import "maplibre-gl/dist/maplibre-gl.css";
+import "@/features/ui-theme/styles/terminal.css";
 import { Providers } from "./providers";
 
 export const metadata: Metadata = {
@@ -16,7 +17,7 @@ type RootLayoutProps = {
 
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className="dark" suppressHydrationWarning>
       <body className="min-h-screen bg-terminal-bg text-terminal-text font-mono antialiased">
         <Providers>{children}</Providers>
       </body>

@@ -3,7 +3,33 @@
 
 @layer base {
   :root {
+    color-scheme: light;
+    --terminal-bg: 245 247 252;
+    --terminal-surface: 255 255 255;
+    --terminal-border: 205 216 237;
+    --terminal-green: 23 142 89;
+    --terminal-green-dim: 40 125 88;
+    --terminal-cyan: 16 116 184;
+    --terminal-amber: 183 117 27;
+    --terminal-red: 198 61 69;
+    --terminal-text: 31 39 52;
+    --terminal-text-dim: 79 92 114;
+    --terminal-text-muted: 110 124 146;
+  }
+
+  .dark {
     color-scheme: dark;
+    --terminal-bg: 15 17 21;
+    --terminal-surface: 22 26 34;
+    --terminal-border: 42 49 64;
+    --terminal-green: 132 219 160;
+    --terminal-green-dim: 111 192 139;
+    --terminal-cyan: 136 198 245;
+    --terminal-amber: 233 188 116;
+    --terminal-red: 234 123 120;
+    --terminal-text: 216 222 233;
+    --terminal-text-dim: 165 175 193;
+    --terminal-text-muted: 127 137 159;
   }
 
   * {
@@ -19,9 +45,19 @@
     @apply bg-terminal-bg text-terminal-text;
     background-image: radial-gradient(1200px 520px at 6% -12%, rgba(116, 153, 214, 0.16), transparent 48%),
       radial-gradient(1100px 520px at 100% 110%, rgba(125, 142, 198, 0.12), transparent 45%),
-      linear-gradient(180deg, #0e1118 0%, #0b0e14 100%);
+      linear-gradient(
+        180deg,
+        rgb(var(--terminal-bg)) 0%,
+        rgb(var(--terminal-surface)) 100%
+      );
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+  }
+
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+    mix-blend-mode: normal;
   }
 }
 

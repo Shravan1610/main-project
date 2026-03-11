@@ -23,10 +23,17 @@ export type LayerConfig = {
   enabled: boolean;
 };
 
+export type MapEngine = "2d" | "3d";
+
+export type ActiveLayers = Record<string, boolean>;
+
 export type MapProps = {
   viewport: MapViewport;
   markers: MapMarker[];
+  activeLayers?: ActiveLayers;
   onMarkerSelect?: (marker: MapMarker) => void;
+  engine?: MapEngine;
+  onEngineChange?: (engine: MapEngine) => void;
 };
 
 export type LayerResponse = {

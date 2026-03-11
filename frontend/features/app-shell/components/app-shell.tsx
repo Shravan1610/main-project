@@ -8,6 +8,7 @@ type AppShellProps = {
   searchSlot?: ReactNode;
   compareTraySlot?: ReactNode;
   layerControlsSlot?: ReactNode;
+  navSlot?: ReactNode;
 };
 
 export function AppShell({
@@ -17,10 +18,11 @@ export function AppShell({
   searchSlot,
   compareTraySlot,
   layerControlsSlot,
+  navSlot,
 }: AppShellProps) {
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-[1660px] flex-col gap-4 p-3 md:p-4">
-      <Header searchSlot={searchSlot} compareTraySlot={compareTraySlot} />
+      <Header searchSlot={searchSlot} compareTraySlot={compareTraySlot} navSlot={navSlot} />
 
       <section className="grid flex-1 gap-4 xl:grid-cols-[1fr_360px]">
         <div className="terminal-surface relative min-h-[520px] p-2 md:p-3">

@@ -5,7 +5,11 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(extra="ignore")
+    model_config = SettingsConfigDict(
+        extra="ignore",
+        env_file=".env",
+        env_file_encoding="utf-8",
+    )
 
     port: int = 8000
     cors_origins: str = "http://localhost:3000"
@@ -15,8 +19,13 @@ class Settings(BaseSettings):
     coingecko_demo_api_key: str = ""
     news_api_key: str = ""
     gnews_api_key: str = ""
+    the_news_api_key: str = ""
+    google_ai_studio_api_key: str = ""
+    gemini_model: str = "gemini-3.1-flash-lite"
+    deepgram_api_key: str = ""
     climate_api_key: str = ""
     geocoding_api_key: str = ""
+    youtube_api_key: str = ""
 
     esg_model_url: str = Field(default="https://greenverify-api.onrender.com")
     log_level: str = "INFO"

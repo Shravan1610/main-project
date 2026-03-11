@@ -1,6 +1,6 @@
 "use client";
 
-import { CryptoFeed } from "./crypto-feed";
+import { CryptoWatchlist } from "./crypto-watchlist";
 import { useCryptoFeed } from "../hooks";
 
 export function CryptoFeedSection() {
@@ -17,7 +17,7 @@ export function CryptoFeedSection() {
   return (
     <section className="space-y-2">
       <h3 className="text-sm font-semibold text-terminal-text">Crypto Feed</h3>
-      <CryptoFeed items={data ?? []} />
+      <CryptoWatchlist items={data ?? []} />
     </section>
   );
 }

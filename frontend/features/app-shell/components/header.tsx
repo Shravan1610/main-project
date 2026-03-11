@@ -1,11 +1,16 @@
 import type { ReactNode } from "react";
+import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler";
+import { VoiceAgentLauncher } from "@/features/voice-agent/components";
 
 type HeaderProps = {
   searchSlot?: ReactNode;
   compareTraySlot?: ReactNode;
+  navSlot?: ReactNode;
 };
 
-export function Header({ searchSlot, compareTraySlot }: HeaderProps) {
+export function Header({ searchSlot, compareTraySlot, navSlot }: HeaderProps) {
+  const showTools = Boolean(searchSlot || compareTraySlot);
+
   return (
     <header className="terminal-surface overflow-hidden p-0">
       <div className="flex flex-col gap-3 px-4 py-3 md:flex-row md:items-center md:justify-between md:px-5">
@@ -25,20 +30,23 @@ export function Header({ searchSlot, compareTraySlot }: HeaderProps) {
               </span>
             </div>
             <p className="text-xs text-terminal-text-muted md:tracking-wide">Signal dashboard for markets, climate, and news</p>
+            {navSlot ? <div className="mt-2">{navSlot}</div> : null}
           </div>
         </div>
 
         <div className="flex w-full flex-col gap-2 md:w-auto md:min-w-[360px]">
-          {searchSlot ?? (
-            <div className="rounded-lg border border-terminal-border bg-terminal-bg/70 px-3 py-2 text-sm text-terminal-text-dim">
-              Search slot (Phase 1 scaffold)
+          <div className="flex justify-end">
+            <div className="flex items-center gap-2">
+              <VoiceAgentLauncher />
+              <AnimatedThemeToggler aria-label="Toggle theme" />
             </div>
-          )}
-          {compareTraySlot ?? (
-            <div className="rounded-lg border border-terminal-border bg-terminal-bg/70 px-3 py-2 text-sm text-terminal-text-dim">
-              Compare tray slot (Phase 1 scaffold)
-            </div>
-          )}
+          </div>
+          {showTools ? (
+            <>
+              {searchSlot}
+              {compareTraySlot}
+            </>
+          ) : null}
         </div>
       </div>
     </header>

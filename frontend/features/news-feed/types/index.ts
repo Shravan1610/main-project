@@ -1,5 +1,6 @@
 export type FeedNewsItem = {
   title: string;
+  summary?: string | null;
   source?: string;
   publishedAt?: string;
   url?: string;
