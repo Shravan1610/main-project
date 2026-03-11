@@ -27,4 +27,5 @@ export type DocumentAnalyzerResponse = {
   source?: {
     url?: string | null;
   };
+  aiAnalytics?: AiAnalytics | null;
 };
