@@ -1,5 +1,6 @@
 from functools import lru_cache
 import importlib.util
+import sys
 from pathlib import Path
 import sys
 from types import ModuleType

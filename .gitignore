@@ -19,7 +19,8 @@ dist/
 build/
 *.tsbuildinfo
 
-# IDE
+# TypeScript build info
+*.tsbuildinfo
 .vscode/
 .idea/
 *.swp
