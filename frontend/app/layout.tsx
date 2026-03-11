@@ -1,18 +1,13 @@
 import type { Metadata } from "next";
-import { Fira_Code } from "next/font/google";
 import type { ReactNode } from "react";
 
 import "./globals.css";
+import "leaflet/dist/leaflet.css";
 import { Providers } from "./providers";
 
-const firaCode = Fira_Code({
-  subsets: ["latin"],
-  variable: "--font-mono",
-});
-
 export const metadata: Metadata = {
-  title: "GreenTrust",
-  description: "Map-first sustainable finance intelligence platform",
+  title: "World Monitor",
+  description: "Map-first global monitoring terminal",
 };
 
 type RootLayoutProps = {
@@ -21,7 +16,7 @@ type RootLayoutProps = {
 
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
-    <html lang="en" className={firaCode.variable}>
+    <html lang="en" suppressHydrationWarning>
       <body className="min-h-screen bg-terminal-bg text-terminal-text font-mono antialiased">
         <Providers>{children}</Providers>
       </body>

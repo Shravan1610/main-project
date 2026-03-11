@@ -3,5 +3,10 @@ import { apiClient } from "@/shared/api";
 import type { EntityAnalysis } from "../types";
 
 export async function getEntityAnalysis(entityId: string): Promise<EntityAnalysis> {
-  return apiClient.get<EntityAnalysis>("/analyze", { params: { entity: entityId } });
+  const normalizedEntityId = entityId.trim();
+  if (!normalizedEntityId) {
+    throw new Error("Entity ID is required");
+  }
+
+  return apiClient.get<EntityAnalysis>("/analyze", { params: { entity: normalizedEntityId } });
 }

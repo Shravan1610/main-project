@@ -9,4 +9,10 @@
 //   fetchLayerData(): Promise<MapLayersResponse>
 //   Uses: @/shared/api/client
 
-export {}; // Stub — implement in SR-1-02
+import { apiClient } from "@/shared/api";
+
+import type { LayerResponse } from "../types";
+
+export async function fetchLayerData(): Promise<LayerResponse> {
+  return apiClient.get<LayerResponse>("/layers");
+}

@@ -1,6 +1,5 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@config "../tailwind.config.ts";
+@import "tailwindcss";
 
 @layer base {
   :root {
@@ -18,11 +17,16 @@
 
   body {
     @apply bg-terminal-bg text-terminal-text;
+    background-image: radial-gradient(1200px 520px at 6% -12%, rgba(116, 153, 214, 0.16), transparent 48%),
+      radial-gradient(1100px 520px at 100% 110%, rgba(125, 142, 198, 0.12), transparent 45%),
+      linear-gradient(180deg, #0e1118 0%, #0b0e14 100%);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
   }
 }
 
 @layer utilities {
   .terminal-surface {
-    @apply rounded-lg border border-terminal-border bg-terminal-surface/80 shadow-glow;
+    @apply rounded-2xl border border-terminal-border bg-terminal-surface shadow-glow backdrop-blur-md;
   }
 }

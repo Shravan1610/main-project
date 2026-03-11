@@ -3,12 +3,24 @@ import type { CompareState } from "../types";
 type CompareTrayProps = {
   selectedEntityIds: CompareState["selectedEntityIds"];
   onRemove: (entityId: string) => void;
+  onCompare?: () => void;
+  loading?: boolean;
 };
 
-export function CompareTray({ selectedEntityIds, onRemove }: CompareTrayProps) {
+export function CompareTray({ selectedEntityIds, onRemove, onCompare, loading = false }: CompareTrayProps) {
   return (
     <div className="rounded border border-terminal-border bg-terminal-surface p-2">
-      <p className="mb-2 text-xs text-terminal-text-dim">Compare Tray</p>
+      <div className="mb-2 flex items-center justify-between">
+        <p className="text-xs text-terminal-text-dim">Compare Tray</p>
+        <button
+          type="button"
+          onClick={onCompare}
+          disabled={!onCompare || selectedEntityIds.length < 2 || loading}
+          className="rounded border border-terminal-border px-2 py-1 text-xs text-terminal-text disabled:cursor-not-allowed disabled:opacity-45"
+        >
+          {loading ? "Comparing..." : "Compare"}
+        </button>
+      </div>
       <div className="flex flex-wrap gap-2">
         {selectedEntityIds.map((id) => (
           <button

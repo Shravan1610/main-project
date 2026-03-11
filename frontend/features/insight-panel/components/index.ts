@@ -4,6 +4,7 @@ export { EntityHeader } from "./entity-header";
 export { InsightPanel } from "./insight-panel";
 export { MarketSummary } from "./market-summary";
 export { NewsSummary } from "./news-summary";
+export { ResearchBriefCard } from "./research-brief";
 export { ScoreCard } from "./score-card";
 export { ScoreDisplay } from "./score-display";
 export { ScoreSection } from "./score-section";

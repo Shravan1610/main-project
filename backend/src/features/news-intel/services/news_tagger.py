@@ -1,12 +1,19 @@
 def tag_article(article: dict) -> str:
     text = f"{article.get('title', '')} {article.get('summary', '')}".lower()
-    if "risk" in text:
-        return "risk"
-    if "regulation" in text:
+
+    if any(token in text for token in ("regulation", "policy", "compliance", "antitrust", "sec", "law")):
         return "regulation"
-    if "disaster" in text:
+    if any(token in text for token in ("supply chain", "logistics", "shipping", "factory", "port")):
+        return "supply-chain"
+    if any(token in text for token in ("earnings", "guidance", "revenue", "profit", "quarter", "eps")):
+        return "earnings"
+    if any(token in text for token in ("inflation", "interest rate", "fed", "ecb", "macro", "gdp", "jobs report")):
+        return "macro"
+    if any(token in text for token in ("disaster", "storm", "flood", "wildfire", "earthquake", "hurricane")):
         return "disaster"
-    if "opportunity" in text:
+    if any(token in text for token in ("risk", "lawsuit", "downgrade", "probe", "uncertainty", "layoff")):
+        return "risk"
+    if any(token in text for token in ("opportunity", "growth", "partnership", "launch", "upgrade", "expansion")):
         return "opportunity"
     return "general"
 

@@ -11,7 +11,10 @@ class Settings(BaseSettings):
     cors_origins: str = "http://localhost:3000"
 
     market_api_key: str = ""
+    finnhub_api_key: str = ""
+    coingecko_demo_api_key: str = ""
     news_api_key: str = ""
+    gnews_api_key: str = ""
     climate_api_key: str = ""
     geocoding_api_key: str = ""
 

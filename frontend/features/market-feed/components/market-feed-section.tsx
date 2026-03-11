@@ -1,6 +1,6 @@
 "use client";
 
-import { MarketFeed } from "./market-feed";
+import { MarketWatchlist } from "./market-watchlist";
 import { useMarketFeed } from "../hooks";
 
 export function MarketFeedSection() {
@@ -16,8 +16,8 @@ export function MarketFeedSection() {
 
   return (
     <section className="space-y-2">
-      <h3 className="text-sm font-semibold text-terminal-text">Market Feed</h3>
-      <MarketFeed items={data ?? []} />
+      <h3 className="text-sm font-semibold text-terminal-text">Watchlist</h3>
+      <MarketWatchlist items={data ?? []} />
     </section>
   );
 }

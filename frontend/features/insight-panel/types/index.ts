@@ -1,6 +1,8 @@
 export type Driver = {
   label: string;
   impact: "positive" | "negative" | "neutral";
+  weight?: number | null;
+  detail?: string;
 };
 
 export type ScoreMap = {
@@ -14,6 +16,8 @@ export type MarketSnapshot = {
   changePercent: number;
   currency?: string;
   exchange?: string;
+  marketCap?: number | null;
+  volume?: number | null;
 };
 
 export type NewsItem = {
@@ -27,7 +31,36 @@ export type NewsItem = {
 export type ClimateSummaryData = {
   summary: string;
   vulnerability?: string;
-  events?: Array<{ title?: string; category?: string }>;
+  events?: Array<{ type?: string; severity?: string; location?: string; description?: string | null }>;
+};
+
+export type NewsSignal = {
+  category: string;
+  count: number;
+  direction: "positive" | "negative";
+  headline?: string | null;
+};
+
+export type ResearchBrief = {
+  entityId: string;
+  summary: string;
+  keyPoints: string[];
+  risks: string[];
+  opportunities: string[];
+  confidence: number;
+  sourceRefs: Array<{
+    title: string;
+    source: string;
+    url: string;
+  }>;
+  generatedAt?: string | null;
+};
+
+export type CoverageSummary = {
+  articleCount: number;
+  sourceCount: number;
+  lastUpdated: string;
+  latestPublishedAt?: string | null;
 };
 
 export type EntityAnalysis = {
@@ -45,4 +78,7 @@ export type EntityAnalysis = {
   };
   news: NewsItem[];
   climate: ClimateSummaryData;
+  newsSignals?: NewsSignal[];
+  researchBrief?: ResearchBrief;
+  coverage?: CoverageSummary;
 };

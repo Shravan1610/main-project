@@ -1,32 +1,42 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { DependencyList } from "react";
 
 type UseApiOptions<TData> = {
   enabled?: boolean;
   initialData?: TData | null;
+  refreshIntervalMs?: number;
+  pauseWhenHidden?: boolean;
 };
 
 export function useApi<TData>(
   fetcher: () => Promise<TData>,
-  deps: DependencyList,
   options?: UseApiOptions<TData>,
 ) {
+  const isEnabled = options?.enabled ?? true;
+  const refreshIntervalMs = options?.refreshIntervalMs ?? 0;
+  const pauseWhenHidden = options?.pauseWhenHidden ?? false;
   const [data, setData] = useState<TData | null>(options?.initialData ?? null);
-  const [loading, setLoading] = useState<boolean>(Boolean(options?.enabled ?? true));
+  const [loading, setLoading] = useState<boolean>(Boolean(isEnabled));
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    const isEnabled = options?.enabled ?? true;
     if (!isEnabled) {
       setLoading(false);
       return;
     }
 
     let isCancelled = false;
+    let timer: ReturnType<typeof setTimeout> | null = null;
 
     async function run() {
+      if (pauseWhenHidden && typeof document !== "undefined" && document.visibilityState === "hidden") {
+        if (refreshIntervalMs > 0 && !isCancelled) {
+          timer = setTimeout(run, refreshIntervalMs);
+        }
+        return;
+      }
+
       setLoading(true);
       setError(null);
 
@@ -44,14 +54,21 @@ export function useApi<TData>(
           setLoading(false);
         }
       }
+
+      if (refreshIntervalMs > 0 && !isCancelled) {
+        timer = setTimeout(run, refreshIntervalMs);
+      }
     }
 
     run();
 
     return () => {
       isCancelled = true;
+      if (timer) {
+        clearTimeout(timer);
+      }
     };
-  }, deps);
+  }, [fetcher, isEnabled, refreshIntervalMs, pauseWhenHidden]);
 
   return { data, loading, error, setData };
 }

@@ -15,7 +15,7 @@ def get_http_client() -> httpx.AsyncClient:
         _http_client = httpx.AsyncClient(
             timeout=timeout,
             transport=transport,
-            headers={"User-Agent": "GreenTrust/0.1"},
+            headers={"User-Agent": "WorldMonitor/0.1"},
         )
 
     return _http_client

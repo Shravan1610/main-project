@@ -3,18 +3,17 @@
   "title": "MapLayersResponse",
   "description": "Response from GET /layers",
   "type": "object",
-  "required": ["exchanges", "climateEvents", "newsLocations"],
+  "required": ["exchanges", "climate", "news", "updatedAt"],
   "properties": {
     "exchanges": {
       "type": "array",
-      "description": "Major stock exchanges with coordinates",
       "items": {
         "type": "object",
-        "required": ["id", "name", "coordinates"],
+        "required": ["id", "kind", "label", "coordinates"],
         "properties": {
           "id": { "type": "string" },
-          "name": { "type": "string" },
-          "country": { "type": "string" },
+          "kind": { "type": "string", "enum": ["exchange"] },
+          "label": { "type": "string" },
           "coordinates": {
             "type": "object",
             "required": ["lat", "lng"],
@@ -22,23 +21,19 @@
               "lat": { "type": "number" },
               "lng": { "type": "number" }
             }
-          },
-          "marketStatus": { "type": ["string", "null"], "enum": ["open", "closed", "pre-market", "after-hours", null] }
+          }
         }
       }
     },
-    "climateEvents": {
+    "climate": {
       "type": "array",
-      "description": "Active climate/weather events",
       "items": {
         "type": "object",
-        "required": ["id", "type", "severity", "coordinates"],
+        "required": ["id", "kind", "label", "coordinates"],
         "properties": {
           "id": { "type": "string" },
-          "type": { "type": "string" },
-          "severity": { "type": "string", "enum": ["minor", "moderate", "severe", "extreme"] },
-          "location": { "type": "string" },
-          "description": { "type": ["string", "null"] },
+          "kind": { "type": "string", "enum": ["climate"] },
+          "label": { "type": "string" },
           "coordinates": {
             "type": "object",
             "required": ["lat", "lng"],
@@ -46,25 +41,20 @@
               "lat": { "type": "number" },
               "lng": { "type": "number" }
             }
-          },
-          "date": { "type": ["string", "null"], "format": "date-time" }
+          }
         }
       }
     },
-    "newsLocations": {
+    "news": {
       "type": "array",
-      "description": "Geocoded news article locations",
       "items": {
         "type": "object",
-        "required": ["id", "title", "coordinates"],
+        "required": ["id", "kind", "label", "coordinates"],
         "properties": {
           "id": { "type": "string" },
-          "title": { "type": "string" },
-          "source": { "type": "string" },
-          "category": {
-            "type": ["string", "null"],
-            "enum": ["risk", "opportunity", "regulation", "disaster", "general", null]
-          },
+          "kind": { "type": "string", "enum": ["news"] },
+          "label": { "type": "string" },
+          "category": { "type": ["string", "null"] },
           "coordinates": {
             "type": "object",
             "required": ["lat", "lng"],
@@ -72,10 +62,10 @@
               "lat": { "type": "number" },
               "lng": { "type": "number" }
             }
-          },
-          "url": { "type": ["string", "null"] }
+          }
         }
       }
-    }
+    },
+    "updatedAt": { "type": "string", "format": "date-time" }
   }
 }

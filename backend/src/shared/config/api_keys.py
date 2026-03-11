@@ -2,7 +2,10 @@ from src.shared.config.settings import get_settings
 
 _SERVICE_TO_FIELD: dict[str, str] = {
     "market": "market_api_key",
+    "finnhub": "finnhub_api_key",
+    "coingecko": "coingecko_demo_api_key",
     "news": "news_api_key",
+    "gnews": "gnews_api_key",
     "climate": "climate_api_key",
     "geocoding": "geocoding_api_key",
 }

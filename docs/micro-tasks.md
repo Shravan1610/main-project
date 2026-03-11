@@ -276,15 +276,15 @@
 
 | ID | Task | Description | Output | Status |
 |----|------|-------------|--------|--------|
-| AF-2-01 | Implement entity-resolver/services/company_lookup.py | Real company lookup via external API | Working company resolution | ⬜ |
-| AF-2-02 | Implement entity-resolver/services/ticker_lookup.py | Real ticker/stock lookup | Working stock resolution | ⬜ |
-| AF-2-03 | Implement entity-resolver/services/crypto_lookup.py | Real crypto lookup | Working crypto resolution | ⬜ |
-| AF-2-04 | Implement market-intel/services/stock_data.py | Real stock price/change data from API | Working stock data | ⬜ |
-| AF-2-05 | Implement market-intel/services/crypto_data.py | Real crypto price data from API | Working crypto data | ⬜ |
-| AF-2-06 | Implement news-intel/services/news_service.py | Real news data from NewsAPI/GNews | Working news data | ⬜ |
-| AF-2-07 | Implement climate-intel/services/climate_service.py | Real climate data from weather API | Working climate data | ⬜ |
-| AF-2-08 | Wire analyze_controller.py end-to-end | Connect all services → full /analyze response | Working /analyze | ⬜ |
-| AF-2-09 | Wire search_controller.py end-to-end | Connect resolver → /search response | Working /search | ⬜ |
+| AF-2-01 | Implement entity-resolver/services/company_lookup.py | Real company lookup via external API | Working company resolution | ✅ |
+| AF-2-02 | Implement entity-resolver/services/ticker_lookup.py | Real ticker/stock lookup | Working stock resolution | ✅ |
+| AF-2-03 | Implement entity-resolver/services/crypto_lookup.py | Real crypto lookup | Working crypto resolution | ✅ |
+| AF-2-04 | Implement market-intel/services/stock_data.py | Real stock price/change data from API | Working stock data | ✅ |
+| AF-2-05 | Implement market-intel/services/crypto_data.py | Real crypto price data from API | Working crypto data | ✅ |
+| AF-2-06 | Implement news-intel/services/news_service.py | Real news data from NewsAPI/GNews | Working news data | ✅ |
+| AF-2-07 | Implement climate-intel/services/climate_service.py | Real climate data from weather API | Working climate data | ✅ |
+| AF-2-08 | Wire analyze_controller.py end-to-end | Connect all services → full /analyze response | Working /analyze | ✅ |
+| AF-2-09 | Wire search_controller.py end-to-end | Connect resolver → /search response | Working /search | ✅ |
 
 ## Shravan — Phase 2
 

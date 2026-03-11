@@ -12,7 +12,7 @@ from src.shared.utils import register_error_handlers
 
 settings = get_settings()
 
-app = FastAPI(title="GreenTrust Backend", version="0.1.0")
+app = FastAPI(title="World Monitor Backend", version="0.1.0")
 
 app.add_middleware(
     CORSMiddleware,

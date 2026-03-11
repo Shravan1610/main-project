@@ -4,6 +4,7 @@ import { ClimateSummary } from "./climate-summary";
 import { EntityHeader } from "./entity-header";
 import { MarketSummary } from "./market-summary";
 import { NewsSummary } from "./news-summary";
+import { ResearchBriefCard } from "./research-brief";
 import { ScoreSection } from "./score-section";
 import { useEntityAnalysis } from "../hooks";
 
@@ -23,7 +24,7 @@ export function InsightPanel({ entityId }: InsightPanelProps) {
   }
 
   if (error || !data) {
-    return <div className="text-sm text-terminal-red">Failed to load entity analysis.</div>;
+    return <div className="text-sm text-terminal-red">Failed to load entity analysis{error?.message ? `: ${error.message}` : "."}</div>;
   }
 
   return (
@@ -31,6 +32,7 @@ export function InsightPanel({ entityId }: InsightPanelProps) {
       <EntityHeader entity={data} />
       <MarketSummary market={data.market} />
       <ScoreSection entity={data} />
+      <ResearchBriefCard brief={data.researchBrief} coverage={data.coverage} />
       <NewsSummary news={data.news} />
       <ClimateSummary climate={data.climate} />
     </div>

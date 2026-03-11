@@ -81,6 +81,12 @@ Afham implementation progress (Phase 1):
 - [x] Backend compile checks pass for `src/api`, `src/features`, and `src/main.py`
 - [ ] Real external API integration and data enrichment (Phase 2)
 
+Afham implementation progress (Phase 2):
+- [x] AF-2-01 to AF-2-09 implemented with provider wiring and fallbacks
+- [x] CoinGecko integration path added for crypto lookup/data
+- [x] Alpha Vantage integration path added for company/ticker/search/quotes
+- [x] NewsAPI and OpenWeather integration paths added for news/climate
+
 ---
 
 ## Phase Review Cadence

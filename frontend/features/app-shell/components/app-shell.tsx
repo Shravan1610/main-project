@@ -19,11 +19,11 @@ export function AppShell({
   layerControlsSlot,
 }: AppShellProps) {
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-[1600px] flex-col p-4 md:p-6">
+    <main className="mx-auto flex min-h-screen w-full max-w-[1660px] flex-col gap-4 p-3 md:p-4">
       <Header searchSlot={searchSlot} compareTraySlot={compareTraySlot} />
 
-      <section className="mt-4 grid flex-1 gap-4 lg:grid-cols-[1fr_360px]">
-        <div className="terminal-surface relative min-h-[420px] p-4">
+      <section className="grid flex-1 gap-4 xl:grid-cols-[1fr_360px]">
+        <div className="terminal-surface relative min-h-[520px] p-2 md:p-3">
           {layerControlsSlot ? <div className="absolute left-4 top-4 z-10">{layerControlsSlot}</div> : null}
           {mapSlot ?? (
             <div className="flex h-full min-h-[360px] items-center justify-center text-sm text-terminal-text-dim">
@@ -32,14 +32,14 @@ export function AppShell({
           )}
         </div>
 
-        <aside className="terminal-surface min-h-[420px] p-4">
+        <aside className="terminal-surface min-h-[520px] p-4">
           {sidePanelSlot ?? (
             <div className="text-sm text-terminal-text-dim">Insight panel (Phase 1 scaffold)</div>
           )}
         </aside>
       </section>
 
-      <section className="terminal-surface mt-4 min-h-[160px] p-4">
+      <section className="terminal-surface min-h-[210px] p-3 md:p-4">
         {feedSlot ?? <div className="text-sm text-terminal-text-dim">Feeds section (Phase 1 scaffold)</div>}
       </section>
     </main>

@@ -33,4 +33,5 @@ export type LayerResponse = {
   exchanges: MapMarker[];
   climate: MapMarker[];
   news: MapMarker[];
+  updatedAt?: string;
 };
