@@ -1,11 +1,16 @@
-// frontend/features/comparison/components/compare-grid.tsx
-// Compare grid — displays 2-3 CompareCards side by side
-//
-// Owner: Sai
-// Task: SAI-3-02
-// Phase: 3 — Compare & Scores
-//
-// Props: { entities: CompareEntity[] }
-// Renders: responsive grid of CompareCards, max 3 columns
+import { CompareCard } from "./compare-card";
+import type { EntityAnalysis } from "@/features/insight-panel/types";
 
-export {}; // Stub — implement in SAI-3-02
+type CompareGridProps = {
+  entities: EntityAnalysis[];
+};
+
+export function CompareGrid({ entities }: CompareGridProps) {
+  return (
+    <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+      {entities.map((entity) => (
+        <CompareCard key={entity.id} entity={entity} />
+      ))}
+    </div>
+  );
+}

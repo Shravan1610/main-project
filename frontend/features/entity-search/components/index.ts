@@ -1,6 +1,3 @@
-// frontend/features/entity-search/components/index.ts
-// Barrel export for entity-search components
-//
-// Owner: Sai
-
-export {}; // Stub — re-export SearchBar, SearchResultItem
+export { SearchBar } from "./search-bar";
+export { SearchResultItem } from "./search-result-item";
+export { SearchResults } from "./search-results";

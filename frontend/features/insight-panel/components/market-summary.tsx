@@ -1,11 +1,17 @@
-// frontend/features/insight-panel/components/market-summary.tsx
-// Market summary — price, change %, market cap, volume in compact card
-//
-// Owner: Sai
-// Task: SAI-2-08
-// Phase: 2 — Core UI
-//
-// Props: { market: { price, changePercent, currency, marketCap?, volume? } }
-// Renders: current price, change badge (green/red), formatted numbers
+import { formatCurrency, formatPercent } from "@/shared/utils";
 
-export {}; // Stub — implement in SAI-2-08
+import type { MarketSnapshot } from "../types";
+
+type MarketSummaryProps = {
+  market: MarketSnapshot;
+};
+
+export function MarketSummary({ market }: MarketSummaryProps) {
+  return (
+    <div className="rounded border border-terminal-border bg-terminal-surface p-3 text-sm">
+      <p className="text-terminal-text">Price: {formatCurrency(market.price)}</p>
+      <p className="text-terminal-text-dim">Change: {formatPercent(market.changePercent)}</p>
+      {market.exchange ? <p className="text-terminal-text-dim">Exchange: {market.exchange}</p> : null}
+    </div>
+  );
+}

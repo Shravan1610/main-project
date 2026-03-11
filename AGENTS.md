@@ -51,3 +51,16 @@ Backend:
 - Copy env templates before running locally: root `.env.example`, plus frontend/backend env files.
 - Never commit real API keys or secrets.
 - Keep `NEXT_PUBLIC_API_URL` and backend CORS settings aligned for local development.
+
+## Remote Collaboration Constraints (Mandatory)
+- This repo is being edited by 4 people in parallel; keep changes tightly scoped to the assigned task.
+- Do not read `.env` files.
+- Use only `plan.md` and files under `docs/` as project context unless explicitly asked otherwise.
+- Do not assume missing requirements; ask clear questions when requirements are unclear.
+- Keep implementations simple and direct; avoid over-engineering.
+
+## ESG Service Endpoints
+- Base URL: `https://greenverify-api.onrender.com/`
+- Health: `https://greenverify-api.onrender.com/`
+- Swagger docs: `https://greenverify-api.onrender.com/docs`
+- Predict endpoint: `https://greenverify-api.onrender.com/predict`

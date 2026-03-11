@@ -1,11 +1,19 @@
-// frontend/features/comparison/components/compare-card.tsx
-// Single entity compare card — scores, drivers, market data side-by-side
-//
-// Owner: Sai
-// Task: SAI-3-01
-// Phase: 3 — Compare & Scores
-//
-// Props: { entity: CompareEntity }
-// Renders: name, scores (3 bars), top drivers, mini market info
+import type { EntityAnalysis } from "@/features/insight-panel/types";
 
-export {}; // Stub — implement in SAI-3-01
+type CompareCardProps = {
+  entity: EntityAnalysis;
+};
+
+export function CompareCard({ entity }: CompareCardProps) {
+  return (
+    <article className="rounded border border-terminal-border bg-terminal-surface p-3">
+      <h4 className="text-sm font-semibold text-terminal-text">{entity.name}</h4>
+      <p className="text-xs text-terminal-text-dim">{entity.ticker || entity.id}</p>
+      <div className="mt-2 space-y-1 text-xs text-terminal-text-dim">
+        <p>Sustainability: {entity.scores.sustainability}</p>
+        <p>Financial Risk: {entity.scores.financialRisk}</p>
+        <p>Long-Term Impact: {entity.scores.longTermImpact}</p>
+      </div>
+    </article>
+  );
+}

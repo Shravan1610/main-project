@@ -163,6 +163,13 @@ GEOCODING_API_KEY=
 ESG_MODEL_URL=
 ```
 
+## ESG Model Service (Canonical URLs)
+
+- Base URL: `https://greenverify-api.onrender.com/`
+- Health: `https://greenverify-api.onrender.com/`
+- Swagger docs: `https://greenverify-api.onrender.com/docs`
+- Predict endpoint: `https://greenverify-api.onrender.com/predict`
+
 ## Commands
 
 ### Frontend
@@ -348,3 +355,10 @@ Each stub file contains a comment/docstring with:
 - Do NOT use `any` type in TypeScript — define proper types
 - Map tiles can fail silently — always have fallback tile sources
 - External APIs have rate limits — implement caching in backend
+
+## Remote Collaboration Constraints (Mandatory)
+- This repo is being edited by 4 people in parallel; keep changes tightly scoped to the assigned task.
+- Do not read `.env` files.
+- Use only `plan.md` and files under `docs/` as project context unless explicitly asked otherwise.
+- Do not assume missing requirements; ask clear questions when requirements are unclear.
+- Keep implementations simple and direct; avoid over-engineering.

@@ -1,2 +1,2 @@
-// Components barrel | Owner: Shravan | Task: SH-1-15
-export {}; // Stub
+export { AppShell } from "./app-shell";
+export { Header } from "./header";

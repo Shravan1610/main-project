@@ -1,14 +1,23 @@
-// frontend/features/ui-theme/constants/index.ts
-// Theme constants — color tokens, spacing, typography, animation configs
-//
-// Owner: Srijan (Shravan reviews)
-// Task: SR-1-03
-// Phase: 1 — Scaffolding
-//
-// Expected exports:
-//   COLORS — terminal color palette object
-//   FONT_SIZES — type scale
-//   SPACING — spacing tokens
-//   ANIMATION — timing/easing presets
+export { CATEGORY_COLORS, SCORE_COLORS, TERMINAL_COLORS } from "./colors";
 
-export {}; // Stub — implement in SR-1-03
+export const FONT_SIZES = {
+  xs: "0.75rem",
+  sm: "0.875rem",
+  base: "1rem",
+  lg: "1.125rem",
+  xl: "1.25rem",
+} as const;
+
+export const SPACING = {
+  xs: "0.25rem",
+  sm: "0.5rem",
+  md: "1rem",
+  lg: "1.5rem",
+  xl: "2rem",
+} as const;
+
+export const ANIMATION = {
+  fast: "150ms",
+  normal: "250ms",
+  slow: "400ms",
+} as const;

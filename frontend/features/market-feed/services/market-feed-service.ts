@@ -1,12 +1,12 @@
-// frontend/features/market-feed/services/market-feed-service.ts
-// API service for stock/market feed — calls GET /feeds and extracts stocks array
-//
-// Owner: Sai
-// Task: SAI-1-11
-// Phase: 1 — Scaffolding
-//
-// Expected functions:
-//   fetchMarketFeed(): Promise<StockItem[]>
-//   Uses: @/shared/api/client, calls /feeds endpoint
+import { apiClient } from "@/shared/api";
 
-export {}; // Stub — implement in SAI-1-11
+import type { StockTicker } from "../types";
+
+type FeedResponse = {
+  stocks: StockTicker[];
+};
+
+export async function getMarketFeed(): Promise<StockTicker[]> {
+  const response = await apiClient.get<FeedResponse>("/feeds");
+  return response.stocks ?? [];
+}

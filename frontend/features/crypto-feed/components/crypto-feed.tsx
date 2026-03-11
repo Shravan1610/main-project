@@ -1,11 +1,17 @@
-// frontend/features/crypto-feed/components/crypto-feed.tsx
-// Crypto feed main container — horizontal scrolling crypto tickers
-//
-// Owner: Sai
-// Task: SA-1-48
-// Phase: 1 — Scaffolding
-//
-// Props: none (uses useCryptoFeed hook)
-// Renders: section title, horizontal ticker row, loading/empty states
+import { CryptoTicker } from "./crypto-ticker";
+import type { CryptoTicker as CryptoTickerType } from "../types";
 
-export {}; // Stub — implement in SA-1-48
+type CryptoFeedProps = {
+  items: CryptoTickerType[];
+};
+
+export function CryptoFeed({ items }: CryptoFeedProps) {
+  return (
+    <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+      {items.slice(0, 8).map((item) => (
+        <CryptoTicker key={item.symbol} item={item} />
+      ))}
+      {items.length === 0 ? <p className="text-xs text-terminal-text-dim">No crypto data available.</p> : null}
+    </div>
+  );
+}

@@ -1,11 +1,14 @@
-// frontend/features/news-feed/components/news-card.tsx
-// Single news card — title, source, date, category badge, thumbnail
-//
-// Owner: Sai
-// Task: SAI-4-02
-// Phase: 4 — Feeds
-//
-// Props: { item: NewsItem }
-// Renders: terminal-styled card with headline, source, timestamp, category tag
+import type { FeedNewsItem } from "../types";
 
-export {}; // Stub — implement in SAI-4-02
+type NewsCardProps = {
+  item: FeedNewsItem;
+};
+
+export function NewsCard({ item }: NewsCardProps) {
+  return (
+    <article className="rounded border border-terminal-border bg-terminal-surface p-3">
+      <p className="text-sm text-terminal-text">{item.title}</p>
+      <p className="mt-1 text-xs text-terminal-text-dim">{item.source || "Unknown source"}</p>
+    </article>
+  );
+}

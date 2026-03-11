@@ -1,15 +1,19 @@
-"""
-backend/src/shared/utils/response_builder.py
-Helper functions for building standardized API responses.
+from typing import Any
 
-Owner: Shravan
-Task: SH-1-18
-Phase: 1
 
-Expected functions:
-  success_response(data: dict, message: str = "OK") -> dict
-    — Returns {"status": "success", "message": message, "data": data}
-  error_response(message: str, code: int = 400, details: dict | None = None) -> dict
-    — Returns {"status": "error", "message": message, "code": code, "details": details}
-"""
-# Stub — implement in SH-1-18
+def success_response(data: Any, message: str = "OK") -> dict[str, Any]:
+    return {
+        "status": "success",
+        "message": message,
+        "data": data,
+    }
+
+
+def error_response(code: str, message: str, details: dict[str, Any] | None = None) -> dict[str, Any]:
+    return {
+        "error": {
+            "code": code,
+            "message": message,
+            "details": details,
+        }
+    }

@@ -1,11 +1,17 @@
-// frontend/features/crypto-feed/components/crypto-ticker.tsx
-// Single crypto ticker chip — compact display of crypto data
-//
-// Owner: Sai
-// Task: SA-1-49
-// Phase: 1 — Scaffolding
-//
-// Props: { symbol: string, name: string, price: number, changePercent: number }
-// Renders: crypto symbol, price, change % badge (green/red)
+import { formatCurrency, formatPercent } from "@/shared/utils";
 
-export {}; // Stub — implement in SA-1-49
+import type { CryptoTicker as CryptoTickerType } from "../types";
+
+type CryptoTickerProps = {
+  item: CryptoTickerType;
+};
+
+export function CryptoTicker({ item }: CryptoTickerProps) {
+  return (
+    <div className="rounded border border-terminal-border bg-terminal-surface px-3 py-2 text-xs">
+      <p className="font-medium text-terminal-text">{item.symbol}</p>
+      <p className="text-terminal-text-dim">{formatCurrency(item.price)}</p>
+      <p className="text-terminal-text-dim">{formatPercent(item.changePercent ?? 0)}</p>
+    </div>
+  );
+}

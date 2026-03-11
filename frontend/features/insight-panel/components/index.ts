@@ -1,6 +1,9 @@
-// frontend/features/insight-panel/components/index.ts
-// Barrel export for insight-panel components
-//
-// Owner: Sai
-
-export {}; // Stub — re-export InsightPanel, ScoreDisplay, DriverList, MarketSummary
+export { ClimateSummary } from "./climate-summary";
+export { DriverList } from "./driver-list";
+export { EntityHeader } from "./entity-header";
+export { InsightPanel } from "./insight-panel";
+export { MarketSummary } from "./market-summary";
+export { NewsSummary } from "./news-summary";
+export { ScoreCard } from "./score-card";
+export { ScoreDisplay } from "./score-display";
+export { ScoreSection } from "./score-section";

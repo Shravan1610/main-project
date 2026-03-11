@@ -1,6 +1,4 @@
-// frontend/features/market-feed/components/index.ts
-// Barrel export for market-feed components
-//
-// Owner: Sai
-
-export {}; // Stub — re-export StockTickerCard, MarketFeedSection
+export { MarketFeed } from "./market-feed";
+export { MarketFeedSection } from "./market-feed-section";
+export { StockTicker } from "./stock-ticker";
+export { StockTickerCard } from "./stock-ticker-card";

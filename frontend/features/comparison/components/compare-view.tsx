@@ -1,11 +1,14 @@
-// frontend/features/comparison/components/compare-view.tsx
-// Compare view — side-by-side comparison cards, triggered from compare tray
-//
-// Owner: Sai
-// Task: SA-1-24
-// Phase: 1 — Scaffolding
-//
-// Props: { entities: CompareEntity[] }
-// Renders: ResponsiveGrid of CompareCards, max 3, empty slots if fewer
+import { CompareGrid } from "./compare-grid";
+import type { EntityAnalysis } from "@/features/insight-panel/types";
 
-export {}; // Stub — implement in SA-1-24
+type CompareViewProps = {
+  entities: EntityAnalysis[];
+};
+
+export function CompareView({ entities }: CompareViewProps) {
+  if (entities.length === 0) {
+    return <p className="text-sm text-terminal-text-dim">No comparison data yet.</p>;
+  }
+
+  return <CompareGrid entities={entities} />;
+}

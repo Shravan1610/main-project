@@ -1,12 +1,11 @@
-"""
-backend/src/api/routes/health_routes.py
-GET /health endpoint — returns service health status.
+"""Health route for backend readiness checks."""
 
-Owner: Afham
-Task: AF-1-02
-Phase: 1
+from fastapi import APIRouter
 
-Expected functions:
-  router — APIRouter with GET /health returning {"status": "ok", "version": "..."}.
-"""
-# Stub — implement in AF-1-02
+router = APIRouter()
+
+
+@router.get("/health")
+async def get_health() -> dict[str, str]:
+    """Return a simple service heartbeat payload."""
+    return {"status": "ok", "version": "0.1.0"}

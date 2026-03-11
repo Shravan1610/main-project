@@ -1,11 +1,17 @@
-// frontend/features/news-feed/components/news-feed.tsx
-// News feed main container — scrollable news section
-//
-// Owner: Sai
-// Task: SA-1-32
-// Phase: 1 — Scaffolding
-//
-// Props: none (uses useNewsFeed hook)
-// Renders: section title, scrollable grid of NewsCards, loading/empty states
+import { NewsCard } from "./news-card";
+import type { FeedNewsItem } from "../types";
 
-export {}; // Stub — implement in SA-1-32
+type NewsFeedProps = {
+  items: FeedNewsItem[];
+};
+
+export function NewsFeed({ items }: NewsFeedProps) {
+  return (
+    <div className="grid gap-2">
+      {items.slice(0, 6).map((item, index) => (
+        <NewsCard key={`${item.title}-${index}`} item={item} />
+      ))}
+      {items.length === 0 ? <p className="text-xs text-terminal-text-dim">No news available.</p> : null}
+    </div>
+  );
+}

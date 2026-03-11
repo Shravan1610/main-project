@@ -1,11 +1,18 @@
-// frontend/features/insight-panel/components/entity-header.tsx
-// Entity header — name, type badge, ticker, country, logo
-//
-// Owner: Sai
-// Task: SA-1-11
-// Phase: 1 — Scaffolding
-//
-// Props: { name: string, type: EntityType, ticker?: string, country?: string, logoUrl?: string }
-// Renders: entity name, type icon, ticker badge, country flag
+import type { EntityAnalysis } from "../types";
 
-export {}; // Stub — implement in SA-1-11
+type EntityHeaderProps = {
+  entity: Pick<EntityAnalysis, "name" | "type" | "ticker" | "country">;
+};
+
+export function EntityHeader({ entity }: EntityHeaderProps) {
+  return (
+    <div>
+      <h3 className="text-lg font-semibold text-terminal-text">{entity.name}</h3>
+      <p className="text-xs text-terminal-text-dim">
+        {entity.type.toUpperCase()}
+        {entity.ticker ? ` • ${entity.ticker}` : ""}
+        {entity.country ? ` • ${entity.country}` : ""}
+      </p>
+    </div>
+  );
+}

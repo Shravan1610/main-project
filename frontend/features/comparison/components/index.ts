@@ -1,6 +1,4 @@
-// frontend/features/comparison/components/index.ts
-// Barrel export for comparison components
-//
-// Owner: Sai
-
-export {}; // Stub — re-export CompareTray, CompareCard, CompareGrid
+export { CompareCard } from "./compare-card";
+export { CompareGrid } from "./compare-grid";
+export { CompareTray } from "./compare-tray";
+export { CompareView } from "./compare-view";

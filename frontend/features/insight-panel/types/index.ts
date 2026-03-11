@@ -1,14 +1,48 @@
-// frontend/features/insight-panel/types/index.ts
-// Types for insight panel — AnalyzeResponse, ScoreData, DriverItem, EntityInsight
-//
-// Owner: Sai
-// Task: SAI-1-06
-// Phase: 1 — Scaffolding
-//
-// Expected types:
-//   AnalyzeResponse — mirrors contracts/analyze-response.json exactly
-//   ScoreData { sustainability, financialRisk, longTermImpact } (0-100 each)
-//   DriverItem { label, impact: "positive"|"negative"|"neutral", weight? }
-//   EntityInsight { entity info + market + news + climate + scores + drivers }
+export type Driver = {
+  label: string;
+  impact: "positive" | "negative" | "neutral";
+};
 
-export {}; // Stub — implement in SAI-1-06
+export type ScoreMap = {
+  sustainability: number;
+  financialRisk: number;
+  longTermImpact: number;
+};
+
+export type MarketSnapshot = {
+  price: number;
+  changePercent: number;
+  currency?: string;
+  exchange?: string;
+};
+
+export type NewsItem = {
+  title: string;
+  source?: string;
+  publishedAt?: string;
+  url?: string;
+  category?: string;
+};
+
+export type ClimateSummaryData = {
+  summary: string;
+  vulnerability?: string;
+  events?: Array<{ title?: string; category?: string }>;
+};
+
+export type EntityAnalysis = {
+  id: string;
+  name: string;
+  type: string;
+  ticker?: string;
+  country?: string;
+  market: MarketSnapshot;
+  scores: ScoreMap;
+  drivers: {
+    sustainability: Driver[];
+    financialRisk: Driver[];
+    longTermImpact: Driver[];
+  };
+  news: NewsItem[];
+  climate: ClimateSummaryData;
+};

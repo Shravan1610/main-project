@@ -3,4 +3,8 @@
 //
 // Owner: Srijan
 
-export {}; // Stub — re-export WorldMap, EntityMarker, ClimateMarker, NewsMarker
+export { ClimateMarker } from "./climate-marker";
+export { EntityMarker } from "./entity-marker";
+export { ExchangeMarker } from "./exchange-marker";
+export { NewsMarker } from "./news-marker";
+export { WorldMap } from "./world-map";

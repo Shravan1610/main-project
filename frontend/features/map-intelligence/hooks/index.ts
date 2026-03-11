@@ -3,4 +3,4 @@
 //
 // Owner: Srijan
 
-export {}; // Stub — re-export from use-map-state
+export { useMap } from "./use-map";

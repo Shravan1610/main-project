@@ -1,9 +1,28 @@
-/* frontend/app/globals.css
- * Global styles — Tailwind directives, font imports, base resets, scrollbar styles
- *
- * Owner: Shravan + Srijan
- * Task: SH-1-03
- * Phase: 1 — Scaffolding
- */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-/* Stub — implement in SH-1-03 */
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  * {
+    @apply border-terminal-border;
+  }
+
+  html,
+  body {
+    @apply m-0 p-0;
+  }
+
+  body {
+    @apply bg-terminal-bg text-terminal-text;
+  }
+}
+
+@layer utilities {
+  .terminal-surface {
+    @apply rounded-lg border border-terminal-border bg-terminal-surface/80 shadow-glow;
+  }
+}

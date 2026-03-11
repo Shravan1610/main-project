@@ -1,8 +1,4 @@
-"""
-backend/src/shared/config/__init__.py
-Shared config package — re-exports Settings, get_api_key.
+from src.shared.config.api_keys import get_api_key
+from src.shared.config.settings import Settings, get_settings
 
-Owner: Shravan
-Phase: 1 — Scaffolding
-"""
-# Stub — implement barrel exports
+__all__ = ["Settings", "get_settings", "get_api_key"]

@@ -1,15 +1,40 @@
-"""
-backend/src/shared/clients/cache_client.py
-In-memory TTL cache — cachetools-based, avoids repeated API calls.
+from collections.abc import Callable
+from functools import wraps
+from threading import Lock
+from typing import Any
 
-Owner: Shravan
-Task: SH-1-11
-Phase: 1 — Scaffolding
+from cachetools import TTLCache
 
-Expected:
-  cache = TTLCache(maxsize=100, ttl=300)
-  cached(key: str) -> decorator
-  get_cached(key: str) -> any | None
-  set_cached(key: str, value: any) -> None
-"""
-# Stub — implement in SH-1-11
+from src.shared.config import get_settings
+
+settings = get_settings()
+cache = TTLCache(maxsize=256, ttl=settings.cache_ttl_seconds)
+cache_lock = Lock()
+
+
+def get_cached(key: str) -> Any | None:
+    with cache_lock:
+        return cache.get(key)
+
+
+def set_cached(key: str, value: Any) -> None:
+    with cache_lock:
+        cache[key] = value
+
+
+def cached(key_builder: Callable[..., str]) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
+    def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
+        @wraps(func)
+        async def async_wrapper(*args: Any, **kwargs: Any) -> Any:
+            key = key_builder(*args, **kwargs)
+            cached_value = get_cached(key)
+            if cached_value is not None:
+                return cached_value
+
+            value = await func(*args, **kwargs)
+            set_cached(key, value)
+            return value
+
+        return async_wrapper
+
+    return decorator

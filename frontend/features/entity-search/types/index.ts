@@ -1,13 +1,27 @@
-// frontend/features/entity-search/types/index.ts
-// Types for entity search — SearchResult, SearchQuery, EntityType
-//
-// Owner: Sai
-// Task: SAI-1-01
-// Phase: 1 — Scaffolding
-//
-// Expected types:
-//   SearchResult { id, name, type, ticker?, country?, sector?, logoUrl? }
-//   SearchQuery { query: string }
-//   EntityType = "company" | "stock" | "crypto"
+export type EntityType = "company" | "stock" | "crypto";
 
-export {}; // Stub — implement in SAI-1-01
+export type SearchResult = {
+  id: string;
+  name: string;
+  type: EntityType;
+  ticker?: string;
+  country?: string;
+  exchange?: string;
+  coordinates?: {
+    lat: number;
+    lng: number;
+  };
+};
+
+export type SearchResponse = {
+  query: string;
+  results: SearchResult[];
+  total: number;
+};
+
+export type SearchState = {
+  query: string;
+  results: SearchResult[];
+  loading: boolean;
+  error: string | null;
+};

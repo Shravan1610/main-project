@@ -1,11 +1,23 @@
-// frontend/features/market-feed/components/market-feed-section.tsx
-// Market feed section — scrollable list of StockTickerCards
-//
-// Owner: Sai
-// Task: SAI-4-06
-// Phase: 4 — Feeds
-//
-// Props: none (uses useMarketFeed hook internally)
-// Renders: section title "Market Movers", horizontal ticker cards, loading state
+"use client";
 
-export {}; // Stub — implement in SAI-4-06
+import { MarketFeed } from "./market-feed";
+import { useMarketFeed } from "../hooks";
+
+export function MarketFeedSection() {
+  const { data, loading, error } = useMarketFeed(true);
+
+  if (loading) {
+    return <div className="text-sm text-terminal-text-dim">Loading market feed...</div>;
+  }
+
+  if (error) {
+    return <div className="text-sm text-terminal-red">Failed to load market feed.</div>;
+  }
+
+  return (
+    <section className="space-y-2">
+      <h3 className="text-sm font-semibold text-terminal-text">Market Feed</h3>
+      <MarketFeed items={data ?? []} />
+    </section>
+  );
+}

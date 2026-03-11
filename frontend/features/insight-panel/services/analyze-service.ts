@@ -1,12 +1,7 @@
-// frontend/features/insight-panel/services/analyze-service.ts
-// API service for entity analysis — calls GET /analyze?entity={id}
-//
-// Owner: Sai
-// Task: SAI-1-07
-// Phase: 1 — Scaffolding
-//
-// Expected functions:
-//   analyzeEntity(entityId: string): Promise<AnalyzeResponse>
-//   Uses: @/shared/api/client
+import { apiClient } from "@/shared/api";
 
-export {}; // Stub — implement in SAI-1-07
+import type { EntityAnalysis } from "../types";
+
+export async function getEntityAnalysis(entityId: string): Promise<EntityAnalysis> {
+  return apiClient.get<EntityAnalysis>("/analyze", { params: { entity: entityId } });
+}

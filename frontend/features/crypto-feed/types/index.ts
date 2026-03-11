@@ -1,12 +1,11 @@
-// frontend/features/crypto-feed/types/index.ts
-// Types for crypto feed — CryptoItem, CryptoFeedResponse
-//
-// Owner: Sai
-// Task: SAI-1-12
-// Phase: 1 — Scaffolding
-//
-// Expected types:
-//   CryptoItem { symbol, name, price, changePercent, currency, marketCap?, volume? }
-//   CryptoFeedResponse { items: CryptoItem[] }
+export type CryptoTicker = {
+  symbol: string;
+  price: number;
+  changePercent?: number;
+};
 
-export {}; // Stub — implement in SAI-1-12
+export type CryptoFeedState = {
+  items: CryptoTicker[];
+  loading: boolean;
+  error: string | null;
+};

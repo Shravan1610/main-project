@@ -1,8 +1,30 @@
-// frontend/app/layout.tsx
-// Root layout — sets up HTML shell, fonts, global styles, providers
-//
-// Owner: Shravan
-// Task: SH-1-01
-// Phase: 1 — Scaffolding
+import type { Metadata } from "next";
+import { Fira_Code } from "next/font/google";
+import type { ReactNode } from "react";
 
-export {}; // Stub — implement in SH-1-01
+import "./globals.css";
+import { Providers } from "./providers";
+
+const firaCode = Fira_Code({
+  subsets: ["latin"],
+  variable: "--font-mono",
+});
+
+export const metadata: Metadata = {
+  title: "GreenTrust",
+  description: "Map-first sustainable finance intelligence platform",
+};
+
+type RootLayoutProps = {
+  children: ReactNode;
+};
+
+export default function RootLayout({ children }: RootLayoutProps) {
+  return (
+    <html lang="en" className={firaCode.variable}>
+      <body className="min-h-screen bg-terminal-bg text-terminal-text font-mono antialiased">
+        <Providers>{children}</Providers>
+      </body>
+    </html>
+  );
+}

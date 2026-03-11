@@ -1,33 +1,30 @@
-"""
-backend/src/shared/config/settings.py
-Pydantic Settings model — loads all env vars with defaults.
+from functools import lru_cache
 
-Owner: Shravan
-Task: SH-1-08
-Phase: 1 — Scaffolding
+from pydantic import Field
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
-Expected class:
-  Settings(BaseSettings):
+
+class Settings(BaseSettings):
+    model_config = SettingsConfigDict(extra="ignore")
+
     port: int = 8000
     cors_origins: str = "http://localhost:3000"
+
     market_api_key: str = ""
     news_api_key: str = ""
     climate_api_key: str = ""
     geocoding_api_key: str = ""
-    esg_model_url: st    esg_model_url: st    esg_model_url: st    esg_model_url: st    esg_model_url: st end    esg_model_urig    esg_model_url: st    esg_model_url: st    esg_model_url: st    esg_model_url: st    esg_model_url: st end    esg_model_urig    esg_model_url: st    esg_model_url: st    esg_model_url: st    esg_model_url: st    esg_model_url: st end    esg_model_urig    esg_model_url: st    esg_model_url: st    esg_model_url: st    esg_model_url: st    esg_model_url: st end    esg_model_urig    esg_model_url: st    esg_model_url: st   eme    esg_model_url: st F
 
-# Backend shared clients
-cat > backend/src/shared/clients/http_client.py << 'PYEOF'
-"""
-backend/src/shared/clients/http_client.py
-Shared async httpx client — singleton pattern, timeout config.
+    esg_model_url: str = Field(default="https://greenverify-api.onrender.com")
+    log_level: str = "INFO"
+    request_timeout_seconds: float = 12.0
+    cache_ttl_seconds: int = 300
 
-Owner: Shravan
-Task: SH-1-10
-Phase: 1 — Scaffolding
+    @property
+    def cors_origin_list(self) -> list[str]:
+        return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]
 
-Expected:
-  get_http_client() -> httpx.AsyncClient
-  Configures timeout, default headers, connection pooling.
-"""
-# Stub — implement in SH-1-10
+
+@lru_cache(maxsize=1)
+def get_settings() -> Settings:
+    return Settings()

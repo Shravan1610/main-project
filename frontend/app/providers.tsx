@@ -1,8 +1,26 @@
-// frontend/app/providers.tsx
-// Client-side providers — React Query, global context
-//
-// Owner: Shravan
-// Task: SH-1-06
-// Phase: 1 — Scaffolding
+"use client";
 
-export {}; // Stub — implement in SH-1-06
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import type { ReactNode } from "react";
+import { useState } from "react";
+
+type ProvidersProps = {
+  children: ReactNode;
+};
+
+export function Providers({ children }: ProvidersProps) {
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            retry: 1,
+            staleTime: 30_000,
+            refetchOnWindowFocus: false,
+          },
+        },
+      }),
+  );
+
+  return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
+}

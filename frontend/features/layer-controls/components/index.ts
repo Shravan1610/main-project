@@ -3,4 +3,5 @@
 //
 // Owner: Srijan
 
-export {}; // Stub — re-export LayerPanel, LayerToggle
+export { LayerPanel } from "./layer-panel";
+export { LayerToggle } from "./layer-toggle";

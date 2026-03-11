@@ -39,7 +39,7 @@
 | SH-0-10 | Write frontend/package.json | Define all npm dependencies and scripts | package.json | ⬜ |
 | SH-0-11 | Write frontend/tsconfig.json | TypeScript config with path aliases | tsconfig.json | ⬜ |
 | SH-0-12 | Write frontend/tailwind.config.ts | Tailwind config with terminal theme colors | tailwind.config.ts | ⬜ |
-| SH-0-13 | Write frontend/next.config.ts | Next.js config | next.config.ts | ⬜ |
+| SH-0-13 | Write frontend/next.config.mjs | Next.js config | next.config.mjs | ⬜ |
 | SH-0-14 | Write frontend/postcss.config.js | PostCSS config for Tailwind | postcss.config.js | ⬜ |
 | SH-0-15 | Write .env.example files | Root, frontend, backend env templates | 3 .env.example files | ⬜ |
 | SH-0-16 | Write docs/architecture.md | Architecture overview matching CLAUDE.md diagram | architecture.md | ⬜ |
@@ -106,89 +106,89 @@
 
 | ID | Task | Description | Output | Status |
 |----|------|-------------|--------|--------|
-| SR-1-01 | Write ui-theme/constants/colors.ts | Terminal-inspired color palette constants | colors.ts | ⬜ |
-| SR-1-02 | Write ui-theme/constants/index.ts | Barrel export | index.ts | ⬜ |
-| SR-1-03 | Write ui-theme/styles/terminal.css | Terminal-style CSS: glow effects, scanlines, fonts | terminal.css | ⬜ |
-| SR-1-04 | Write ui-theme/components/terminal-card.tsx | Reusable card with terminal border/glow styling | terminal-card.tsx | ⬜ |
-| SR-1-05 | Write ui-theme/components/terminal-badge.tsx | Badge component for tags (risk, opportunity, etc.) | terminal-badge.tsx | ⬜ |
-| SR-1-06 | Write ui-theme/components/loading-indicator.tsx | Terminal-style loading spinner/bar | loading-indicator.tsx | ⬜ |
-| SR-1-07 | Write ui-theme/components/index.ts | Barrel export | index.ts | ⬜ |
-| SR-1-08 | Write map-intelligence/types/index.ts | Map types: MarkerData, MapViewport, LayerConfig, MapProps | index.ts | ⬜ |
-| SR-1-09 | Write map-intelligence/components/world-map.tsx | Main map component with Leaflet, tile layer, marker rendering | world-map.tsx | ⬜ |
-| SR-1-10 | Write map-intelligence/components/entity-marker.tsx | Company/stock marker with popup | entity-marker.tsx | ⬜ |
-| SR-1-11 | Write map-intelligence/components/climate-marker.tsx | Climate event marker with category styling | climate-marker.tsx | ⬜ |
-| SR-1-12 | Write map-intelligence/components/news-marker.tsx | News location marker | news-marker.tsx | ⬜ |
-| SR-1-13 | Write map-intelligence/components/exchange-marker.tsx | Stock exchange location marker | exchange-marker.tsx | ⬜ |
-| SR-1-14 | Write map-intelligence/components/index.ts | Barrel export | index.ts | ⬜ |
-| SR-1-15 | Write map-intelligence/hooks/use-map.ts | Map state hook: viewport, zoom, markers | use-map.ts | ⬜ |
-| SR-1-16 | Write map-intelligence/hooks/index.ts | Barrel export | index.ts | ⬜ |
-| SR-1-17 | Write map-intelligence/services/map-data-service.ts | Fetch and transform layer data from /layers endpoint | map-data-service.ts | ⬜ |
-| SR-1-18 | Write map-intelligence/services/index.ts | Barrel export | index.ts | ⬜ |
-| SR-1-19 | Write layer-controls/types/index.ts | Layer types: LayerType enum, LayerState | index.ts | ⬜ |
-| SR-1-20 | Write layer-controls/components/layer-panel.tsx | Layer toggle panel UI | layer-panel.tsx | ⬜ |
-| SR-1-21 | Write layer-controls/components/layer-toggle.tsx | Individual layer toggle switch | layer-toggle.tsx | ⬜ |
-| SR-1-22 | Write layer-controls/components/index.ts | Barrel export | index.ts | ⬜ |
-| SR-1-23 | Write layer-controls/hooks/use-layers.ts | Layer visibility state management | use-layers.ts | ⬜ |
-| SR-1-24 | Write layer-controls/hooks/index.ts | Barrel export | index.ts | ⬜ |
+| SR-1-01 | Write ui-theme/constants/colors.ts | Terminal-inspired color palette constants | colors.ts | ✅ |
+| SR-1-02 | Write ui-theme/constants/index.ts | Barrel export | index.ts | ✅ |
+| SR-1-03 | Write ui-theme/styles/terminal.css | Terminal-style CSS: glow effects, scanlines, fonts | terminal.css | ✅ |
+| SR-1-04 | Write ui-theme/components/terminal-card.tsx | Reusable card with terminal border/glow styling | terminal-card.tsx | ✅ |
+| SR-1-05 | Write ui-theme/components/terminal-badge.tsx | Badge component for tags (risk, opportunity, etc.) | terminal-badge.tsx | ✅ |
+| SR-1-06 | Write ui-theme/components/loading-indicator.tsx | Terminal-style loading spinner/bar | loading-indicator.tsx | ✅ |
+| SR-1-07 | Write ui-theme/components/index.ts | Barrel export | index.ts | ✅ |
+| SR-1-08 | Write map-intelligence/types/index.ts | Map types: MarkerData, MapViewport, LayerConfig, MapProps | index.ts | ✅ |
+| SR-1-09 | Write map-intelligence/components/world-map.tsx | Main map component with Leaflet, tile layer, marker rendering | world-map.tsx | ✅ |
+| SR-1-10 | Write map-intelligence/components/entity-marker.tsx | Company/stock marker with popup | entity-marker.tsx | ✅ |
+| SR-1-11 | Write map-intelligence/components/climate-marker.tsx | Climate event marker with category styling | climate-marker.tsx | ✅ |
+| SR-1-12 | Write map-intelligence/components/news-marker.tsx | News location marker | news-marker.tsx | ✅ |
+| SR-1-13 | Write map-intelligence/components/exchange-marker.tsx | Stock exchange location marker | exchange-marker.tsx | ✅ |
+| SR-1-14 | Write map-intelligence/components/index.ts | Barrel export | index.ts | ✅ |
+| SR-1-15 | Write map-intelligence/hooks/use-map.ts | Map state hook: viewport, zoom, markers | use-map.ts | ✅ |
+| SR-1-16 | Write map-intelligence/hooks/index.ts | Barrel export | index.ts | ✅ |
+| SR-1-17 | Write map-intelligence/services/map-data-service.ts | Fetch and transform layer data from /layers endpoint | map-data-service.ts | ✅ |
+| SR-1-18 | Write map-intelligence/services/index.ts | Barrel export | index.ts | ✅ |
+| SR-1-19 | Write layer-controls/types/index.ts | Layer types: LayerType enum, LayerState | index.ts | ✅ |
+| SR-1-20 | Write layer-controls/components/layer-panel.tsx | Layer toggle panel UI | layer-panel.tsx | ✅ |
+| SR-1-21 | Write layer-controls/components/layer-toggle.tsx | Individual layer toggle switch | layer-toggle.tsx | ✅ |
+| SR-1-22 | Write layer-controls/components/index.ts | Barrel export | index.ts | ✅ |
+| SR-1-23 | Write layer-controls/hooks/use-layers.ts | Layer visibility state management | use-layers.ts | ✅ |
+| SR-1-24 | Write layer-controls/hooks/index.ts | Barrel export | index.ts | ✅ |
 
 ## Sai — Phase 1 (Search + Panels + Feeds)
 
 | ID | Task | Description | Output | Status |
 |----|------|-------------|--------|--------|
-| SA-1-01 | Write entity-search/types/index.ts | Search types: SearchResult, SearchState | index.ts | ⬜ |
-| SA-1-02 | Write entity-search/components/search-bar.tsx | Search input with debounced query, results dropdown | search-bar.tsx | ⬜ |
-| SA-1-03 | Write entity-search/components/search-results.tsx | Dropdown showing matched entities | search-results.tsx | ⬜ |
-| SA-1-04 | Write entity-search/components/index.ts | Barrel export | index.ts | ⬜ |
-| SA-1-05 | Write entity-search/hooks/use-search.ts | Search state + debounced API call | use-search.ts | ⬜ |
-| SA-1-06 | Write entity-search/hooks/index.ts | Barrel export | index.ts | ⬜ |
-| SA-1-07 | Write entity-search/services/search-service.ts | Call /search endpoint, transform response | search-service.ts | ⬜ |
-| SA-1-08 | Write entity-search/services/index.ts | Barrel export | index.ts | ⬜ |
-| SA-1-09 | Write insight-panel/types/index.ts | Panel types: EntityAnalysis, ScoreData, DriverData | index.ts | ⬜ |
-| SA-1-10 | Write insight-panel/components/insight-panel.tsx | Side panel container showing entity analysis | insight-panel.tsx | ⬜ |
-| SA-1-11 | Write insight-panel/components/entity-header.tsx | Entity name, type, ticker, country | entity-header.tsx | ⬜ |
-| SA-1-12 | Write insight-panel/components/score-card.tsx | Single score display with progress bar + drivers | score-card.tsx | ⬜ |
-| SA-1-13 | Write insight-panel/components/score-section.tsx | All 3 scores grouped together | score-section.tsx | ⬜ |
-| SA-1-14 | Write insight-panel/components/market-summary.tsx | Price, change %, exchange info | market-summary.tsx | ⬜ |
-| SA-1-15 | Write insight-panel/components/news-summary.tsx | Recent news list for entity | news-summary.tsx | ⬜ |
-| SA-1-16 | Write insight-panel/components/climate-summary.tsx | Climate context summary | climate-summary.tsx | ⬜ |
-| SA-1-17 | Write insight-panel/components/index.ts | Barrel export | index.ts | ⬜ |
-| SA-1-18 | Write insight-panel/hooks/use-entity-analysis.ts | Fetch + cache entity analysis from /analyze | use-entity-analysis.ts | ⬜ |
-| SA-1-19 | Write insight-panel/hooks/index.ts | Barrel export | index.ts | ⬜ |
-| SA-1-20 | Write insight-panel/services/analyze-service.ts | Call /analyze endpoint | analyze-service.ts | ⬜ |
-| SA-1-21 | Write insight-panel/services/index.ts | Barrel export | index.ts | ⬜ |
-| SA-1-22 | Write comparison/types/index.ts | Compare types: CompareState, CompareResult | index.ts | ⬜ |
-| SA-1-23 | Write comparison/components/compare-tray.tsx | Selected entities tray (up to 3 slots) | compare-tray.tsx | ⬜ |
-| SA-1-24 | Write comparison/components/compare-view.tsx | Side-by-side comparison cards | compare-view.tsx | ⬜ |
-| SA-1-25 | Write comparison/components/compare-card.tsx | Single entity comparison card | compare-card.tsx | ⬜ |
-| SA-1-26 | Write comparison/components/index.ts | Barrel export | index.ts | ⬜ |
-| SA-1-27 | Write comparison/hooks/use-compare.ts | Compare state: add/remove entities, fetch comparison | use-compare.ts | ⬜ |
-| SA-1-28 | Write comparison/hooks/index.ts | Barrel export | index.ts | ⬜ |
-| SA-1-29 | Write comparison/services/compare-service.ts | Call /compare endpoint | compare-service.ts | ⬜ |
-| SA-1-30 | Write comparison/services/index.ts | Barrel export | index.ts | ⬜ |
-| SA-1-31 | Write news-feed/types/index.ts | News feed types: NewsItem, NewsFeedState | index.ts | ⬜ |
-| SA-1-32 | Write news-feed/components/news-feed.tsx | Scrollable news feed section | news-feed.tsx | ⬜ |
-| SA-1-33 | Write news-feed/components/news-card.tsx | Single news item card | news-card.tsx | ⬜ |
-| SA-1-34 | Write news-feed/components/index.ts | Barrel export | index.ts | ⬜ |
-| SA-1-35 | Write news-feed/hooks/use-news-feed.ts | Fetch news from /feeds | use-news-feed.ts | ⬜ |
-| SA-1-36 | Write news-feed/hooks/index.ts | Barrel export | index.ts | ⬜ |
-| SA-1-37 | Write news-feed/services/news-feed-service.ts | Call /feeds and extract news | news-feed-service.ts | ⬜ |
-| SA-1-38 | Write news-feed/services/index.ts | Barrel export | index.ts | ⬜ |
-| SA-1-39 | Write market-feed/types/index.ts | Stock feed types: StockTicker, MarketFeedState | index.ts | ⬜ |
-| SA-1-40 | Write market-feed/components/market-feed.tsx | Horizontal scrolling stock ticker section | market-feed.tsx | ⬜ |
-| SA-1-41 | Write market-feed/components/stock-ticker.tsx | Single stock ticker chip | stock-ticker.tsx | ⬜ |
-| SA-1-42 | Write market-feed/components/index.ts | Barrel export | index.ts | ⬜ |
-| SA-1-43 | Write market-feed/hooks/use-market-feed.ts | Fetch stocks from /feeds | use-market-feed.ts | ⬜ |
-| SA-1-44 | Write market-feed/hooks/index.ts | Barrel export | index.ts | ⬜ |
-| SA-1-45 | Write market-feed/services/market-feed-service.ts | Call /feeds and extract stocks | market-feed-service.ts | ⬜ |
-| SA-1-46 | Write market-feed/services/index.ts | Barrel export | index.ts | ⬜ |
-| SA-1-47 | Write crypto-feed/types/index.ts | Crypto feed types: CryptoTicker, CryptoFeedState | index.ts | ⬜ |
-| SA-1-48 | Write crypto-feed/components/crypto-feed.tsx | Horizontal scrolling crypto ticker section | crypto-feed.tsx | ⬜ |
-| SA-1-49 | Write crypto-feed/components/crypto-ticker.tsx | Single crypto ticker chip | crypto-ticker.tsx | ⬜ |
-| SA-1-50 | Write crypto-feed/components/index.ts | Barrel export | index.ts | ⬜ |
-| SA-1-51 | Write crypto-feed/hooks/use-crypto-feed.ts | Fetch crypto from /feeds | use-crypto-feed.ts | ⬜ |
-| SA-1-52 | Write crypto-feed/hooks/index.ts | Barrel export | index.ts | ⬜ |
-| SA-1-53 | Write crypto-feed/services/crypto-feed-service.ts | Call /feeds and extract crypto | crypto-feed-service.ts | ⬜ |
-| SA-1-54 | Write crypto-feed/services/index.ts | Barrel export | index.ts | ⬜ |
+| SA-1-01 | Write entity-search/types/index.ts | Search types: SearchResult, SearchState | index.ts | ✅ |
+| SA-1-02 | Write entity-search/components/search-bar.tsx | Search input with debounced query, results dropdown | search-bar.tsx | ✅ |
+| SA-1-03 | Write entity-search/components/search-results.tsx | Dropdown showing matched entities | search-results.tsx | ✅ |
+| SA-1-04 | Write entity-search/components/index.ts | Barrel export | index.ts | ✅ |
+| SA-1-05 | Write entity-search/hooks/use-search.ts | Search state + debounced API call | use-search.ts | ✅ |
+| SA-1-06 | Write entity-search/hooks/index.ts | Barrel export | index.ts | ✅ |
+| SA-1-07 | Write entity-search/services/search-service.ts | Call /search endpoint, transform response | search-service.ts | ✅ |
+| SA-1-08 | Write entity-search/services/index.ts | Barrel export | index.ts | ✅ |
+| SA-1-09 | Write insight-panel/types/index.ts | Panel types: EntityAnalysis, ScoreData, DriverData | index.ts | ✅ |
+| SA-1-10 | Write insight-panel/components/insight-panel.tsx | Side panel container showing entity analysis | insight-panel.tsx | ✅ |
+| SA-1-11 | Write insight-panel/components/entity-header.tsx | Entity name, type, ticker, country | entity-header.tsx | ✅ |
+| SA-1-12 | Write insight-panel/components/score-card.tsx | Single score display with progress bar + drivers | score-card.tsx | ✅ |
+| SA-1-13 | Write insight-panel/components/score-section.tsx | All 3 scores grouped together | score-section.tsx | ✅ |
+| SA-1-14 | Write insight-panel/components/market-summary.tsx | Price, change %, exchange info | market-summary.tsx | ✅ |
+| SA-1-15 | Write insight-panel/components/news-summary.tsx | Recent news list for entity | news-summary.tsx | ✅ |
+| SA-1-16 | Write insight-panel/components/climate-summary.tsx | Climate context summary | climate-summary.tsx | ✅ |
+| SA-1-17 | Write insight-panel/components/index.ts | Barrel export | index.ts | ✅ |
+| SA-1-18 | Write insight-panel/hooks/use-entity-analysis.ts | Fetch + cache entity analysis from /analyze | use-entity-analysis.ts | ✅ |
+| SA-1-19 | Write insight-panel/hooks/index.ts | Barrel export | index.ts | ✅ |
+| SA-1-20 | Write insight-panel/services/analyze-service.ts | Call /analyze endpoint | analyze-service.ts | ✅ |
+| SA-1-21 | Write insight-panel/services/index.ts | Barrel export | index.ts | ✅ |
+| SA-1-22 | Write comparison/types/index.ts | Compare types: CompareState, CompareResult | index.ts | ✅ |
+| SA-1-23 | Write comparison/components/compare-tray.tsx | Selected entities tray (up to 3 slots) | compare-tray.tsx | ✅ |
+| SA-1-24 | Write comparison/components/compare-view.tsx | Side-by-side comparison cards | compare-view.tsx | ✅ |
+| SA-1-25 | Write comparison/components/compare-card.tsx | Single entity comparison card | compare-card.tsx | ✅ |
+| SA-1-26 | Write comparison/components/index.ts | Barrel export | index.ts | ✅ |
+| SA-1-27 | Write comparison/hooks/use-compare.ts | Compare state: add/remove entities, fetch comparison | use-compare.ts | ✅ |
+| SA-1-28 | Write comparison/hooks/index.ts | Barrel export | index.ts | ✅ |
+| SA-1-29 | Write comparison/services/compare-service.ts | Call /compare endpoint | compare-service.ts | ✅ |
+| SA-1-30 | Write comparison/services/index.ts | Barrel export | index.ts | ✅ |
+| SA-1-31 | Write news-feed/types/index.ts | News feed types: NewsItem, NewsFeedState | index.ts | ✅ |
+| SA-1-32 | Write news-feed/components/news-feed.tsx | Scrollable news feed section | news-feed.tsx | ✅ |
+| SA-1-33 | Write news-feed/components/news-card.tsx | Single news item card | news-card.tsx | ✅ |
+| SA-1-34 | Write news-feed/components/index.ts | Barrel export | index.ts | ✅ |
+| SA-1-35 | Write news-feed/hooks/use-news-feed.ts | Fetch news from /feeds | use-news-feed.ts | ✅ |
+| SA-1-36 | Write news-feed/hooks/index.ts | Barrel export | index.ts | ✅ |
+| SA-1-37 | Write news-feed/services/news-feed-service.ts | Call /feeds and extract news | news-feed-service.ts | ✅ |
+| SA-1-38 | Write news-feed/services/index.ts | Barrel export | index.ts | ✅ |
+| SA-1-39 | Write market-feed/types/index.ts | Stock feed types: StockTicker, MarketFeedState | index.ts | ✅ |
+| SA-1-40 | Write market-feed/components/market-feed.tsx | Horizontal scrolling stock ticker section | market-feed.tsx | ✅ |
+| SA-1-41 | Write market-feed/components/stock-ticker.tsx | Single stock ticker chip | stock-ticker.tsx | ✅ |
+| SA-1-42 | Write market-feed/components/index.ts | Barrel export | index.ts | ✅ |
+| SA-1-43 | Write market-feed/hooks/use-market-feed.ts | Fetch stocks from /feeds | use-market-feed.ts | ✅ |
+| SA-1-44 | Write market-feed/hooks/index.ts | Barrel export | index.ts | ✅ |
+| SA-1-45 | Write market-feed/services/market-feed-service.ts | Call /feeds and extract stocks | market-feed-service.ts | ✅ |
+| SA-1-46 | Write market-feed/services/index.ts | Barrel export | index.ts | ✅ |
+| SA-1-47 | Write crypto-feed/types/index.ts | Crypto feed types: CryptoTicker, CryptoFeedState | index.ts | ✅ |
+| SA-1-48 | Write crypto-feed/components/crypto-feed.tsx | Horizontal scrolling crypto ticker section | crypto-feed.tsx | ✅ |
+| SA-1-49 | Write crypto-feed/components/crypto-ticker.tsx | Single crypto ticker chip | crypto-ticker.tsx | ✅ |
+| SA-1-50 | Write crypto-feed/components/index.ts | Barrel export | index.ts | ✅ |
+| SA-1-51 | Write crypto-feed/hooks/use-crypto-feed.ts | Fetch crypto from /feeds | use-crypto-feed.ts | ✅ |
+| SA-1-52 | Write crypto-feed/hooks/index.ts | Barrel export | index.ts | ✅ |
+| SA-1-53 | Write crypto-feed/services/crypto-feed-service.ts | Call /feeds and extract crypto | crypto-feed-service.ts | ✅ |
+| SA-1-54 | Write crypto-feed/services/index.ts | Barrel export | index.ts | ✅ |
 
 ## Afham — Phase 1 (Backend Routes + Feature Stubs)
 

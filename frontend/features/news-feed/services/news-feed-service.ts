@@ -1,12 +1,12 @@
-// frontend/features/news-feed/services/news-feed-service.ts
-// API service for news feed — calls GET /feeds and extracts news array
-//
-// Owner: Sai
-// Task: SAI-1-09
-// Phase: 1 — Scaffolding
-//
-// Expected functions:
-//   fetchNewsFeed(): Promise<NewsItem[]>
-//   Uses: @/shared/api/client, calls /feeds endpoint
+import { apiClient } from "@/shared/api";
 
-export {}; // Stub — implement in SAI-1-09
+import type { FeedNewsItem } from "../types";
+
+type FeedResponse = {
+  news: FeedNewsItem[];
+};
+
+export async function getNewsFeed(): Promise<FeedNewsItem[]> {
+  const response = await apiClient.get<FeedResponse>("/feeds");
+  return response.news ?? [];
+}

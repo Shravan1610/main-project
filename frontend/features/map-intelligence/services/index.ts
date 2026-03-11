@@ -3,4 +3,4 @@
 //
 // Owner: Srijan
 
-export {}; // Stub — re-export from layer-data-service
+export { fetchMapLayers, transformToMarkers } from "./map-data-service";

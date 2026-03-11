@@ -1,11 +1,21 @@
-// frontend/features/insight-panel/components/driver-list.tsx
-// Driver list — shows top drivers for a score with impact indicators
-//
-// Owner: Sai
-// Task: SAI-3-04
-// Phase: 3 — Compare & Scores
-//
-// Props: { drivers: DriverItem[] }
-// Renders: list of drivers with positive/negative/neutral badges
+import type { Driver } from "../types";
 
-export {}; // Stub — implement in SAI-3-04
+type DriverListProps = {
+  drivers: Driver[];
+};
+
+export function DriverList({ drivers }: DriverListProps) {
+  if (drivers.length === 0) {
+    return <p className="text-xs text-terminal-text-dim">No drivers available.</p>;
+  }
+
+  return (
+    <ul className="space-y-1 text-xs">
+      {drivers.map((driver, index) => (
+        <li key={`${driver.label}-${index}`} className="text-terminal-text-dim">
+          • {driver.label}
+        </li>
+      ))}
+    </ul>
+  );
+}

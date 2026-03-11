@@ -1,13 +1,13 @@
-"""
-backend/src/shared/schemas/error_schema.py
-ErrorResponse Pydantic model matching contracts/error-response.json.
+from typing import Any
 
-Owner: Shravan
-Task: SH-1-21
-Phase: 1
+from src.shared.schemas.base_schema import BaseSchema
 
-Expected classes:
-  ErrorResponse(BaseModel) — status: str = "error", message: str,
-                             code: int, details: dict | None = None
-"""
-# Stub — implement in SH-1-21
+
+class ErrorDetail(BaseSchema):
+    code: str
+    message: str
+    details: dict[str, Any] | None = None
+
+
+class ErrorResponse(BaseSchema):
+    error: ErrorDetail

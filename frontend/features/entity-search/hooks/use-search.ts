@@ -1,12 +1,52 @@
-// frontend/features/entity-search/hooks/use-search.ts
-// Hook for entity search — manages search state, debounced input, results
-//
-// Owner: Sai
-// Task: SAI-2-01
-// Phase: 2 — Core UI
-//
-// Expected hook:
-//   useSearch() => { query, setQuery, results, isLoading, error }
-//   Uses: searchEntities from services, @tanstack/react-query or useState
+"use client";
 
-export {}; // Stub — implement in SAI-2-01
+import { useEffect, useMemo, useState } from "react";
+
+import { searchEntities } from "../services";
+import type { SearchResult } from "../types";
+
+export function useSearch(initialQuery = "", debounceMs = 250) {
+  const [query, setQuery] = useState(initialQuery);
+  const [results, setResults] = useState<SearchResult[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const trimmedQuery = useMemo(() => query.trim(), [query]);
+
+  useEffect(() => {
+    if (!trimmedQuery) {
+      setResults([]);
+      setLoading(false);
+      setError(null);
+      return;
+    }
+
+    let cancelled = false;
+    const timeout = setTimeout(async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await searchEntities(trimmedQuery);
+        if (!cancelled) {
+          setResults(response.results);
+        }
+      } catch (caughtError) {
+        if (!cancelled) {
+          setError(caughtError instanceof Error ? caughtError.message : "Search failed");
+          setResults([]);
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    }, debounceMs);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timeout);
+    };
+  }, [trimmedQuery, debounceMs]);
+
+  return { query, setQuery, results, loading, error, clear: () => setQuery("") };
+}

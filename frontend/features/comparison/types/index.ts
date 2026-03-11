@@ -1,13 +1,16 @@
-// frontend/features/comparison/types/index.ts
-// Types for comparison — CompareEntity, CompareRequest, CompareResponse
-//
-// Owner: Sai
-// Task: SAI-1-04
-// Phase: 1 — Scaffolding
-//
-// Expected types:
-//   CompareEntity — mirrors analyze-response entity shape
-//   CompareRequest { entities: string[] } (up to 3 entity IDs)
-//   CompareResponse { entities: CompareEntity[] }
+import type { EntityAnalysis } from "@/features/insight-panel/types";
 
-export {}; // Stub — implement in SAI-1-04
+export type CompareRequest = {
+  entities: string[];
+};
+
+export type CompareResponse = {
+  entities: EntityAnalysis[];
+};
+
+export type CompareState = {
+  selectedEntityIds: string[];
+  compareData: EntityAnalysis[];
+  loading: boolean;
+  error: string | null;
+};

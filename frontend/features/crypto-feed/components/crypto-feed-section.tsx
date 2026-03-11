@@ -1,11 +1,23 @@
-// frontend/features/crypto-feed/components/crypto-feed-section.tsx
-// Crypto feed section — scrollable list of CryptoTickerCards
-//
-// Owner: Sai
-// Task: SAI-4-09
-// Phase: 4 — Feeds
-//
-// Props: none (uses useCryptoFeed hook internally)
-// Renders: section title "Crypto Watch", ticker cards, loading state
+"use client";
 
-export {}; // Stub — implement in SAI-4-09
+import { CryptoFeed } from "./crypto-feed";
+import { useCryptoFeed } from "../hooks";
+
+export function CryptoFeedSection() {
+  const { data, loading, error } = useCryptoFeed(true);
+
+  if (loading) {
+    return <div className="text-sm text-terminal-text-dim">Loading crypto feed...</div>;
+  }
+
+  if (error) {
+    return <div className="text-sm text-terminal-red">Failed to load crypto feed.</div>;
+  }
+
+  return (
+    <section className="space-y-2">
+      <h3 className="text-sm font-semibold text-terminal-text">Crypto Feed</h3>
+      <CryptoFeed items={data ?? []} />
+    </section>
+  );
+}

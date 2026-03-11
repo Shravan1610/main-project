@@ -1,12 +1,7 @@
-// frontend/features/entity-search/services/search-service.ts
-// API service for entity search — calls GET /search?q={query}
-//
-// Owner: Sai
-// Task: SAI-1-02
-// Phase: 1 — Scaffolding
-//
-// Expected functions:
-//   searchEntities(query: string): Promise<SearchResult[]>
-//   Uses: @/shared/api/client
+import { apiClient } from "@/shared/api";
 
-export {}; // Stub — implement in SAI-1-02
+import type { SearchResponse } from "../types";
+
+export async function searchEntities(query: string): Promise<SearchResponse> {
+  return apiClient.get<SearchResponse>("/search", { params: { q: query } });
+}

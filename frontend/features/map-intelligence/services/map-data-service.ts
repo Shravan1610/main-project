@@ -10,4 +10,14 @@
 //   transformToMarkers(layers: MapLayersData): MapMarker[]
 //   Uses: @/shared/api/client
 
-export {}; // Stub — implement in SR-1-17
+import { apiClient } from "@/shared/api";
+
+import type { LayerResponse, MapMarker } from "../types";
+
+export async function fetchMapLayers(): Promise<LayerResponse> {
+  return apiClient.get<LayerResponse>("/layers");
+}
+
+export function transformToMarkers(layers: LayerResponse): MapMarker[] {
+  return [...layers.exchanges, ...layers.climate, ...layers.news];
+}

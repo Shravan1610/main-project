@@ -1,14 +1,22 @@
-"""
-backend/src/shared/utils/logger.py
-Configured logger with format for dev/prod environments.
+import logging
 
-Owner: Shravan
-Task: SH-1-17
-Phase: 1
+from src.shared.config import get_settings
 
-Expected functions:
-  get_logger(name: str) -> logging.Logger
-    — Returns a configured logger with appropriate format and level
-      based on environment (DEBUG for dev, INFO for prod).
-"""
-# Stub — implement in SH-1-17
+_LOG_FORMAT = "%(asctime)s | %(levelname)s | %(name)s | %(message)s"
+
+
+def get_logger(name: str) -> logging.Logger:
+    settings = get_settings()
+    logger = logging.getLogger(name)
+
+    if not logger.handlers:
+        handler = logging.StreamHandler()
+        handler.setFormatter(logging.Formatter(_LOG_FORMAT))
+        logger.addHandler(handler)
+
+    level_name = settings.log_level.upper()
+    level = getattr(logging, level_name, logging.INFO)
+    logger.setLevel(level)
+    logger.propagate = False
+
+    return logger

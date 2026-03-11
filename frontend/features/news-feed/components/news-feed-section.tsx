@@ -1,11 +1,23 @@
-// frontend/features/news-feed/components/news-feed-section.tsx
-// News feed section — scrollable list of NewsCards with section header
-//
-// Owner: Sai
-// Task: SAI-4-03
-// Phase: 4 — Feeds
-//
-// Props: none (uses useNewsFeed hook internally)
-// Renders: section title "Latest News", horizontal/vertical card list, loading state
+"use client";
 
-export {}; // Stub — implement in SAI-4-03
+import { NewsFeed } from "./news-feed";
+import { useNewsFeed } from "../hooks";
+
+export function NewsFeedSection() {
+  const { data, loading, error } = useNewsFeed(true);
+
+  if (loading) {
+    return <div className="text-sm text-terminal-text-dim">Loading news feed...</div>;
+  }
+
+  if (error) {
+    return <div className="text-sm text-terminal-red">Failed to load news feed.</div>;
+  }
+
+  return (
+    <section className="space-y-2">
+      <h3 className="text-sm font-semibold text-terminal-text">Latest News</h3>
+      <NewsFeed items={data ?? []} />
+    </section>
+  );
+}

@@ -1,6 +1,4 @@
-// frontend/features/crypto-feed/components/index.ts
-// Barrel export for crypto-feed components
-//
-// Owner: Sai
-
-export {}; // Stub — re-export CryptoTickerCard, CryptoFeedSection
+export { CryptoFeed } from "./crypto-feed";
+export { CryptoFeedSection } from "./crypto-feed-section";
+export { CryptoTicker } from "./crypto-ticker";
+export { CryptoTickerCard } from "./crypto-ticker-card";

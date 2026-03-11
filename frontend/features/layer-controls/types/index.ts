@@ -10,4 +10,15 @@
 //   LayerConfig { id: LayerType, label: string, icon: string, enabled: boolean }
 //   LayerState { layers: LayerConfig[] }
 
-export {}; // Stub — implement in SR-1-01
+export type LayerType = "entities" | "exchanges" | "climate" | "news" | "heatmap" | "risk-overlay";
+
+export type LayerConfig = {
+  id: LayerType;
+  label: string;
+  icon: string;
+  enabled: boolean;
+};
+
+export type LayerState = {
+  layers: LayerConfig[];
+};

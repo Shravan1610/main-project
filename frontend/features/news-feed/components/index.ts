@@ -1,6 +1,3 @@
-// frontend/features/news-feed/components/index.ts
-// Barrel export for news-feed components
-//
-// Owner: Sai
-
-export {}; // Stub — re-export NewsCard, NewsFeedSection
+export { NewsCard } from "./news-card";
+export { NewsFeed } from "./news-feed";
+export { NewsFeedSection } from "./news-feed-section";

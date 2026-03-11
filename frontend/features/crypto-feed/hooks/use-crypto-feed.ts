@@ -1,11 +1,9 @@
-// frontend/features/crypto-feed/hooks/use-crypto-feed.ts
-// Hook for crypto feed — fetches latest crypto data
-//
-// Owner: Sai
-// Task: SAI-4-07
-// Phase: 4 — Feeds
-//
-// Expected hook:
-//   useCryptoFeed() => { items: CryptoItem[], isLoading, error, refresh }
+"use client";
 
-export {}; // Stub — implement in SAI-4-07
+import { useApi } from "@/shared/hooks";
+
+import { getCryptoFeed } from "../services";
+
+export function useCryptoFeed(enabled = true) {
+  return useApi(getCryptoFeed, [enabled], { enabled, initialData: [] });
+}

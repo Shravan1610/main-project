@@ -1,2 +1,1 @@
-// Hooks barrel | Shravan | SH-1-08
-export {}; // Stub
+export { useApi } from "./use-api";

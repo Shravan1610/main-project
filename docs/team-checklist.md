@@ -18,11 +18,16 @@
 ## Shravan Setup
 
 - [ ] All items above
-- [ ] Verify all contracts are valid JSON
-- [ ] Confirm `.env.example` files are complete
-- [ ] ESG model URL is accessible
-- [ ] Set up API keys in `backend/.env`
-- [ ] Review each team member’s branch naming
+- [x] Verify all contracts are valid JSON
+- [x] Confirm `.env.example` files are complete
+- [ ] ESG model URL is accessible *(URL now configured in `backend/.env`; remote reachability check from this runtime returned `HTTP 000` and needs re-check from local terminal/network)*
+- [ ] Set up API keys in `backend/.env` *(template copied; real keys still required)*
+- [ ] Review each team member’s branch naming *(blocked: only `main` exists locally/remotely)*
+
+Verification notes (2026-03-11):
+- Contracts validated with `jq` (`contracts/*.json` all passed).
+- Frontend dependency install completed; `npm run dev` now boots after switching to `next.config.mjs` (the `/` page still returns 500 due existing page implementation issues).
+- Backend dependency install completed; `uvicorn src.main:app --port 8000` starts and `GET /health` returns `200` with `{"status":"ok","version":"0.1.0"}`.
 
 ## Srijan Setup
 
@@ -32,6 +37,12 @@
 - [ ] Understand layer types: entity, exchange, climate, news
 - [ ] Review `contracts/map-layers-response.json`
 
+Srijan implementation progress (Phase 1):
+- [x] SR-1-01 to SR-1-24 scaffolding completed in `ui-theme/`, `map-intelligence/`, and `layer-controls/`
+- [x] Barrel exports added for components/hooks/services/types touched in Phase 1
+- [x] Project type-check passes after Srijan Phase 1 scaffolding
+- [ ] Real Leaflet tile rendering behavior verification (Phase 2 runtime check)
+
 ## Sai Setup
 
 - [ ] All items above
@@ -40,6 +51,12 @@
 - [ ] Understand `contracts/compare-response.json`
 - [ ] Understand `contracts/feed-response.json`
 - [ ] Review insight-panel, comparison, and feed UI requirements
+
+Sai implementation progress (Phase 1):
+- [x] SA-1-01 to SA-1-54 scaffolding completed across `entity-search/`, `insight-panel/`, `comparison/`, `news-feed/`, `market-feed/`, and `crypto-feed/`
+- [x] Typed services/hooks/components and barrel exports added for all Sai Phase 1 modules
+- [x] Frontend type-check passes after Sai Phase 1 scaffolding
+- [ ] Real endpoint runtime verification for `/search`, `/analyze`, `/compare`, `/feeds` (Phase 2+ integration check)
 
 ## Afham Setup
 
