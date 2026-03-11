@@ -78,10 +78,11 @@ def _required_field_issues(record: dict[str, Any]) -> list[str]:
         if not record.get("period_start") or not record.get("period_end"):
             issues.append("certificate_period_missing")
 
-    if not record.get("quantity"):
+    if record.get("quantity") is None:
         issues.append("quantity_missing")
 
-    if not record.get("unit"):
+    unit = record.get("unit")
+    if unit is None or (isinstance(unit, str) and unit.strip() == ""):
         issues.append("unit_missing")
 
     return issues
@@ -217,10 +218,14 @@ class EvidenceStore:
             text = document.get("text_preview", "")
             extracted_quantity, extracted_unit = _extract_quantity_and_unit(text)
             extraction_version = 1
+            previous_activity_record_id: str | None = None
+            previous_review_task_id: str | None = None
             if document.get("latest_extraction_id"):
                 previous = self.extractions.get(document["latest_extraction_id"])
                 if previous:
                     extraction_version = int(previous.get("version", 1)) + 1
+                previous_activity_record_id = document.get("latest_activity_record_id")
+                previous_review_task_id = document.get("latest_review_task_id")
 
             quantity = _parse_float((overrides or {}).get("quantity"))
             if quantity is None:
@@ -294,6 +299,35 @@ class EvidenceStore:
             activity_record["lifecycle_status"] = _normalize_lifecycle_status(document, activity_record["reviewer_status"])
 
             self.activity_records[activity_record["id"]] = activity_record
+
+            # Mark the previous activity record and review task as superseded
+            # before creating the new ones so pending queues stay accurate.
+            if previous_activity_record_id and previous_activity_record_id in self.activity_records:
+                prev_record = self.activity_records[previous_activity_record_id]
+                if prev_record.get("reviewer_status") == "needs_review":
+                    prev_record["reviewer_status"] = "superseded"
+                    prev_record["lifecycle_status"] = "superseded"
+                    prev_record["updated_at"] = _utc_now()
+                    self._log_event(
+                        event_type="activity_record_superseded",
+                        actor_id=actor_id,
+                        entity_type="activity_record",
+                        entity_id=previous_activity_record_id,
+                        payload={"superseded_by_extraction": extraction["id"]},
+                    )
+            if previous_review_task_id and previous_review_task_id in self.review_tasks:
+                prev_task = self.review_tasks[previous_review_task_id]
+                if prev_task.get("status") == "needs_review":
+                    prev_task["status"] = "superseded"
+                    prev_task["updated_at"] = _utc_now()
+                    self._log_event(
+                        event_type="review_task_superseded",
+                        actor_id=actor_id,
+                        entity_type="review_task",
+                        entity_id=previous_review_task_id,
+                        payload={"superseded_by_extraction": extraction["id"]},
+                    )
+
             review_task = self._create_or_replace_review_task(
                 activity_record_id=activity_record["id"],
                 actor_id=actor_id,

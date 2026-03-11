@@ -59,15 +59,25 @@ export function EvidenceCollectionPanel() {
   const [actionError, setActionError] = useState<string | null>(null);
 
   const refreshData = useCallback(async () => {
-    const [documentsResponse, reviewTasksResponse, dashboardResponse] = await Promise.all([
-      listEvidenceDocuments(),
-      listReviewTasks("needs_review"),
-      getEvidenceDashboardSummary(),
-    ]);
+    try {
+      const [documentsResponse, reviewTasksResponse, dashboardResponse] = await Promise.all([
+        listEvidenceDocuments(),
+        listReviewTasks("needs_review"),
+        getEvidenceDashboardSummary(),
+      ]);
 
-    setDocuments(documentsResponse.documents);
-    setReviewTasks(reviewTasksResponse.review_tasks);
-    setDashboard(dashboardResponse);
+      setDocuments(documentsResponse.documents);
+      setReviewTasks(reviewTasksResponse.review_tasks);
+      setDashboard(dashboardResponse);
+      setActionError(null);
+    } catch (error) {
+      console.error("Failed to refresh evidence collection data", error);
+      const message =
+        error instanceof Error && error.message
+          ? error.message
+          : "Failed to load evidence collection data. Please try again.";
+      setActionError(message);
+    }
   }, []);
 
   useEffect(() => {

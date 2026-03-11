@@ -122,7 +122,7 @@ def run_extraction(document_id: str, actor_id: str, overrides: dict[str, Any] | 
     try:
         return run_document_extraction(document_id, actor_id=actor_id, overrides=overrides)
     except KeyError as error:
-        raise HTTPException(status_code=404, detail=str(error)) from error
+        raise HTTPException(status_code=404, detail=error.args[0]) from error
 
 
 def fetch_documents() -> dict[str, Any]:
@@ -133,7 +133,7 @@ def fetch_document(document_id: str) -> dict[str, Any]:
     try:
         return get_document(document_id)
     except KeyError as error:
-        raise HTTPException(status_code=404, detail=str(error)) from error
+        raise HTTPException(status_code=404, detail=error.args[0]) from error
 
 
 def fetch_review_tasks(status: str | None = None) -> dict[str, Any]:
@@ -150,7 +150,7 @@ def apply_review_decision(
     try:
         return submit_review_decision(task_id, reviewer_id, decision, notes, overrides)
     except KeyError as error:
-        raise HTTPException(status_code=404, detail=str(error)) from error
+        raise HTTPException(status_code=404, detail=error.args[0]) from error
     except ValueError as error:
         raise HTTPException(status_code=400, detail=str(error)) from error
 
@@ -178,7 +178,7 @@ def create_claim_record(
             created_by=created_by,
         )
     except KeyError as error:
-        raise HTTPException(status_code=404, detail=str(error)) from error
+        raise HTTPException(status_code=404, detail=error.args[0]) from error
     except ValueError as error:
         raise HTTPException(status_code=400, detail=str(error)) from error
 
@@ -187,7 +187,7 @@ def fetch_claim_trace(claim_id: str) -> dict[str, Any]:
     try:
         return get_claim_trace(claim_id)
     except KeyError as error:
-        raise HTTPException(status_code=404, detail=str(error)) from error
+        raise HTTPException(status_code=404, detail=error.args[0]) from error
 
 
 def fetch_dashboard_summary() -> dict[str, Any]:

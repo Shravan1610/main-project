@@ -17,9 +17,16 @@ import type {
 } from "../types";
 
 async function parseResponse<T>(response: Response, fallbackMessage: string): Promise<T> {
-  const data = (await response.json().catch(() => null)) as { detail?: string } | T | null;
+  const data = (await response.json().catch(() => null)) as
+    | { detail?: string }
+    | { error?: { message?: string } }
+    | T
+    | null;
   if (!response.ok) {
-    const message = (data as { detail?: string } | null)?.detail ?? fallbackMessage;
+    const message =
+      (data as { detail?: string } | null)?.detail ??
+      (data as { error?: { message?: string } } | null)?.error?.message ??
+      fallbackMessage;
     throw new Error(message);
   }
   return data as T;
