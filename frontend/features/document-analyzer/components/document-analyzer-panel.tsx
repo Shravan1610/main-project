@@ -13,6 +13,13 @@ const INPUT_MODES: Array<{ id: InputMode; label: string }> = [
   { id: "webpage", label: "Webpage" },
 ];
 
+const CLAIM_TYPE_STYLES: Record<string, string> = {
+  commitment: "border-cyan-400/40 bg-cyan-500/10 text-cyan-200",
+  certification: "border-emerald-400/40 bg-emerald-500/10 text-emerald-200",
+  assertion: "border-amber-400/40 bg-amber-500/10 text-amber-200",
+  metric: "border-sky-400/40 bg-sky-500/10 text-sky-200",
+};
+
 export function DocumentAnalyzerPanel() {
   const [mode, setMode] = useState<InputMode>("document");
   const [file, setFile] = useState<File | null>(null);
@@ -26,6 +33,8 @@ export function DocumentAnalyzerPanel() {
     if (!result?.extraction?.entities) return [];
     return Object.entries(result.extraction.entities);
   }, [result?.extraction?.entities]);
+
+  const claims = result?.claims ?? [];
 
   async function submit() {
     setLoading(true);
@@ -80,20 +89,23 @@ export function DocumentAnalyzerPanel() {
         ) : null}
 
         {mode === "url" ? (
-          <input
-            type="url"
-            value={url}
-            onChange={(event) => setUrl(event.target.value)}
-            placeholder="https://example.com/report"
-            className="w-full rounded border border-terminal-border bg-terminal-surface px-2 py-2 text-xs text-terminal-text"
-          />
+          <div className="space-y-1">
+            <input
+              type="url"
+              value={url}
+              onChange={(event) => setUrl(event.target.value)}
+              placeholder="https://company.com/sustainability"
+              className="w-full rounded border border-terminal-border bg-terminal-surface px-2 py-2 text-xs text-terminal-text"
+            />
+            <p className="text-[11px] text-terminal-text-muted">Scrape URL for ESG Claims</p>
+          </div>
         ) : null}
 
         {mode === "webpage" ? (
           <textarea
             value={webpage}
             onChange={(event) => setWebpage(event.target.value)}
-            placeholder="Paste webpage HTML or content..."
+            placeholder="Paste company ad text, press-release HTML or webpage content to scan for claims..."
             rows={7}
             className="w-full rounded border border-terminal-border bg-terminal-surface px-2 py-2 text-xs text-terminal-text"
           />
@@ -140,6 +152,36 @@ export function DocumentAnalyzerPanel() {
                 <p>{values.length > 0 ? values.join(", ") : "None"}</p>
               </div>
             ))}
+          </div>
+
+          <div className="mt-3 space-y-2">
+            <p className="text-terminal-text-muted">Claims Detected</p>
+            {claims.length === 0 ? <p>No ESG claims detected in this content.</p> : null}
+            {claims.map((claim, index) => {
+              const style = CLAIM_TYPE_STYLES[claim.type] ?? "border-terminal-border bg-terminal-surface text-terminal-text";
+              const confidence = Math.max(0, Math.min(1, claim.confidence ?? 0));
+
+              return (
+                <div key={`${claim.category}-${claim.type}-${claim.text}`} className="rounded border border-terminal-border bg-terminal-surface/40 p-2">
+                  <div className="mb-1 flex flex-wrap items-center gap-2">
+                    <span className="rounded border border-terminal-border px-2 py-0.5 text-[10px] uppercase tracking-wide text-terminal-text-muted">
+                      {claim.category}
+                    </span>
+                    <span className={`rounded border px-2 py-0.5 text-[10px] uppercase tracking-wide ${style}`}>{claim.type}</span>
+                  </div>
+                  <p>{claim.text}</p>
+                  <div className="mt-2">
+                    <div className="mb-1 flex items-center justify-between text-[10px] text-terminal-text-muted">
+                      <span>Confidence</span>
+                      <span>{Math.round(confidence * 100)}%</span>
+                    </div>
+                    <div className="h-1.5 w-full overflow-hidden rounded bg-terminal-border/60">
+                      <div className="h-full bg-cyan-300/80" style={{ width: `${Math.round(confidence * 100)}%` }} />
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       ) : null}

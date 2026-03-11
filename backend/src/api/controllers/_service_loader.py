@@ -2,6 +2,7 @@ from functools import lru_cache
 import importlib.util
 import sys
 from pathlib import Path
+import sys
 from types import ModuleType
 
 SRC_DIR = Path(__file__).resolve().parents[2]

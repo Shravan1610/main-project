@@ -1,20 +1,8 @@
-export type AiAnalytics = {
-  esgRiskScore: number | null;
-  esgRiskLevel: string;
-  aiConfidence: number;
-  greenwashingProbability: number;
-  climateClaimCredibility: number;
-  suspiciousStatements: string[];
-  riskBreakdown: {
-    environmentalRisk: number;
-    governanceRisk: number;
-    carbonExposure: number;
-    greenwashingRisk: number;
-  };
-  esgModelResponse: Record<string, unknown>;
-  nlpModelResponse: Record<string, unknown>;
-  verificationStatus: "verified" | "flagged" | "unavailable";
-  extractedMetrics: Record<string, number>;
+export type DocumentClaim = {
+  text: string;
+  type: string;
+  category: string;
+  confidence: number;
 };
 
 export type DocumentAnalyzerResponse = {
@@ -34,6 +22,7 @@ export type DocumentAnalyzerResponse = {
     entities?: Record<string, string[]>;
     summary?: string;
   };
+  claims?: DocumentClaim[];
   modelStatus: string;
   source?: {
     url?: string | null;
