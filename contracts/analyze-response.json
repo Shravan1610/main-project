@@ -1,0 +1,148 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "AnalyzeResponse",
+  "description": "Response from GET /analyze?entity={id}",
+  "type": "object",
+  "required": ["id", "name", "type", "coordinates", "market", "news", "climate", "scores", "drivers"],
+  "properties": {
+    "id": { "type": "string" },
+    "name": { "type": "string" },
+    "type": { "type": "string", "enum": ["company", "stock", "crypto"] },
+    "ticker": { "type": ["string", "null"] },
+    "country": { "type": ["string", "null"] },
+    "sector": { "type": ["string", "null"] },
+    "exchange": { "type": ["string", "null"] },
+    "logoUrl": { "type": ["string", "null"] },
+    "coordinates": {
+      "type": "object",
+      "required": ["lat", "lng"],
+      "properties": {
+        "lat": { "type": "number" },
+        "lng": { "type": "number" }
+      }
+    },
+    "market": {
+      "type": "object",
+      "required": ["price", "changePercent", "currency"],
+      "properties": {
+        "price": { "type": "number" },
+        "changePercent": { "type": "number" },
+        "currency": { "type": "string" },
+        "exchange": { "type": ["string", "null"] },
+        "marketCap": { "type": ["number", "null"] },
+        "volume": { "type": ["number", "null"] },
+        "high52w": { "type": ["number", "null"] },
+        "low52w": { "type": ["number", "null"] }
+      }
+    },
+    "news": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["title", "source", "publishedAt", "url"],
+        "properties": {
+          "title": { "type": "string" },
+          "summary": { "type": ["string", "null"] },
+          "source": { "type": "string" },
+          "publishedAt": { "type": "string", "format": "date-time" },
+          "url": { "type": "string", "format": "uri" },
+          "imageUrl": { "type": ["string", "null"] },
+          "category": {
+            "type": ["string", "null"],
+            "enum": ["risk", "opportunity", "regulation", "disaster", "general", null]
+          },
+          "coordinates": {
+            "type": ["object", "null"],
+            "properties": {
+              "lat": { "type": "number" },
+              "lng": { "type": "number" }
+            }
+          }
+        }
+      }
+    },
+    "climate": {
+      "type": "object",
+      "required": ["summary", "events", "vulnerability"],
+      "properties": {
+        "summary": { "type": "string" },
+        "vulnerability": {
+          "type": "string",
+          "enum": ["low", "moderate", "high", "critical"]
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["type", "severity", "location"],
+            "properties": {
+              "type": { "type": "string" },
+              "severity": { "type": "string", "enum": ["minor", "moderate", "severe", "extreme"] },
+              "location": { "type": "string" },
+              "description": { "type": ["string", "null"] },
+              "coordinates": {
+                "type": ["object", "null"],
+                "properties": {
+                  "lat": { "type": "number" },
+                  "lng": { "type": "number" }
+                }
+              },
+              "date": { "type": ["string", "null"], "format": "date-time" }
+            }
+          }
+        }
+      }
+    },
+    "scores": {
+      "type": "object",
+      "required": ["sustainability", "financialRisk", "longTermImpact"],
+      "properties": {
+        "sustainability": { "type": "number", "minimum": 0, "maximum": 100 },
+        "financialRisk": { "type": "number", "minimum": 0, "maximum": 100 },
+        "longTermImpact": { "type": "number", "minimum": 0, "maximum": 100 }
+      }
+    },
+    "drivers": {
+      "type": "object",
+      "required": ["sustainability", "financialRisk", "longTermImpact"],
+      "properties": {
+        "sustainability": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["label", "impact"],
+            "properties": {
+              "label": { "type": "string" },
+              "impact": { "type": "string", "enum": ["positive", "negative", "neutral"] },
+              "weight": { "type": ["number", "null"] }
+            }
+          }
+        },
+        "financialRisk": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["label", "impact"],
+            "properties": {
+              "label": { "type": "string" },
+              "impact": { "type": "string", "enum": ["positive", "negative", "neutral"] },
+              "weight": { "type": ["number", "null"] }
+            }
+          }
+        },
+        "longTermImpact": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["label", "impact"],
+            "properties": {
+              "label": { "type": "string" },
+              "impact": { "type": "string", "enum": ["positive", "negative", "neutral"] },
+              "weight": { "type": ["number", "null"] }
+            }
+          }
+        }
+      }
+    }
+  }
+}

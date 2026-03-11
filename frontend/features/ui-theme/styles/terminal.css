@@ -1,0 +1,16 @@
+/* frontend/features/ui-theme/styles/terminal.css
+ * Terminal-style CSS utilities: glow effects, scanlines, fonts, animations
+ *
+ * Owner: Srijan
+ * Task: SR-1-03
+ * Phase: 1 — Scaffolding
+ *
+ * Expected:
+ *   .terminal-glow — green glow box-shadow
+ *   .terminal-scanline — animated scanline overlay
+ *   .terminal-text — monospace font + text color
+ *   .terminal-border — 1px border with terminal-border color
+ *   scrollbar styles — thin dark scrollbar
+ */
+
+/* Stub — implement in SR-1-03 */

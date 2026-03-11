@@ -1,0 +1,58 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "FeedResponse",
+  "description": "Response from GET /feeds",
+  "type": "object",
+  "required": ["news", "stocks", "crypto"],
+  "properties": {
+    "news": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["title", "source", "publishedAt", "url"],
+        "properties": {
+          "title": { "type": "string" },
+          "summary": { "type": ["string", "null"] },
+          "source": { "type": "string" },
+          "publishedAt": { "type": "string", "format": "date-time" },
+          "url": { "type": "string", "format": "uri" },
+          "imageUrl": { "type": ["string", "null"] },
+          "category": {
+            "type": ["string", "null"],
+            "enum": ["risk", "opportunity", "regulation", "disaster", "general", null]
+          }
+        }
+      }
+    },
+    "stocks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["ticker", "name", "price", "changePercent"],
+        "properties": {
+          "ticker": { "type": "string" },
+          "name": { "type": "string" },
+          "price": { "type": "number" },
+          "changePercent": { "type": "number" },
+          "currency": { "type": "string" },
+          "exchange": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "crypto": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["symbol", "name", "price", "changePercent"],
+        "properties": {
+          "symbol": { "type": "string" },
+          "name": { "type": "string" },
+          "price": { "type": "number" },
+          "changePercent": { "type": "number" },
+          "marketCap": { "type": ["number", "null"] }
+        }
+      }
+    },
+    "updatedAt": { "type": "string", "format": "date-time" }
+  }
+}

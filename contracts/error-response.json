@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ErrorResponse",
+  "description": "Standard error response for all GreenTrust endpoints",
+  "type": "object",
+  "required": ["error"],
+  "properties": {
+    "error": {
+      "type": "object",
+      "required": ["code", "message"],
+      "properties": {
+        "code": {
+          "type": "string",
+          "description": "Machine-readable error code",
+          "enum": [
+            "NOT_FOUND",
+            "INVALID_QUERY",
+            "EXTERNAL_API_ERROR",
+            "RATE_LIMITED",
+            "INTERNAL_ERROR",
+            "VALIDATION_ERROR",
+            "ENTITY_NOT_RESOLVED",
+            "COMPARE_LIMIT_EXCEEDED"
+          ]
+        },
+        "message": {
+          "type": "string",
+          "description": "Human-readable error description"
+        },
+        "details": {
+          "type": ["object", "null"],
+          "description": "Additional error context"
+        }
+      }
+    }
+  }
+}

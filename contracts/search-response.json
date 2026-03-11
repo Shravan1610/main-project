@@ -1,0 +1,34 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SearchResponse",
+  "description": "Response from GET /search?q={query}",
+  "type": "object",
+  "required": ["query", "results"],
+  "properties": {
+    "query": { "type": "string" },
+    "results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "type"],
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "type": { "type": "string", "enum": ["company", "stock", "crypto"] },
+          "ticker": { "type": ["string", "null"] },
+          "country": { "type": ["string", "null"] },
+          "exchange": { "type": ["string", "null"] },
+          "logoUrl": { "type": ["string", "null"] },
+          "coordinates": {
+            "type": ["object", "null"],
+            "properties": {
+              "lat": { "type": "number" },
+              "lng": { "type": "number" }
+            }
+          }
+        }
+      }
+    },
+    "total": { "type": "integer" }
+  }
+}

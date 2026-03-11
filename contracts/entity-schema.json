@@ -1,0 +1,50 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Entity",
+  "description": "Canonical entity shape used across all GreenTrust endpoints",
+  "type": "object",
+  "required": ["id", "name", "type", "coordinates"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique identifier (ticker or slug)"
+    },
+    "name": {
+      "type": "string",
+      "description": "Display name of the entity"
+    },
+    "type": {
+      "type": "string",
+      "enum": ["company", "stock", "crypto"],
+      "description": "Entity classification"
+    },
+    "ticker": {
+      "type": ["string", "null"],
+      "description": "Stock/crypto ticker symbol"
+    },
+    "country": {
+      "type": ["string", "null"],
+      "description": "Country of headquarters or primary exchange"
+    },
+    "coordinates": {
+      "type": "object",
+      "required": ["lat", "lng"],
+      "properties": {
+        "lat": { "type": "number", "minimum": -90, "maximum": 90 },
+        "lng": { "type": "number", "minimum": -180, "maximum": 180 }
+      }
+    },
+    "logoUrl": {
+      "type": ["string", "null"],
+      "description": "URL to entity logo image"
+    },
+    "sector": {
+      "type": ["string", "null"],
+      "description": "Industry sector classification"
+    },
+    "exchange": {
+      "type": ["string", "null"],
+      "description": "Primary stock exchange (for stocks)"
+    }
+  }
+}
