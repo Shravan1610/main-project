@@ -18,6 +18,81 @@ def _fallback(entity_name: str) -> dict[str, Any]:
     }
 
 
+def _parse_json_from_text(raw_text: str) -> dict[str, Any] | None:
+    start = raw_text.find("{")
+    end = raw_text.rfind("}")
+    if start == -1 or end == -1 or end <= start:
+        return None
+
+    try:
+        import json
+
+        parsed = json.loads(raw_text[start : end + 1])
+        return parsed if isinstance(parsed, dict) else None
+    except Exception:
+        return None
+
+
+async def _fetch_esg_scores_with_gemini(entity_name: str) -> dict[str, Any] | None:
+    settings = get_settings()
+    api_key = settings.google_ai_studio_api_key.strip()
+    model = settings.gemini_model.strip()
+    if not api_key or not model:
+        return None
+
+    prompt = "\n".join(
+        [
+            "Estimate ESG scores for the named entity.",
+            "Return ONLY valid JSON with this exact shape:",
+            '{"overall_score": number, "scores": {"environmental": number, "social": number, "governance": number}, "confidence": number, "reasoning": "string"}',
+            "Use score values from 0 to 100 and confidence from 0 to 1.",
+            "If the entity is ambiguous, return conservative mid-range estimates.",
+            f"Entity: {entity_name}",
+        ]
+    )
+
+    client = get_http_client()
+    response = await client.post(
+        f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent",
+        params={"key": api_key},
+        json={
+            "contents": [{"parts": [{"text": prompt}]}],
+            "generationConfig": {
+                "temperature": 0.1,
+                "responseMimeType": "application/json",
+            },
+        },
+    )
+    response.raise_for_status()
+    payload = response.json() if response.content else {}
+    raw_text = (
+        payload.get("candidates", [{}])[0]
+        .get("content", {})
+        .get("parts", [{}])[0]
+        .get("text", "")
+    )
+    parsed = _parse_json_from_text(str(raw_text))
+    if not parsed:
+        return None
+
+    overall = float(parsed.get("overall_score", 55.0))
+    category_scores = parsed.get("scores", {})
+    return {
+        "entity_id": entity_name.strip().upper() or "UNKNOWN",
+        "overall_score": max(0.0, min(100.0, overall)),
+        "scores": {
+            "environmental": max(0.0, min(100.0, float(category_scores.get("environmental", overall)))),
+            "social": max(0.0, min(100.0, float(category_scores.get("social", overall)))),
+            "governance": max(0.0, min(100.0, float(category_scores.get("governance", overall)))),
+        },
+        "raw_response": {
+            "source": "gemini_fallback",
+            "model": model,
+            "payload": parsed,
+        },
+    }
+
+
 async def fetch_esg_scores(entity_name: str) -> dict[str, Any]:
     settings = get_settings()
     payload = {"entity": entity_name}
@@ -42,4 +117,10 @@ async def fetch_esg_scores(entity_name: str) -> dict[str, Any]:
             "raw_response": data,
         }
     except Exception:
+        try:
+            gemini_result = await _fetch_esg_scores_with_gemini(entity_name)
+            if gemini_result is not None:
+                return gemini_result
+        except Exception:
+            pass
         return _fallback(entity_name)

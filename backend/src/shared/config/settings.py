@@ -24,7 +24,7 @@ class Settings(BaseSettings):
     gnews_api_key: str = ""
     the_news_api_key: str = ""
     google_ai_studio_api_key: str = ""
-    gemini_model: str = "gemini-3.1-flash-lite"
+    gemini_model: str = "gemini-3.1-flash-lite-preview"
     climate_api_key: str = ""
     geocoding_api_key: str = ""
     youtube_api_key: str = ""

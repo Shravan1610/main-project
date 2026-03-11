@@ -4,4 +4,3 @@
 // Owner: Srijan
 
 export { fetchMapLayers, transformToMarkers } from "./map-data-service";
-export { fetchLayerData } from "./layer-data-service";

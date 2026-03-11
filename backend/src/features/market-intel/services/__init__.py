@@ -1,1 +1,1 @@
-__all__ = ["market_service", "stock_data", "crypto_data"]
+__all__ = ["stock_data", "crypto_data"]

@@ -19,7 +19,7 @@ const corsHeaders = {
 const ESG_MODEL_URL = Deno.env.get("ESG_MODEL_URL") ?? "https://greenverify-api.onrender.com";
 const NLP_MODEL_URL = Deno.env.get("NLP_MODEL_URL") ?? "https://greenverifynlp-api.onrender.com";
 const GEMINI_API_KEY = Deno.env.get("GOOGLE_AI_STUDIO_API_KEY") ?? "";
-const GEMINI_MODEL = Deno.env.get("GEMINI_MODEL") ?? "gemini-3.1-flash-lite";
+const GEMINI_MODEL = Deno.env.get("GEMINI_MODEL") ?? "gemini-3.1-flash-lite-preview";
 
 const CLAIM_PATTERNS: Record<string, string[]> = {
   carbon: ["carbon neutral", "net zero", "carbon offset", "scope 1", "scope 2", "scope 3", "ghg emissions"],

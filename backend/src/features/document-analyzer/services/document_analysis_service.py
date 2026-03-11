@@ -3,6 +3,7 @@ from __future__ import annotations
 import io
 import importlib.util
 import ipaddress
+import json
 import os
 from pathlib import Path
 import re
@@ -395,31 +396,124 @@ def _detect_greenwashing(text: str) -> dict[str, Any]:
 # ---------------------------------------------------------------------------
 
 
-async def _call_esg_model(metrics: dict[str, float]) -> dict[str, Any]:
+def _parse_json_from_text(raw_text: str) -> dict[str, Any] | None:
+    start = raw_text.find("{")
+    end = raw_text.rfind("}")
+    if start == -1 or end == -1 or end <= start:
+        return None
+
+    try:
+        parsed = json.loads(raw_text[start : end + 1])
+        return parsed if isinstance(parsed, dict) else None
+    except Exception:
+        return None
+
+
+async def _call_gemini_json(prompt: str) -> dict[str, Any] | None:
+    settings = get_settings()
+    api_key = settings.google_ai_studio_api_key.strip()
+    model = settings.gemini_model.strip()
+    if not api_key or not model:
+        return None
+
+    client = get_http_client()
+    response = await client.post(
+        f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent",
+        params={"key": api_key},
+        json={
+            "contents": [{"parts": [{"text": prompt}]}],
+            "generationConfig": {
+                "temperature": 0.1,
+                "responseMimeType": "application/json",
+            },
+        },
+    )
+    response.raise_for_status()
+    payload = response.json() if response.content else {}
+    raw_text = (
+        payload.get("candidates", [{}])[0]
+        .get("content", {})
+        .get("parts", [{}])[0]
+        .get("text", "")
+    )
+    return _parse_json_from_text(str(raw_text))
+
+
+def _build_esg_gemini_prompt(text: str, metrics: dict[str, float]) -> str:
+    return "\n".join(
+        [
+            "Estimate ESG risk from the supplied content and extracted metrics.",
+            "Return ONLY valid JSON with this exact shape:",
+            '{"risk_score": number, "risk_level": "string", "confidence": number, "reasoning": "string"}',
+            "Use risk_score from 0 to 100 and confidence from 0 to 1.",
+            "Prefer conservative estimates when evidence is weak.",
+            f"Metrics: {json.dumps(metrics, sort_keys=True)}",
+            f"Content: {text[:6000]}",
+        ]
+    )
+
+
+def _build_nlp_gemini_prompt(text: str, metrics: dict[str, float]) -> str:
+    return "\n".join(
+        [
+            "Assess climate and greenwashing claim risk from the supplied content and extracted metrics.",
+            "Return ONLY valid JSON with this exact shape:",
+            '{"risk_score": number, "risk_level": "string", "confidence": number, "reasoning": "string"}',
+            "Use risk_score from 0 to 100 and confidence from 0 to 1.",
+            "High risk means weak or misleading climate credibility.",
+            f"Metrics: {json.dumps(metrics, sort_keys=True)}",
+            f"Content: {text[:6000]}",
+        ]
+    )
+
+
+async def _call_esg_model(text: str, metrics: dict[str, float]) -> dict[str, Any]:
     try:
         client = get_http_client()
         resp = await client.post(f"{_get_esg_model_url()}/predict", json=metrics)
         resp.raise_for_status()
         return resp.json() if resp.content else {}
     except Exception as exc:
+        try:
+            gemini_payload = await _call_gemini_json(_build_esg_gemini_prompt(text, metrics))
+            if gemini_payload:
+                gemini_payload["source"] = "gemini_fallback"
+                gemini_payload["model"] = get_settings().gemini_model.strip()
+                gemini_payload["render_error"] = str(exc)
+                return gemini_payload
+        except Exception:
+            pass
         return {"error": str(exc), "status": "unavailable"}
 
 
-async def _call_nlp_model(metrics: dict[str, float]) -> dict[str, Any]:
+async def _call_nlp_model(text: str, metrics: dict[str, float]) -> dict[str, Any]:
     try:
         client = get_http_client()
         resp = await client.post(f"{_get_nlp_model_url()}/predict", json=metrics)
         resp.raise_for_status()
         return resp.json() if resp.content else {}
     except Exception as exc:
+        try:
+            gemini_payload = await _call_gemini_json(_build_nlp_gemini_prompt(text, metrics))
+            if gemini_payload:
+                gemini_payload["source"] = "gemini_fallback"
+                gemini_payload["model"] = get_settings().gemini_model.strip()
+                gemini_payload["render_error"] = str(exc)
+                return gemini_payload
+        except Exception:
+            pass
         return {"error": str(exc), "status": "unavailable"}
 
 
-async def _run_input_specific_models(input_type: str, metrics: dict[str, float]) -> tuple[str, dict[str, Any], dict[str, Any], str]:
+async def _run_input_specific_models(
+    input_type: str,
+    text: str,
+    metrics: dict[str, float],
+) -> tuple[str, dict[str, Any], dict[str, Any], str]:
     normalized = input_type.strip().lower()
     if normalized == "document":
-        nlp_response = await _call_nlp_model(metrics)
-        esg_response = await _call_esg_model(metrics)
+        nlp_response = await _call_nlp_model(text, metrics)
+        esg_response = await _call_esg_model(text, metrics)
 
         if "error" not in nlp_response and "error" not in esg_response:
             model_status = "nlp_and_esg_loaded"
@@ -435,7 +529,7 @@ async def _run_input_specific_models(input_type: str, metrics: dict[str, float])
             model_status,
         )
 
-    esg_response = await _call_esg_model(metrics)
+    esg_response = await _call_esg_model(text, metrics)
     model_status = "esg_model_loaded" if "error" not in esg_response else "esg_model_unavailable"
     return (
         "esg",
@@ -734,6 +828,7 @@ async def analyze_document_input(
 
     analysis_engine, esg_model_resp, nlp_model_resp, model_status = await _run_input_specific_models(
         input_type,
+        text,
         metrics,
     )
 
