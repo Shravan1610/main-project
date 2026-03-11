@@ -4,17 +4,19 @@
 @layer base {
   :root {
     color-scheme: light;
-    --terminal-bg: 245 247 252;
-    --terminal-surface: 255 255 255;
-    --terminal-border: 205 216 237;
-    --terminal-green: 23 142 89;
-    --terminal-green-dim: 40 125 88;
-    --terminal-cyan: 16 116 184;
-    --terminal-amber: 183 117 27;
-    --terminal-red: 198 61 69;
-    --terminal-text: 31 39 52;
-    --terminal-text-dim: 79 92 114;
-    --terminal-text-muted: 110 124 146;
+    --terminal-bg: 244 247 251;
+    --terminal-surface: 252 253 255;
+    --terminal-border: 196 207 223;
+    --terminal-green: 47 110 84;
+    --terminal-green-dim: 75 117 98;
+    --terminal-cyan: 71 109 145;
+    --terminal-amber: 145 102 58;
+    --terminal-red: 160 92 103;
+    --terminal-text: 40 50 64;
+    --terminal-text-dim: 95 107 125;
+    --terminal-text-muted: 128 139 157;
+    --terminal-surface-shadow: 0 16px 36px rgba(88, 103, 130, 0.07),
+      0 1px 0 rgba(255, 255, 255, 0.8) inset;
   }
 
   .dark {
@@ -30,6 +32,8 @@
     --terminal-text: 216 222 233;
     --terminal-text-dim: 165 175 193;
     --terminal-text-muted: 127 137 159;
+    --terminal-surface-shadow: 0 10px 28px rgba(3, 7, 18, 0.38),
+      0 1px 0 rgba(255, 255, 255, 0.03) inset;
   }
 
   * {
@@ -43,8 +47,8 @@
 
   body {
     @apply bg-terminal-bg text-terminal-text;
-    background-image: radial-gradient(1200px 520px at 6% -12%, rgba(116, 153, 214, 0.16), transparent 48%),
-      radial-gradient(1100px 520px at 100% 110%, rgba(125, 142, 198, 0.12), transparent 45%),
+    background-image: radial-gradient(1200px 520px at 6% -12%, rgba(117, 139, 175, 0.07), transparent 48%),
+      radial-gradient(1100px 520px at 100% 110%, rgba(145, 154, 184, 0.06), transparent 45%),
       linear-gradient(
         180deg,
         rgb(var(--terminal-bg)) 0%,
@@ -64,5 +68,6 @@
 @layer utilities {
   .terminal-surface {
     @apply rounded-2xl border border-terminal-border bg-terminal-surface shadow-glow backdrop-blur-md;
+    box-shadow: var(--terminal-surface-shadow);
   }
 }

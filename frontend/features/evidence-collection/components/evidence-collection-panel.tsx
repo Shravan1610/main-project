@@ -269,7 +269,7 @@ export function EvidenceCollectionPanel() {
               type="button"
               onClick={() => void handleUpload()}
               disabled={loading}
-              className="mt-2 rounded border border-cyan-400/50 bg-cyan-500/10 px-3 py-1.5 text-xs text-cyan-200 disabled:opacity-60"
+              className="mt-2 rounded border border-terminal-cyan/35 bg-terminal-cyan/8 px-3 py-1.5 text-xs text-terminal-cyan disabled:opacity-60"
             >
               {loading ? "Processing..." : "Ingest Upload"}
             </button>
@@ -303,7 +303,7 @@ export function EvidenceCollectionPanel() {
               type="button"
               onClick={() => void handleEmailIngest()}
               disabled={loading}
-              className="mt-2 rounded border border-emerald-400/50 bg-emerald-500/10 px-3 py-1.5 text-xs text-emerald-200 disabled:opacity-60"
+              className="mt-2 rounded border border-terminal-green/35 bg-terminal-green/8 px-3 py-1.5 text-xs text-terminal-green disabled:opacity-60"
             >
               {loading ? "Processing..." : "Ingest Email Evidence"}
             </button>
@@ -349,7 +349,7 @@ export function EvidenceCollectionPanel() {
                     type="button"
                     onClick={() => void handleReviewDecision(task.id, "approved")}
                     disabled={loading}
-                    className="rounded border border-emerald-400/40 px-2 py-1 text-[11px] text-emerald-200 disabled:opacity-50"
+                    className="rounded border border-terminal-green/35 px-2 py-1 text-[11px] text-terminal-green disabled:opacity-50"
                   >
                     Approve
                   </button>
@@ -357,7 +357,7 @@ export function EvidenceCollectionPanel() {
                     type="button"
                     onClick={() => void handleReviewDecision(task.id, "rejected")}
                     disabled={loading}
-                    className="rounded border border-rose-400/40 px-2 py-1 text-[11px] text-rose-200 disabled:opacity-50"
+                    className="rounded border border-terminal-red/35 px-2 py-1 text-[11px] text-terminal-red disabled:opacity-50"
                   >
                     Reject
                   </button>
@@ -413,7 +413,7 @@ export function EvidenceCollectionPanel() {
             type="button"
             onClick={() => void handleCreateClaim()}
             disabled={loading}
-            className="rounded border border-cyan-400/50 bg-cyan-500/10 px-3 py-1.5 text-xs text-cyan-200 disabled:opacity-60"
+            className="rounded border border-terminal-cyan/35 bg-terminal-cyan/8 px-3 py-1.5 text-xs text-terminal-cyan disabled:opacity-60"
           >
             Create Claim
           </button>
@@ -471,7 +471,7 @@ export function EvidenceCollectionPanel() {
         </div>
       </div>
 
-      {actionMessage ? <p className="text-xs text-emerald-300">{actionMessage}</p> : null}
+      {actionMessage ? <p className="text-xs text-terminal-green">{actionMessage}</p> : null}
       {actionError ? <p className="text-xs text-terminal-red">{actionError}</p> : null}
     </section>
   );

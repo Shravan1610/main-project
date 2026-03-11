@@ -32,7 +32,7 @@ export default function IntegrityTestPanel() {
 
   return (
 
-    <div className="p-4 border rounded-lg bg-slate-900">
+    <div className="rounded-lg border border-terminal-border bg-terminal-surface p-4 text-terminal-text">
 
       <h2 className="text-lg font-semibold mb-2">
         Integrity Engine Test
@@ -41,18 +41,18 @@ export default function IntegrityTestPanel() {
       <textarea
         value={content}
         onChange={(e) => setContent(e.target.value)}
-        className="w-full p-2 bg-black border rounded mb-2"
+        className="mb-2 w-full rounded border border-terminal-border bg-terminal-bg px-2 py-2 text-terminal-text"
       />
 
       <button
         onClick={runTest}
-        className="px-4 py-2 bg-green-600 rounded"
+        className="rounded border border-terminal-green/35 bg-terminal-green/8 px-4 py-2 text-terminal-green"
       >
         Generate Integrity Record
       </button>
 
       {record && (
-        <pre className="mt-3 text-sm bg-black p-2 rounded">
+        <pre className="mt-3 rounded border border-terminal-border bg-terminal-bg p-2 text-sm text-terminal-text">
           {JSON.stringify(record, null, 2)}
         </pre>
       )}

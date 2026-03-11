@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import GlobeGL from "globe.gl";
 import type { GlobeInstance } from "globe.gl";
 
@@ -108,6 +108,9 @@ let worldGeoJsonCache: GeoJSON.FeatureCollection | null = null;
 const WORLD_GEOJSON_URL =
   "https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson";
 
+const DEFAULT_COUNTRY_FILL = "rgba(255,255,255,0.92)";
+const DEFAULT_COUNTRY_STROKE = "rgba(255,255,255,0.26)";
+
 /* ------------------------------------------------------------------ */
 /*  Helpers                                                            */
 /* ------------------------------------------------------------------ */
@@ -137,6 +140,8 @@ export function GlobeMap({
   const globeRef = useRef<GlobeInstance | null>(null);
   const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const activeLayersRef = useRef(activeLayers);
+  const [worldGeoJson, setWorldGeoJson] =
+    useState<GeoJSON.FeatureCollection | null>(worldGeoJsonCache);
   activeLayersRef.current = activeLayers;
 
   // ---- Initialize globe ---- //
@@ -222,8 +227,11 @@ export function GlobeMap({
         .then((r) => r.json())
         .then((data: GeoJSON.FeatureCollection) => {
           worldGeoJsonCache = data;
+          setWorldGeoJson(data);
         })
         .catch(() => {});
+    } else {
+      setWorldGeoJson(worldGeoJsonCache);
     }
 
     return () => {
@@ -355,40 +363,44 @@ export function GlobeMap({
     }
   }, [activeLayers, markers]);
 
-  // ---- Risk overlay: polygonsData choropleth ---- //
+  // ---- Country polygons: default white land, risk tint when enabled ---- //
   useEffect(() => {
     if (!globeRef.current) return;
+    if (!worldGeoJson) return;
 
-    if (activeLayers["risk-overlay"] && worldGeoJsonCache) {
-      const riskMarkers = markers.filter(
-        (m) => m.kind === "climate" || m.kind === "news",
-      );
-      const features = worldGeoJsonCache.features.map((f) => {
-        const bbox = featureBBox(f);
-        const count = bbox ? countMarkersInBBox(bbox, riskMarkers) : 0;
-        return { ...f, properties: { ...f.properties, _riskCount: count } };
-      });
+    const riskMarkers = markers.filter(
+      (m) => m.kind === "climate" || m.kind === "news",
+    );
+    const riskOverlayEnabled = activeLayers["risk-overlay"];
+    const features = worldGeoJson.features.map((f) => {
+      const bbox = featureBBox(f);
+      const count = bbox ? countMarkersInBBox(bbox, riskMarkers) : 0;
+      return { ...f, properties: { ...f.properties, _riskCount: count } };
+    });
 
-      globeRef.current
-        .polygonsData(features)
-        .polygonGeoJsonGeometry(
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          ((d: unknown) => (d as GeoJSON.Feature).geometry) as any,
-        )
-        .polygonCapColor(
-          (d: unknown) =>
-            computeRiskColor(
-              ((d as GeoJSON.Feature).properties as Record<string, number>)
-                ?._riskCount ?? 0,
-            ),
-        )
-        .polygonSideColor(() => "rgba(0,0,0,0)")
-        .polygonStrokeColor(() => "rgba(30,41,59,0.25)")
-        .polygonAltitude(0.006);
-    } else {
-      globeRef.current.polygonsData([]);
-    }
-  }, [activeLayers, markers]);
+    globeRef.current
+      .polygonsData(features)
+      .polygonGeoJsonGeometry(
+        ((d: unknown) => (d as GeoJSON.Feature).geometry) as any,
+      )
+      .polygonCapColor((d: unknown) => {
+        if (!riskOverlayEnabled) {
+          return DEFAULT_COUNTRY_FILL;
+        }
+
+        const riskColor = computeRiskColor(
+          ((d as GeoJSON.Feature).properties as Record<string, number>)
+            ?._riskCount ?? 0,
+        );
+
+        return riskColor === "rgba(0,0,0,0)" ? DEFAULT_COUNTRY_FILL : riskColor;
+      })
+      .polygonSideColor(() => "rgba(0,0,0,0)")
+      .polygonStrokeColor(() =>
+        riskOverlayEnabled ? "rgba(255,255,255,0.18)" : DEFAULT_COUNTRY_STROKE,
+      )
+      .polygonAltitude(0.004);
+  }, [activeLayers, markers, worldGeoJson]);
 
   // ---- Fly to viewport changes ---- //
   useEffect(() => {

@@ -167,7 +167,7 @@ export function VoiceAgentLauncher() {
                   type="button"
                   onClick={() => void startRecording()}
                   disabled={isSubmitting}
-                  className="inline-flex items-center gap-1 rounded border border-emerald-500/45 bg-emerald-500/10 px-3 py-1.5 text-xs text-emerald-200 disabled:opacity-70"
+                  className="inline-flex items-center gap-1 rounded border border-terminal-green/35 bg-terminal-green/8 px-3 py-1.5 text-xs text-terminal-green disabled:opacity-70"
                 >
                   <Mic size={14} />
                   Start
@@ -176,7 +176,7 @@ export function VoiceAgentLauncher() {
                 <button
                   type="button"
                   onClick={() => void stopRecording()}
-                  className="inline-flex items-center gap-1 rounded border border-rose-500/45 bg-rose-500/10 px-3 py-1.5 text-xs text-rose-200"
+                  className="inline-flex items-center gap-1 rounded border border-terminal-red/35 bg-terminal-red/8 px-3 py-1.5 text-xs text-terminal-red"
                 >
                   <Square size={14} />
                   Stop
@@ -193,7 +193,7 @@ export function VoiceAgentLauncher() {
                 {transcript || "Record a short command to transcribe and infer tool actions."}
               </p>
               {suggestionsText ? (
-                <p className="mt-1 text-xs text-cyan-300">Suggested tools: {suggestionsText}</p>
+                <p className="mt-1 text-xs text-terminal-cyan">Suggested tools: {suggestionsText}</p>
               ) : null}
             </div>
           </section>

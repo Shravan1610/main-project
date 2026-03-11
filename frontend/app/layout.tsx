@@ -7,8 +7,8 @@ import "@/features/ui-theme/styles/terminal.css";
 import { Providers } from "./providers";
 
 export const metadata: Metadata = {
-  title: "World Monitor",
-  description: "Map-first global monitoring terminal",
+  title: "GreenTrust Intelligence Terminal",
+  description: "Live risk, evidence, document, and verification command center",
 };
 
 type RootLayoutProps = {

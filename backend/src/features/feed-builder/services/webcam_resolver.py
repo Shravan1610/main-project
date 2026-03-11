@@ -3,6 +3,8 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from typing import Any
 
+from httpx import HTTPStatusError
+
 from src.shared.clients import get_http_client
 from src.shared.clients.cache_client import get_cached, set_cached
 from src.shared.config import get_settings
@@ -16,6 +18,7 @@ EMBED_TITLE_BLOCKLIST = ("replay", "highlights", "premiere", "recap")
 WEBCAM_KEYWORDS = ("webcam", "live cam", "earth cam", "traffic cam", "city cam", "skyline", "downtown")
 SHORT_CACHE_SECONDS = 90
 RESOLVE_WINDOW_SECONDS = 180
+PROVIDER_BLOCK_CACHE_SECONDS = RESOLVE_WINDOW_SECONDS
 
 WebcamSource = dict[str, str | list[str]]
 
@@ -171,10 +174,19 @@ def _to_feed(source: WebcamSource, item: dict[str, Any], score: int) -> dict[str
     }
 
 
+def _provider_block_cache_key(resolve_bucket: int) -> str:
+    return f"webcams:provider-block:youtube:{resolve_bucket}"
+
+
 async def _resolve_region(region: str, limit: int) -> list[dict[str, Any]]:
     settings = get_settings()
     api_key = settings.youtube_api_key
     if not api_key:
+        return []
+
+    resolve_bucket = int(datetime.now(timezone.utc).timestamp() // PROVIDER_BLOCK_CACHE_SECONDS)
+    provider_block_key = _provider_block_cache_key(resolve_bucket)
+    if get_cached(provider_block_key):
         return []
 
     sources = REGION_SOURCES.get(region, REGION_SOURCES["all"])
@@ -188,6 +200,24 @@ async def _resolve_region(region: str, limit: int) -> list[dict[str, Any]]:
         try:
             candidate_ids = await _fetch_live_candidates(source, api_key)
             videos = await _hydrate_videos(candidate_ids, api_key)
+        except HTTPStatusError as exc:
+            status_code = exc.response.status_code
+            if status_code in {401, 403}:
+                set_cached(
+                    provider_block_key,
+                    {
+                        "statusCode": status_code,
+                        "blockedAt": datetime.now(timezone.utc).isoformat(),
+                    },
+                )
+                logger.info(
+                    "YouTube webcam resolver unavailable (HTTP %s); skipping webcam lookup for region=%s during this resolve window",
+                    status_code,
+                    region,
+                )
+                break
+            logger.warning("Failed to resolve webcam source %s: %s", source.get("id"), exc)
+            continue
         except Exception as exc:  # noqa: BLE001
             logger.warning("Failed to resolve webcam source %s: %s", source.get("id"), exc)
             continue

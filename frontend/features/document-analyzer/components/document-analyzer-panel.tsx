@@ -14,11 +14,23 @@ const INPUT_MODES: Array<{ id: InputMode; label: string }> = [
 ];
 
 const CLAIM_TYPE_STYLES: Record<string, string> = {
-  commitment: "border-cyan-400/40 bg-cyan-500/10 text-cyan-200",
-  certification: "border-emerald-400/40 bg-emerald-500/10 text-emerald-200",
-  assertion: "border-amber-400/40 bg-amber-500/10 text-amber-200",
-  metric: "border-sky-400/40 bg-sky-500/10 text-sky-200",
+  commitment: "border-terminal-cyan/25 bg-terminal-cyan/8 text-terminal-cyan",
+  certification: "border-terminal-green/25 bg-terminal-green/8 text-terminal-green",
+  assertion: "border-terminal-amber/25 bg-terminal-amber/8 text-terminal-amber",
+  metric: "border-terminal-cyan/25 bg-terminal-cyan/8 text-terminal-cyan",
 };
+
+function scoreColorClass(value: number, inverse = false) {
+  if (inverse) {
+    if (value < 0.3) return "text-terminal-green";
+    if (value < 0.6) return "text-terminal-amber";
+    return "text-terminal-red";
+  }
+
+  if (value > 0.7) return "text-terminal-green";
+  if (value > 0.4) return "text-terminal-amber";
+  return "text-terminal-red";
+}
 
 export function DocumentAnalyzerPanel() {
   const [mode, setMode] = useState<InputMode>("document");
@@ -71,7 +83,7 @@ export function DocumentAnalyzerPanel() {
               onClick={() => setMode(item.id)}
               className={`rounded border px-3 py-1 text-xs uppercase tracking-wide transition-colors ${
                 mode === item.id
-                  ? "border-cyan-400/60 bg-cyan-500/15 text-cyan-200"
+                  ? "border-terminal-cyan/35 bg-terminal-cyan/8 text-terminal-cyan"
                   : "border-terminal-border text-terminal-text-dim hover:bg-terminal-border/35"
               }`}
             >
@@ -116,7 +128,7 @@ export function DocumentAnalyzerPanel() {
             type="button"
             onClick={() => void submit()}
             disabled={loading}
-            className="rounded border border-emerald-400/40 bg-emerald-500/10 px-3 py-1.5 text-xs text-emerald-200 disabled:opacity-70"
+            className="rounded border border-terminal-green/35 bg-terminal-green/8 px-3 py-1.5 text-xs text-terminal-green disabled:opacity-70"
           >
             {loading ? "Analyzing..." : "Analyze"}
           </button>
@@ -176,7 +188,7 @@ export function DocumentAnalyzerPanel() {
                       <span>{Math.round(confidence * 100)}%</span>
                     </div>
                     <div className="h-1.5 w-full overflow-hidden rounded bg-terminal-border/60">
-                      <div className="h-full bg-cyan-300/80" style={{ width: `${Math.round(confidence * 100)}%` }} />
+                      <div className="h-full bg-terminal-cyan/75" style={{ width: `${Math.round(confidence * 100)}%` }} />
                     </div>
                   </div>
                 </div>
@@ -196,10 +208,10 @@ export function DocumentAnalyzerPanel() {
                 <p
                   className={`text-lg font-bold ${
                     (result.aiAnalytics.esgRiskScore ?? 50) < 30
-                      ? "text-emerald-400"
+                      ? "text-terminal-green"
                       : (result.aiAnalytics.esgRiskScore ?? 50) < 60
-                        ? "text-amber-400"
-                        : "text-red-400"
+                        ? "text-terminal-amber"
+                        : "text-terminal-red"
                   }`}
                 >
                   {result.aiAnalytics.esgRiskScore ?? "N/A"}
@@ -210,10 +222,10 @@ export function DocumentAnalyzerPanel() {
                 <p
                   className={`text-lg font-bold ${
                     result.aiAnalytics.esgRiskLevel === "Low Risk"
-                      ? "text-emerald-400"
+                      ? "text-terminal-green"
                       : result.aiAnalytics.esgRiskLevel === "Medium Risk"
-                        ? "text-amber-400"
-                        : "text-red-400"
+                        ? "text-terminal-amber"
+                        : "text-terminal-red"
                   }`}
                 >
                   {result.aiAnalytics.esgRiskLevel}
@@ -221,7 +233,7 @@ export function DocumentAnalyzerPanel() {
               </div>
               <div className="rounded border border-terminal-border p-2">
                 <p className="text-terminal-text-muted">AI Confidence</p>
-                <p className="text-lg font-bold text-cyan-300">
+                <p className="text-lg font-bold text-terminal-cyan">
                   {(result.aiAnalytics.aiConfidence * 100).toFixed(1)}%
                 </p>
               </div>
@@ -230,9 +242,9 @@ export function DocumentAnalyzerPanel() {
                 <p
                   className={`text-lg font-bold ${
                     result.aiAnalytics.verificationStatus === "verified"
-                      ? "text-emerald-400"
+                      ? "text-terminal-green"
                       : result.aiAnalytics.verificationStatus === "flagged"
-                        ? "text-red-400"
+                        ? "text-terminal-red"
                         : "text-terminal-text-dim"
                   }`}
                 >
@@ -245,13 +257,7 @@ export function DocumentAnalyzerPanel() {
               <div className="rounded border border-terminal-border p-2">
                 <p className="text-terminal-text-muted">Greenwashing Probability</p>
                 <p
-                  className={`text-lg font-bold ${
-                    result.aiAnalytics.greenwashingProbability < 0.3
-                      ? "text-emerald-400"
-                      : result.aiAnalytics.greenwashingProbability < 0.6
-                        ? "text-amber-400"
-                        : "text-red-400"
-                  }`}
+                  className={`text-lg font-bold ${scoreColorClass(result.aiAnalytics.greenwashingProbability, true)}`}
                 >
                   {(result.aiAnalytics.greenwashingProbability * 100).toFixed(1)}%
                 </p>
@@ -259,13 +265,7 @@ export function DocumentAnalyzerPanel() {
               <div className="rounded border border-terminal-border p-2">
                 <p className="text-terminal-text-muted">Climate Claim Credibility</p>
                 <p
-                  className={`text-lg font-bold ${
-                    result.aiAnalytics.climateClaimCredibility > 0.7
-                      ? "text-emerald-400"
-                      : result.aiAnalytics.climateClaimCredibility > 0.4
-                        ? "text-amber-400"
-                        : "text-red-400"
-                  }`}
+                  className={`text-lg font-bold ${scoreColorClass(result.aiAnalytics.climateClaimCredibility)}`}
                 >
                   {(result.aiAnalytics.climateClaimCredibility * 100).toFixed(1)}%
                 </p>
@@ -274,7 +274,7 @@ export function DocumentAnalyzerPanel() {
                 <p className="text-terminal-text-muted">Greenwashing Flag</p>
                 <p
                   className={`text-lg font-bold ${
-                    result.aiAnalytics.greenwashingProbability > 0.5 ? "text-red-400" : "text-emerald-400"
+                    result.aiAnalytics.greenwashingProbability > 0.5 ? "text-terminal-red" : "text-terminal-green"
                   }`}
                 >
                   {result.aiAnalytics.greenwashingProbability > 0.5 ? "⚠ FLAGGED" : "✓ CLEAR"}
@@ -289,7 +289,7 @@ export function DocumentAnalyzerPanel() {
               {Object.entries(result.aiAnalytics.riskBreakdown).map(([key, value]) => {
                 const label = key.replace(/([A-Z])/g, " $1").replace(/^./, (s) => s.toUpperCase());
                 const color =
-                  value < 30 ? "bg-emerald-500" : value < 60 ? "bg-amber-500" : "bg-red-500";
+                  value < 30 ? "bg-terminal-green" : value < 60 ? "bg-terminal-amber" : "bg-terminal-red";
                 return (
                   <div key={key}>
                     <div className="mb-0.5 flex items-center justify-between">
@@ -310,10 +310,10 @@ export function DocumentAnalyzerPanel() {
 
           {result.aiAnalytics.suspiciousStatements.length > 0 ? (
             <div className="rounded-xl border border-terminal-border bg-terminal-bg/50 p-3 text-xs text-terminal-text">
-              <p className="mb-2 text-sm font-semibold text-red-400">Suspicious ESG Statements</p>
+              <p className="mb-2 text-sm font-semibold text-terminal-red">Suspicious ESG Statements</p>
               <ul className="space-y-1">
                 {result.aiAnalytics.suspiciousStatements.map((statement, index) => (
-                  <li key={index} className="rounded border border-red-500/20 bg-red-500/5 px-2 py-1 text-terminal-text-muted">
+                  <li key={index} className="rounded border border-terminal-red/20 bg-terminal-red/5 px-2 py-1 text-terminal-text-muted">
                     &ldquo;{statement}&rdquo;
                   </li>
                 ))}
@@ -324,7 +324,7 @@ export function DocumentAnalyzerPanel() {
       ) : null}
 
       {result && !result.aiAnalytics && result.modelStatus !== "empty_input" ? (
-        <div className="rounded-xl border border-terminal-border bg-terminal-bg/50 p-3 text-xs text-amber-300">
+        <div className="rounded-xl border border-terminal-border bg-terminal-bg/50 p-3 text-xs text-terminal-amber">
           AI analysis unavailable. Please retry.
         </div>
       ) : null}

@@ -83,14 +83,14 @@ export function MarketWatchlist({ items }: MarketWatchlistProps) {
                 onClick={() => setSelectedSymbol(item.symbol)}
                 className={`grid w-full grid-cols-[1.15fr_1fr_0.95fr_0.8fr] gap-2 rounded px-2 py-1.5 text-left text-sm transition-colors ${
                   isSelected
-                    ? "bg-terminal-border/45 text-terminal-text"
-                    : "hover:bg-terminal-border/30 text-terminal-text-dim"
+                    ? "bg-terminal-border/28 text-terminal-text"
+                    : "text-terminal-text-dim hover:bg-terminal-border/20 hover:text-terminal-text"
                 }`}
               >
                 <span className="truncate font-medium">{item.symbol}</span>
                 <span className="truncate">{formatCurrency(item.price)}</span>
-                <span className={isPositive ? "text-emerald-300" : "text-rose-300"}>{asSigned(changeValue)}</span>
-                <span className={isPositive ? "text-emerald-300" : "text-rose-300"}>
+                <span className={isPositive ? "text-terminal-green" : "text-terminal-red"}>{asSigned(changeValue)}</span>
+                <span className={isPositive ? "text-terminal-green" : "text-terminal-red"}>
                   {change >= 0 ? "+" : ""}
                   {formatPercent(change)}
                 </span>
@@ -105,7 +105,7 @@ export function MarketWatchlist({ items }: MarketWatchlistProps) {
           <p className="text-[11px] uppercase tracking-[0.16em] text-terminal-text-muted">Current Stock</p>
           <h4 className="mt-1 text-lg font-semibold tracking-wide text-terminal-text">{selectedItem.symbol}</h4>
           <p className="mt-3 text-3xl font-semibold text-terminal-text">{formatCurrency(selectedItem.price)}</p>
-          <p className={`mt-1 text-sm font-medium ${(selectedItem.changePercent ?? 0) >= 0 ? "text-emerald-300" : "text-rose-300"}`}>
+          <p className={`mt-1 text-sm font-medium ${(selectedItem.changePercent ?? 0) >= 0 ? "text-terminal-green" : "text-terminal-red"}`}>
             {(selectedItem.changePercent ?? 0) >= 0 ? "+" : ""}
             {formatPercent(selectedItem.changePercent ?? 0)}
           </p>
@@ -117,8 +117,8 @@ export function MarketWatchlist({ items }: MarketWatchlistProps) {
                 key={item.windowName}
                 className={`rounded-md border px-2 py-1.5 text-center ${
                   item.value >= 0
-                    ? "border-emerald-400/25 bg-emerald-500/10 text-emerald-200"
-                    : "border-rose-400/25 bg-rose-500/10 text-rose-200"
+                    ? "border-terminal-green/20 bg-terminal-green/8 text-terminal-green"
+                    : "border-terminal-red/20 bg-terminal-red/8 text-terminal-red"
                 }`}
               >
                 <p className="text-[10px] font-semibold tracking-wide">{item.windowName}</p>
