@@ -94,8 +94,9 @@ function validateUrl(rawUrl: string) {
   }
 
   const hostname = parsed.hostname.toLowerCase();
-  const privateHostPattern = /^(localhost|127\.\d+\.\d+\.\d+|0\.0\.0\.0|10\.\d+\.\d+\.\d+|192\.168\.\d+\.\d+|172\.(1[6-9]|2\d|3[0-1])\.\d+\.\d+)$/;
-  if (privateHostPattern.test(hostname) || hostname === "::1" || hostname.endsWith(".local")) {
+  const privateHostPattern = /^(localhost|127\.\d+\.\d+\.\d+|0\.0\.0\.0|10\.\d+\.\d+\.\d+|192\.168\.\d+\.\d+|172\.(1[6-9]|2\d|3[0-1])\.\d+\.\d+|169\.254\.\d+\.\d+)$/;
+  const ipv6PrivatePattern = /^(::1|fe80:|fc00:|fd00:)/i;
+  if (privateHostPattern.test(hostname) || ipv6PrivatePattern.test(hostname) || hostname.endsWith(".local")) {
     throw new Error("Private or local URLs are not allowed");
   }
 }
