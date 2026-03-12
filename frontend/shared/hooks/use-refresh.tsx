@@ -28,18 +28,27 @@ export function RefreshProvider({ children }: { children: ReactNode }) {
   const [refreshing, setRefreshing] = useState(false);
   const [secondsUntilRefresh, setSecondsUntilRefresh] = useState(AUTO_REFRESH_MS / 1000);
   const lastRefreshRef = useRef(0);
+  const refreshingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Initialize ref on mount
   useEffect(() => {
     lastRefreshRef.current = Date.now();
+    return () => {
+      if (refreshingTimerRef.current !== null) {
+        clearTimeout(refreshingTimerRef.current);
+      }
+    };
   }, []);
 
   const refresh = useCallback(() => {
+    if (refreshingTimerRef.current !== null) {
+      clearTimeout(refreshingTimerRef.current);
+    }
     setRefreshKey((k) => k + 1);
     setRefreshing(true);
     lastRefreshRef.current = Date.now();
     setSecondsUntilRefresh(AUTO_REFRESH_MS / 1000);
-    setTimeout(() => setRefreshing(false), 2000);
+    refreshingTimerRef.current = setTimeout(() => setRefreshing(false), 2000);
   }, []);
 
   // Auto-refresh every 5 minutes
