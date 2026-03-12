@@ -1,30 +1,33 @@
 from src.shared.clients.http_client import get_http_client
 from src.shared.config import get_settings
 
+COINGECKO_IDS = {
+    "btc": "bitcoin",
+    "eth": "ethereum",
+    "sol": "solana",
+    "xrp": "ripple",
+    "bnb": "binancecoin",
+    "doge": "dogecoin",
+    "ada": "cardano",
+    "trx": "tron",
+}
+
 
 async def fetch_crypto_quote(symbol_or_id: str) -> dict:
     normalized = symbol_or_id.strip().lower() or "bitcoin"
+    coin_id = COINGECKO_IDS.get(normalized, normalized)
     settings = get_settings()
-    if not settings.coingecko_demo_api_key:
-        return {
-            "symbol": normalized.upper(),
-            "price": 0.0,
-            "change_24h": 0.0,
-            "market_cap": None,
-            "volume_24h": None,
-            "currency": "USD",
-            "exchange": "CoinGecko",
-        }
 
     client = get_http_client()
 
     params = {
         "vs_currencies": "usd",
-        "ids": normalized,
+        "ids": coin_id,
         "include_24hr_change": "true",
         "include_market_cap": "true",
     }
-    params["x_cg_demo_api_key"] = settings.coingecko_demo_api_key
+    if settings.coingecko_demo_api_key:
+        params["x_cg_demo_api_key"] = settings.coingecko_demo_api_key
 
     try:
         response = await client.get("https://api.coingecko.com/api/v3/simple/price", params=params)
@@ -33,7 +36,7 @@ async def fetch_crypto_quote(symbol_or_id: str) -> dict:
     except Exception:
         payload = {}
 
-    data = payload.get(normalized)
+    data = payload.get(coin_id)
     if not data:
         return {
             "symbol": normalized.upper(),

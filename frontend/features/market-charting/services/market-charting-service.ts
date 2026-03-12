@@ -12,6 +12,8 @@ const SUPABASE_KEY =
   process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ??
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ??
   "";
+const DEFAULT_MARKET_SYNC_FUNCTION = "market-data-sync";
+const MARKET_SYNC_STALE_MS = 90_000;
 
 const INSTRUMENT_FIELDS = [
   "id",
@@ -186,6 +188,19 @@ function mapCandle(row: MarketCandleRow): MarketCandle {
   };
 }
 
+function isStale(lastSyncedAt?: string | null, staleMs = MARKET_SYNC_STALE_MS) {
+  if (!lastSyncedAt) {
+    return true;
+  }
+
+  const lastSynced = Date.parse(lastSyncedAt);
+  if (Number.isNaN(lastSynced)) {
+    return true;
+  }
+
+  return Date.now() - lastSynced >= staleMs;
+}
+
 async function getInstrument(
   rawSymbol: string,
   assetType?: MarketAssetType,
@@ -240,35 +255,97 @@ async function syncMarketDetail(
 ) {
   requireSupabaseConfig();
 
-  const functionName =
-    process.env.NEXT_PUBLIC_SUPABASE_MARKET_SYNC_FUNCTION ?? "market-data-sync-v2";
-  const response = await fetch(
-    `${SUPABASE_URL.replace(/\/$/, "")}/functions/v1/${functionName}`,
-    {
+  const syncBody = JSON.stringify({
+    symbol: normalizeSymbol(symbol),
+    assetType: lookup?.assetType,
+    exchange: lookup?.exchange,
+    market: lookup?.market,
+    name: lookup?.name,
+    timeframe,
+  });
+
+  // 1️⃣ Try the local Next.js API route first (has EODHD_API_KEY server-side)
+  try {
+    const localResponse = await fetch("/api/market-sync", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        apikey: SUPABASE_KEY,
-        Authorization: `Bearer ${SUPABASE_KEY}`,
-      },
-      body: JSON.stringify({
-        symbol: normalizeSymbol(symbol),
-        assetType: lookup?.assetType,
-        exchange: lookup?.exchange,
-        market: lookup?.market,
-        name: lookup?.name,
-        timeframe,
-      }),
-    },
+      headers: { "Content-Type": "application/json" },
+      body: syncBody,
+    });
+
+    if (localResponse.ok) {
+      return;
+    }
+
+    const localPayload = await localResponse.json().catch(() => null);
+    const localMessage =
+      (localPayload as { error?: string } | null)?.error ??
+      "Local market sync failed.";
+
+    // Only fall through to edge function if local route has a config issue
+    if (
+      !localMessage.includes("is not configured") &&
+      localResponse.status !== 404
+    ) {
+      throw new Error(localMessage);
+    }
+  } catch (error) {
+    // If the local route threw a non-config error, rethrow
+    if (
+      error instanceof Error &&
+      !error.message.includes("is not configured") &&
+      !error.message.includes("fetch failed") &&
+      !error.message.includes("Failed to fetch")
+    ) {
+      throw error;
+    }
+  }
+
+  // 2️⃣ Fall back to Supabase Edge Function(s)
+  const configuredFunctionName =
+    process.env.NEXT_PUBLIC_SUPABASE_MARKET_SYNC_FUNCTION ??
+    DEFAULT_MARKET_SYNC_FUNCTION;
+  const functionNames = Array.from(
+    new Set([configuredFunctionName, DEFAULT_MARKET_SYNC_FUNCTION]),
   );
 
-  if (!response.ok) {
+  let lastErrorMessage = "Market sync function failed.";
+
+  for (const functionName of functionNames) {
+    const response = await fetch(
+      `${SUPABASE_URL.replace(/\/$/, "")}/functions/v1/${functionName}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          apikey: SUPABASE_KEY,
+          Authorization: `Bearer ${SUPABASE_KEY}`,
+        },
+        body: syncBody,
+      },
+    );
+
+    if (response.ok) {
+      return;
+    }
+
     const payload = await response.json().catch(() => null);
     const message =
       (payload as { error?: string } | null)?.error ??
       "Market sync function failed.";
+
+    if (
+      functionName !== DEFAULT_MARKET_SYNC_FUNCTION &&
+      (response.status === 404 ||
+        message.includes("EODHD_API_KEY is not configured"))
+    ) {
+      lastErrorMessage = message;
+      continue;
+    }
+
     throw new Error(message);
   }
+
+  throw new Error(lastErrorMessage);
 }
 
 function candleLimitForTimeframe(timeframe: MarketTimeframe) {
@@ -305,6 +382,15 @@ export async function getMarketDetail(
 
   if (!instrument) {
     throw new Error(`No Supabase market record found for ${symbol}.`);
+  }
+
+  if (isStale(instrument.lastSyncedAt)) {
+    await syncMarketDetail(symbol, timeframe, lookup);
+    instrument = (await getInstrument(
+      symbol,
+      lookup?.assetType,
+      lookup?.exchange,
+    )) ?? instrument;
   }
 
   const candleRows = await restSelect<MarketCandleRow[]>("market_candles", {

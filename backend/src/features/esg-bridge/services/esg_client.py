@@ -1,6 +1,7 @@
 from typing import Any
 
 from src.shared.clients.http_client import get_http_client
+from src.shared.clients.gemini_client import call_gemini
 from src.shared.config import get_settings
 
 
@@ -36,8 +37,7 @@ def _parse_json_from_text(raw_text: str) -> dict[str, Any] | None:
 async def _fetch_esg_scores_with_gemini(entity_name: str) -> dict[str, Any] | None:
     settings = get_settings()
     api_key = settings.google_ai_studio_api_key.strip()
-    model = settings.gemini_model.strip()
-    if not api_key or not model:
+    if not api_key:
         return None
 
     prompt = "\n".join(
@@ -51,28 +51,8 @@ async def _fetch_esg_scores_with_gemini(entity_name: str) -> dict[str, Any] | No
         ]
     )
 
-    client = get_http_client()
-    response = await client.post(
-        f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent",
-        params={"key": api_key},
-        json={
-            "contents": [{"parts": [{"text": prompt}]}],
-            "generationConfig": {
-                "temperature": 0.1,
-                "responseMimeType": "application/json",
-            },
-        },
-    )
-    response.raise_for_status()
-    payload = response.json() if response.content else {}
-    raw_text = (
-        payload.get("candidates", [{}])[0]
-        .get("content", {})
-        .get("parts", [{}])[0]
-        .get("text", "")
-    )
-    parsed = _parse_json_from_text(str(raw_text))
-    if not parsed:
+    parsed = await call_gemini(prompt, temperature=0.1)
+    if not parsed or not isinstance(parsed, dict):
         return None
 
     overall = float(parsed.get("overall_score", 55.0))
@@ -87,7 +67,7 @@ async def _fetch_esg_scores_with_gemini(entity_name: str) -> dict[str, Any] | No
         },
         "raw_response": {
             "source": "gemini_fallback",
-            "model": model,
+            "model": settings.gemini_model,
             "payload": parsed,
         },
     }

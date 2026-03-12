@@ -1,11 +1,28 @@
 "use client"
 
 import { useState, useCallback } from "react"
-import { processIntegrity } from "../services/integrity-engine"
+import { processIntegrity, processFileIntegrity, verifyFileIntegrity } from "../services/integrity-engine"
 import { verifyContent } from "../services/verification-engine"
 import { getTrailEvents } from "../services/trail-integration"
+import { getForensicTrail } from "../services/digital-trail-api"
 import type { AssetType, IntegrityRecord } from "../types/integrity.types"
 import type { IntegrityEvent } from "../types/integrity-events.types"
+
+export interface ForensicEventUI {
+  ip: string
+  timestamp: string
+  attempted_hash: string
+  original_hash: string
+}
+
+export interface VerificationResultUI {
+  hash: string
+  originalHash?: string
+  status: "verified" | "tampered" | "not_found"
+  message: string
+  forensicEvent: ForensicEventUI | null
+  localMatch: boolean
+}
 
 export function useIntegrity() {
 
@@ -13,6 +30,8 @@ export function useIntegrity() {
   const [events, setEvents] = useState<IntegrityEvent[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [verificationResult, setVerificationResult] = useState<VerificationResultUI | null>(null)
+  const [forensicTrail, setForensicTrail] = useState<ForensicEventUI[]>([])
 
   /**
    * Submit a document through the full integrity pipeline:
@@ -130,6 +149,84 @@ export function useIntegrity() {
     setEvents(getTrailEvents())
   }, [])
 
+  /**
+   * Submit a File through the full integrity pipeline:
+   * file → SHA-256 → encrypt chunk → ledger → blockchain → backend register
+   */
+  const submitFile = useCallback(
+    async (file: File, assetName: string, assetType: AssetType = "document"): Promise<IntegrityRecord> => {
+      setLoading(true)
+      setError(null)
+      setVerificationResult(null)
+
+      try {
+        const record = await processFileIntegrity(file, assetName, assetType)
+        setRecords((prev) => [...prev, record])
+        setEvents(getTrailEvents())
+        return record
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : "Failed to process file"
+        setError(msg)
+        throw err
+      } finally {
+        setLoading(false)
+      }
+    },
+    [],
+  )
+
+  /**
+   * Verify a File against the blockchain registry.
+   * If hash differs → backend captures IP + creates forensic trail.
+   */
+  const verifyFile = useCallback(
+    async (file: File, originalHash?: string): Promise<VerificationResultUI> => {
+      setLoading(true)
+      setError(null)
+
+      try {
+        const result = await verifyFileIntegrity(file, originalHash)
+        const vResult: VerificationResultUI = {
+          hash: result.hash,
+          originalHash: result.originalHash,
+          status: result.status,
+          message: result.message,
+          forensicEvent: result.forensicEvent,
+          localMatch: result.localMatch,
+        }
+        setVerificationResult(vResult)
+
+        // If tampered, refresh forensic trail
+        if (result.status === "tampered" && originalHash) {
+          await refreshForensicTrail(originalHash)
+        }
+
+        setEvents(getTrailEvents())
+        return vResult
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : "Verification failed"
+        setError(msg)
+        throw err
+      } finally {
+        setLoading(false)
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  )
+
+  /**
+   * Fetch the forensic trail for a document hash from the backend.
+   */
+  const refreshForensicTrail = useCallback(async (hash: string) => {
+    try {
+      const trail = await getForensicTrail(hash)
+      setForensicTrail(trail.events ?? [])
+    } catch {
+      // Forensic trail unavailable — not critical
+    }
+  }, [])
+
   return {
     records,
     events,
@@ -139,5 +236,11 @@ export function useIntegrity() {
     verifyDocument,
     checkTamper,
     refreshEvents,
+    // New digital trail methods
+    submitFile,
+    verifyFile,
+    verificationResult,
+    forensicTrail,
+    refreshForensicTrail,
   }
 }

@@ -18,9 +18,10 @@ export { default as VerificationResult } from "./components/verification-result"
 // ── Test / Dev ─────────────────────────────────────────────────────────────
 export { default as IntegrityTestPanel } from "./components/integrity-test-panel"
 
-// ── Hooks ──────────────────────────────────────────────────────────────────
+// ── Hooks & Types ──────────────────────────────────────────────────────────
 export { useIntegrity } from "./hooks/use-integrity"
 export { useIntegrityLedger } from "./hooks/use-integrity-ledger"
+export type { ForensicEventUI, VerificationResultUI } from "./hooks/use-integrity"
 
 // ── Types ──────────────────────────────────────────────────────────────────
 export type { IntegrityRecord, AssetType } from "./types/integrity.types"

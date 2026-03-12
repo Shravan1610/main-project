@@ -154,9 +154,9 @@ const DARK_STYLE: maplibregl.StyleSpecification = {
 
 const DEFAULT_ACTIVE: ActiveLayers = {
   entities: true,
-  exchanges: false,
-  climate: false,
-  news: false,
+  exchanges: true,
+  climate: true,
+  news: true,
   heatmap: false,
   "risk-overlay": false,
 };
@@ -362,7 +362,11 @@ export function DeckGLMap({
 
       const def = getLayerDef(kind);
       // Map marker kind → activeLayers key
-      const layerKey = kind === "entity" ? "entities" : kind === "exchange" ? "exchanges" : kind;
+      const kindToLayerKey: Record<string, string> = {
+        entity: "entities",
+        exchange: "exchanges",
+      };
+      const layerKey = kindToLayerKey[kind] ?? kind;
       const isActive = activeLayers[layerKey] ?? false;
 
       layers.push(

@@ -23,8 +23,8 @@ fetch_crypto_feed = _load_local_function("crypto_feed.py", "fetch_crypto_feed")
 
 async def get_feeds() -> dict:
     return {
-        "stocks": fetch_stock_feed(limit=8),
+        "stocks": await fetch_stock_feed(limit=8),
         "news": await fetch_news_feed(limit=8),
-        "crypto": fetch_crypto_feed(limit=8),
+        "crypto": await fetch_crypto_feed(limit=8),
         "updatedAt": datetime.utcnow().isoformat() + "Z",
     }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { MacWindow } from "@/shared/components/mac-window";
 
 import { useLiveWebcams } from "../hooks";
 import type { LiveWebcamFeed, WebcamRegion } from "../types";
@@ -16,6 +17,7 @@ const REGION_LABELS: Record<WebcamRegion, string> = {
 };
 
 const REGION_ORDER: WebcamRegion[] = ["iran", "all", "middle-east", "europe", "americas", "asia", "space"];
+const MAX_VISIBLE_FEEDS = 4;
 
 const FALLBACK_FEEDS: Record<WebcamRegion, LiveWebcamFeed[]> = {
   iran: [
@@ -32,16 +34,16 @@ const FALLBACK_FEEDS: Record<WebcamRegion, LiveWebcamFeed[]> = {
       url: "https://www.youtube.com/@aljazeeraenglish/live",
     },
     {
-      id: "skynews-iran",
+      id: "dw-iran",
       city: "Tel Aviv",
-      country: "UK",
+      country: "Germany",
       region: "iran",
       videoId: "",
-      channelId: "UCoMdktPbSTixAyNGwb-UYkQ",
-      title: "Breaking Live Coverage",
-      channelTitle: "Sky News",
+      channelId: "UCknLrEdhRCp1aegoMqRaCZg",
+      title: "DW Live",
+      channelTitle: "DW News",
       score: 95,
-      url: "https://www.youtube.com/@SkyNews/live",
+      url: "https://www.youtube.com/@dwnews/live",
     },
     {
       id: "france24-iran",
@@ -70,16 +72,16 @@ const FALLBACK_FEEDS: Record<WebcamRegion, LiveWebcamFeed[]> = {
       url: "https://www.youtube.com/@markets/live",
     },
     {
-      id: "skynews-all",
-      city: "Global",
-      country: "UK",
+      id: "cnbc-all",
+      city: "Markets",
+      country: "USA",
       region: "all",
       videoId: "",
-      channelId: "UCoMdktPbSTixAyNGwb-UYkQ",
-      title: "Sky News Live",
-      channelTitle: "Sky News",
+      channelId: "UCrp_UI8XtuYfpiqluWLD7Lw",
+      title: "CNBC Television Live",
+      channelTitle: "CNBC Television",
       score: 98,
-      url: "https://www.youtube.com/@SkyNews/live",
+      url: "https://www.youtube.com/@CNBCTelevision/live",
     },
     {
       id: "dw-all",
@@ -120,16 +122,16 @@ const FALLBACK_FEEDS: Record<WebcamRegion, LiveWebcamFeed[]> = {
       url: "https://www.youtube.com/@aljazeeraenglish/live",
     },
     {
-      id: "skynews-me",
+      id: "euronews-me",
       city: "Tel Aviv",
-      country: "UK",
+      country: "EU",
       region: "middle-east",
       videoId: "",
-      channelId: "UCoMdktPbSTixAyNGwb-UYkQ",
-      title: "Breaking Live Coverage",
-      channelTitle: "Sky News",
+      channelId: "UCSrZ3UV4jOidv8ppoVuvW9Q",
+      title: "euronews Live",
+      channelTitle: "euronews",
       score: 96,
-      url: "https://www.youtube.com/@SkyNews/live",
+      url: "https://www.youtube.com/@euronews/live",
     },
     {
       id: "france24-me",
@@ -158,16 +160,16 @@ const FALLBACK_FEEDS: Record<WebcamRegion, LiveWebcamFeed[]> = {
       url: "https://www.youtube.com/@euronews/live",
     },
     {
-      id: "skynews-eu",
-      city: "London",
-      country: "UK",
+      id: "bloomberg-eu",
+      city: "Markets",
+      country: "USA",
       region: "europe",
       videoId: "",
-      channelId: "UCoMdktPbSTixAyNGwb-UYkQ",
-      title: "Sky News Live",
-      channelTitle: "Sky News",
+      channelId: "UCIALMKvObZNtJ6AmdCLP7Lg",
+      title: "Bloomberg Television Live",
+      channelTitle: "Bloomberg Television",
       score: 96,
-      url: "https://www.youtube.com/@SkyNews/live",
+      url: "https://www.youtube.com/@markets/live",
     },
     {
       id: "dw-eu",
@@ -220,16 +222,16 @@ const FALLBACK_FEEDS: Record<WebcamRegion, LiveWebcamFeed[]> = {
       url: "https://www.youtube.com/@CNBCTelevision/live",
     },
     {
-      id: "cnn-us",
-      city: "Atlanta",
-      country: "USA",
+      id: "france24-us",
+      city: "Global Desk",
+      country: "France",
       region: "americas",
       videoId: "",
-      channelId: "UCupvZG-5ko_eiXAupbDfxWw",
-      title: "CNN Live",
-      channelTitle: "CNN",
+      channelId: "UCQfwfsi5VrQ8yKZ-UWmAEFg",
+      title: "FRANCE 24 Live",
+      channelTitle: "FRANCE 24 English",
       score: 94,
-      url: "https://www.youtube.com/@CNN/live",
+      url: "https://www.youtube.com/@France24_en/live",
     },
     {
       id: "abc-us",
@@ -341,6 +343,7 @@ function buildYoutubeEmbedUrl(videoId: string): string {
     rel: "0",
     modestbranding: "1",
     playsinline: "1",
+    enablejsapi: "1",
   });
 
   return `https://www.youtube.com/embed/${videoId}?${params.toString()}`;
@@ -354,81 +357,96 @@ function buildYoutubeChannelLiveEmbedUrl(channelId: string): string {
     rel: "0",
     modestbranding: "1",
     playsinline: "1",
+    enablejsapi: "1",
   });
 
   return `https://www.youtube-nocookie.com/embed/live_stream?channel=${channelId}&${params.toString()}`;
 }
 
+function getFeedStreamKey(feed: LiveWebcamFeed): string {
+  if (feed.videoId) {
+    return `video:${feed.videoId}`;
+  }
+
+  if (feed.channelId) {
+    return `channel:${feed.channelId}`;
+  }
+
+  return `url:${feed.url}`;
+}
+
+function selectVisibleFeeds(region: WebcamRegion, apiFeeds: LiveWebcamFeed[], fallbackFeeds: LiveWebcamFeed[]) {
+  const uniqueFeeds = new Map<string, LiveWebcamFeed>();
+  const fallbackPool = [...fallbackFeeds, ...FALLBACK_FEEDS.all];
+
+  for (const feed of [...apiFeeds, ...fallbackPool]) {
+    if (!feed.videoId && !feed.channelId) {
+      continue;
+    }
+
+    const streamKey = getFeedStreamKey(feed);
+    if (!uniqueFeeds.has(streamKey)) {
+      uniqueFeeds.set(streamKey, feed);
+    }
+
+    if (uniqueFeeds.size === MAX_VISIBLE_FEEDS) {
+      break;
+    }
+  }
+
+  const selectedFeeds = Array.from(uniqueFeeds.values());
+
+  if (selectedFeeds.length > 0) {
+    return selectedFeeds;
+  }
+
+  return region === "all" ? [] : FALLBACK_FEEDS.all.slice(0, MAX_VISIBLE_FEEDS);
+}
+
 export function LiveWebcamsDashboard() {
-  const [region, setRegion] = useState<WebcamRegion>("space");
-  const { data, loading, error } = useLiveWebcams(region, 4);
+  const [region, setRegion] = useState<WebcamRegion>("all");
+  const { data, loading, error } = useLiveWebcams(region, MAX_VISIBLE_FEEDS);
 
   const feeds = data?.feeds ?? [];
   const fallbackFeeds = FALLBACK_FEEDS[region] ?? FALLBACK_FEEDS.all;
-  const visibleFeeds = feeds.length > 0 ? feeds : fallbackFeeds.slice(0, 4);
+  const visibleFeeds = selectVisibleFeeds(region, feeds, fallbackFeeds);
   const usingFallback = !loading && feeds.length === 0 && fallbackFeeds.length > 0;
   const hasApiKey = data?.resolver?.hasApiKey ?? true;
 
   return (
-    <section className="space-y-2">
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold tracking-wide text-terminal-text">
-          Live Webcams
-        </h3>
-        <p className="text-xs uppercase tracking-[0.18em] text-terminal-red/80">
-          {visibleFeeds.length} Available
-        </p>
-      </div>
-
-      <div className="rounded-xl border border-terminal-border bg-terminal-bg/50 p-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
-        <div className="-mx-0.5 mb-2 overflow-x-auto pb-1">
-          <div className="flex min-w-max gap-2 px-0.5">
-          {REGION_ORDER.map((item) => (
-            <button
-              key={item}
-              type="button"
-              onClick={() => setRegion(item)}
-              className={`rounded-md border px-3 py-1.5 text-xs uppercase tracking-[0.14em] transition-colors ${
-                region === item
-                  ? "border-terminal-red/35 bg-terminal-red/8 text-terminal-red ring-1 ring-terminal-red/10"
-                  : "border-terminal-border bg-terminal-surface/60 text-terminal-text-dim hover:bg-terminal-border/35 hover:text-terminal-text"
-              }`}
-            >
-              {REGION_LABELS[item]}
-            </button>
-          ))}
-          </div>
-        </div>
-
+    <MacWindow
+      title="Live Webcams"
+      rightSlot={<span className="text-terminal-red/80">{visibleFeeds.length} online</span>}
+    >
         {loading ? (
-          <p className="mb-2 text-xs text-terminal-text-dim">
+          <p className="px-2.5 py-2 text-xs text-terminal-text-dim">
             Resolving live streams...
           </p>
         ) : null}
         {error ? (
-          <p className="mb-2 text-xs text-terminal-red">
+          <p className="px-2.5 py-2 text-xs text-terminal-red">
             Failed to resolve live streams.
           </p>
         ) : null}
         {!hasApiKey ? (
-          <p className="mb-2 text-xs text-terminal-text-dim">
+          <p className="px-2.5 py-2 text-xs text-terminal-text-dim">
             Set `YOUTUBE_API_KEY` to enable live webcam resolver.
           </p>
         ) : null}
         {usingFallback ? (
-          <p className="mb-2 text-xs leading-relaxed text-terminal-text-dim">
+          <p className="px-2.5 py-2 text-xs leading-relaxed text-terminal-text-dim">
             Live embeds are unavailable right now. Showing curated YouTube live backups for this region.
           </p>
         ) : null}
 
-        <div className="-mx-0.5 overflow-x-auto pb-2">
-          <div className="flex min-w-max gap-3 px-0.5 snap-x snap-mandatory">
+        <div>
+          <div className="grid grid-cols-2 gap-px bg-terminal-border">
           {visibleFeeds.map((feed) => (
             <article
               key={`${feed.id}-${feed.videoId}`}
-              className="w-[85vw] max-w-[26rem] flex-none snap-start overflow-hidden rounded-lg border border-terminal-border bg-terminal-surface md:w-[calc(50%-0.375rem)]"
+              className="overflow-hidden bg-terminal-surface"
             >
-              <header className="flex items-start justify-between border-b border-terminal-border px-3 py-2">
+              <header className="flex items-start justify-between px-3 py-2">
                 <p className="text-xs font-semibold uppercase tracking-[0.14em] text-terminal-text">
                   {feed.city}
                 </p>
@@ -446,7 +464,7 @@ export function LiveWebcamsDashboard() {
                         : buildYoutubeChannelLiveEmbedUrl(feed.channelId!)
                     }
                     title={`${feed.city} live webcam`}
-                    loading="lazy"
+                    loading="eager"
                     allow="autoplay; encrypted-media; picture-in-picture"
                     referrerPolicy="strict-origin-when-cross-origin"
                     allowFullScreen
@@ -475,13 +493,31 @@ export function LiveWebcamsDashboard() {
             </article>
           ))}
           {!loading && visibleFeeds.length === 0 && hasApiKey ? (
-            <p className="text-xs text-terminal-text-dim">
+            <p className="p-3 text-xs text-terminal-text-dim">
               No live streams available for this region.
             </p>
           ) : null}
           </div>
         </div>
-      </div>
-    </section>
+
+        <div className="overflow-x-auto border-t border-terminal-border bg-terminal-bg/80 px-2.5 py-2">
+          <div className="flex min-w-max gap-2">
+            {REGION_ORDER.map((item) => (
+              <button
+                key={item}
+                type="button"
+                onClick={() => setRegion(item)}
+                className={`whitespace-nowrap rounded-md border px-3 py-1.5 text-xs uppercase tracking-[0.14em] transition-colors ${
+                  region === item
+                    ? "border-terminal-red/35 bg-terminal-red/8 text-terminal-red ring-1 ring-terminal-red/10"
+                    : "border-terminal-border bg-terminal-surface/60 text-terminal-text-dim hover:bg-terminal-border/35 hover:text-terminal-text"
+                }`}
+              >
+                {REGION_LABELS[item]}
+              </button>
+            ))}
+          </div>
+        </div>
+    </MacWindow>
   );
 }

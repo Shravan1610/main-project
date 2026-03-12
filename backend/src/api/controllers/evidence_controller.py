@@ -46,6 +46,14 @@ get_dashboard_summary = load_function(
     "features/evidence-collection/services/evidence_service.py",
     "get_dashboard_summary",
 )
+connect_google_mailbox = load_function(
+    "features/evidence-collection/services/evidence_service.py",
+    "connect_google_mailbox",
+)
+sync_google_mailbox = load_function(
+    "features/evidence-collection/services/evidence_service.py",
+    "sync_google_mailbox",
+)
 
 
 def upload_document(
@@ -192,3 +200,45 @@ def fetch_claim_trace(claim_id: str) -> dict[str, Any]:
 
 def fetch_dashboard_summary() -> dict[str, Any]:
     return get_dashboard_summary()
+
+
+def connect_google_integration(
+    *,
+    organization_id: str,
+    actor_id: str,
+    user_email: str,
+    supabase_user_id: str,
+    provider_token: str | None,
+    provider_refresh_token: str | None,
+    granted_scopes: list[str] | None,
+) -> dict[str, Any]:
+    try:
+        return connect_google_mailbox(
+            organization_id=organization_id,
+            actor_id=actor_id,
+            user_email=user_email,
+            supabase_user_id=supabase_user_id,
+            provider_token=provider_token,
+            provider_refresh_token=provider_refresh_token,
+            granted_scopes=granted_scopes,
+        )
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error
+
+
+def sync_google_integration(
+    *,
+    organization_id: str,
+    actor_id: str,
+    scope: str,
+    query_hint: str | None,
+) -> dict[str, Any]:
+    try:
+        return sync_google_mailbox(
+            organization_id=organization_id,
+            actor_id=actor_id,
+            scope=scope,
+            query_hint=query_hint,
+        )
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRefresh } from "./use-refresh";
 
 type UseApiOptions<TData> = {
   enabled?: boolean;
@@ -19,6 +20,7 @@ export function useApi<TData>(
   const [data, setData] = useState<TData | null>(options?.initialData ?? null);
   const [loading, setLoading] = useState<boolean>(Boolean(isEnabled));
   const [error, setError] = useState<Error | null>(null);
+  const { refreshKey } = useRefresh();
 
   useEffect(() => {
     if (!isEnabled) {
@@ -71,7 +73,7 @@ export function useApi<TData>(
         clearTimeout(timer);
       }
     };
-  }, [fetcher, isEnabled, refreshIntervalMs, pauseWhenHidden]);
+  }, [fetcher, isEnabled, refreshIntervalMs, pauseWhenHidden, refreshKey]);
 
   return { data, loading, error, setData };
 }

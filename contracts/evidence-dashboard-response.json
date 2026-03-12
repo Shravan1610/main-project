@@ -3,11 +3,65 @@
   "title": "EvidenceDashboardResponse",
   "description": "Response from GET /evidence/dashboard/summary",
   "type": "object",
-  "required": ["metrics", "recent_documents", "recent_review_tasks", "recent_claims"],
+  "required": [
+    "product",
+    "ai_config",
+    "google_integration",
+    "metrics",
+    "pipeline",
+    "recent_documents",
+    "recent_review_tasks",
+    "recent_claims",
+    "recent_email_sync_runs"
+  ],
   "properties": {
+    "product": {
+      "type": "object",
+      "required": ["name", "tagline", "status"],
+      "properties": {
+        "name": { "type": "string" },
+        "tagline": { "type": "string" },
+        "status": { "type": "string" }
+      }
+    },
+    "ai_config": {
+      "type": "object",
+      "required": ["primary_model", "extraction_model", "email_discovery_model", "reasoning_model"],
+      "properties": {
+        "primary_model": { "type": "string" },
+        "extraction_model": { "type": "string" },
+        "email_discovery_model": { "type": "string" },
+        "reasoning_model": { "type": "string" }
+      }
+    },
+    "google_integration": {
+      "type": "object",
+      "required": ["provider", "status", "user_email", "connected_at", "last_sync_at", "mailboxes_available", "messages_indexed"],
+      "properties": {
+        "provider": { "type": "string" },
+        "status": { "type": "string" },
+        "user_email": { "type": ["string", "null"] },
+        "connected_at": { "type": ["string", "null"] },
+        "last_sync_at": { "type": ["string", "null"] },
+        "mailboxes_available": { "type": "integer" },
+        "messages_indexed": { "type": "integer" }
+      }
+    },
     "metrics": {
       "type": "object",
-      "required": ["total_documents", "total_activity_records", "pending_review_tasks", "approved_records", "rejected_records", "traceable_claim_ratio"],
+      "required": [
+        "total_documents",
+        "total_activity_records",
+        "pending_review_tasks",
+        "approved_records",
+        "rejected_records",
+        "traceable_claim_ratio",
+        "average_review_turnaround_minutes",
+        "emails_discovered",
+        "email_evidence_matches",
+        "ready_for_claims",
+        "coverage_gap_count"
+      ],
       "properties": {
         "total_documents": { "type": "integer" },
         "total_activity_records": { "type": "integer" },
@@ -15,11 +69,27 @@
         "approved_records": { "type": "integer" },
         "rejected_records": { "type": "integer" },
         "traceable_claim_ratio": { "type": "number" },
-        "average_review_turnaround_minutes": { "type": ["number", "null"] }
+        "average_review_turnaround_minutes": { "type": ["number", "null"] },
+        "emails_discovered": { "type": "integer" },
+        "email_evidence_matches": { "type": "integer" },
+        "ready_for_claims": { "type": "integer" },
+        "coverage_gap_count": { "type": "integer" }
+      }
+    },
+    "pipeline": {
+      "type": "object",
+      "required": ["ingested", "mapped", "needs_review", "approved", "rejected"],
+      "properties": {
+        "ingested": { "type": "integer" },
+        "mapped": { "type": "integer" },
+        "needs_review": { "type": "integer" },
+        "approved": { "type": "integer" },
+        "rejected": { "type": "integer" }
       }
     },
     "recent_documents": { "type": "array", "items": { "type": "object" } },
     "recent_review_tasks": { "type": "array", "items": { "type": "object" } },
-    "recent_claims": { "type": "array", "items": { "type": "object" } }
+    "recent_claims": { "type": "array", "items": { "type": "object" } },
+    "recent_email_sync_runs": { "type": "array", "items": { "type": "object" } }
   }
 }

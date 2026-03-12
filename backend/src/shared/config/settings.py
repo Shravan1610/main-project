@@ -16,7 +16,7 @@ class Settings(BaseSettings):
 
     market_api_key: str = Field(
         default="",
-        validation_alias=AliasChoices("MARKET_API_KEY", "ALPHA_VANTAGE_API_KEY"),
+        validation_alias=AliasChoices("MARKET_API_KEY", "EODHD_API_KEY", "ALPHA_VANTAGE_API_KEY"),
     )
     finnhub_api_key: str = ""
     coingecko_demo_api_key: str = ""
@@ -24,13 +24,25 @@ class Settings(BaseSettings):
     gnews_api_key: str = ""
     the_news_api_key: str = ""
     google_ai_studio_api_key: str = ""
-    gemini_model: str = "gemini-3.1-flash-lite-preview"
+    gemini_model: str = "gemini-3-flash-preview"
     climate_api_key: str = ""
     geocoding_api_key: str = ""
     youtube_api_key: str = ""
     vapi_api_key: str = ""
     vapi_assistant_id: str = ""
     vapi_phone_number_id: str = ""
+
+    # Google OAuth (for Gmail token refresh — values from Supabase dashboard)
+    google_oauth_client_id: str = ""
+    google_oauth_client_secret: str = ""
+
+    # Blockchain (Sepolia testnet)
+    blockchain_rpc_url: str = ""
+    blockchain_private_key: str = ""
+    blockchain_contract_address: str = ""
+
+    # Forensic encryption key (persistent across restarts)
+    forensic_encryption_key: str = ""
 
     esg_model_url: str = Field(default="https://greenverify-api.onrender.com")
     nlp_model_url: str = Field(default="https://greenverifynlp-api.onrender.com")

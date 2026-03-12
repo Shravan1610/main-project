@@ -16,7 +16,15 @@ export interface IntegrityRecord {
   editorIp?: string
 
   blockchainTx?: string
+  blockchainNetwork?: "sepolia" | "simulated"
+  blockchainExplorer?: string | null
 
   version: number
   previousHash?: string
+
+  // Digital Trail extensions
+  encryptedChunk?: string
+  verificationStatus?: "verified" | "tampered" | "unverified"
+  lastVerifiedAt?: number
+  forensicMetadata?: string
 }

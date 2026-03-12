@@ -27,7 +27,7 @@ export default function VersionTimeline({ records }: Props) {
         <div className="relative">
 
           {/* Vertical line */}
-          <div className="absolute left-[7px] top-2 bottom-2 w-px bg-terminal-border" />
+          <div className="absolute left-1.75 top-2 bottom-2 w-px bg-terminal-border" />
 
           <div className="space-y-5">
 

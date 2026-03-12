@@ -15,6 +15,7 @@ from urllib.parse import urlparse
 from bs4 import BeautifulSoup
 
 from src.shared.clients.http_client import get_http_client
+from src.shared.clients.gemini_client import call_gemini
 from src.shared.config import get_settings
 
 # ---------------------------------------------------------------------------
@@ -410,33 +411,10 @@ def _parse_json_from_text(raw_text: str) -> dict[str, Any] | None:
 
 
 async def _call_gemini_json(prompt: str) -> dict[str, Any] | None:
-    settings = get_settings()
-    api_key = settings.google_ai_studio_api_key.strip()
-    model = settings.gemini_model.strip()
-    if not api_key or not model:
-        return None
-
-    client = get_http_client()
-    response = await client.post(
-        f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent",
-        params={"key": api_key},
-        json={
-            "contents": [{"parts": [{"text": prompt}]}],
-            "generationConfig": {
-                "temperature": 0.1,
-                "responseMimeType": "application/json",
-            },
-        },
-    )
-    response.raise_for_status()
-    payload = response.json() if response.content else {}
-    raw_text = (
-        payload.get("candidates", [{}])[0]
-        .get("content", {})
-        .get("parts", [{}])[0]
-        .get("text", "")
-    )
-    return _parse_json_from_text(str(raw_text))
+    result = await call_gemini(prompt, temperature=0.1)
+    if isinstance(result, dict):
+        return result
+    return None
 
 
 def _build_esg_gemini_prompt(text: str, metrics: dict[str, float]) -> str:

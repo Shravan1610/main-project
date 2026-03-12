@@ -8,7 +8,7 @@ export function useMarketFeed(enabled = true) {
   return useApi(getMarketFeed, {
     enabled,
     initialData: [],
-    refreshIntervalMs: 60000,
+    refreshIntervalMs: 30000,
     pauseWhenHidden: true,
   });
 }

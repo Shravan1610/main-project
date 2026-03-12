@@ -10,8 +10,12 @@ import type {
   EvidenceDocumentsResponse,
   EvidenceExtractionResponse,
   EvidenceUploadResponse,
+  GoogleConnectResponse,
+  GoogleSyncRequest,
+  GoogleSyncResponse,
   ReviewTaskDecisionRequest,
   ReviewTaskUpdateResponse,
+  SupabaseGoogleConnectRequest,
   EvidenceReviewTasksResponse,
   UploadEvidenceRequest,
 } from "../types";
@@ -110,4 +114,15 @@ export async function getClaimTrace(claimId: string): Promise<ClaimTraceResponse
 
 export async function getEvidenceDashboardSummary(): Promise<EvidenceDashboardResponse> {
   return apiClient.get<EvidenceDashboardResponse>("/evidence/dashboard/summary");
+}
+
+export async function connectGoogleMailbox(payload: SupabaseGoogleConnectRequest): Promise<GoogleConnectResponse> {
+  return apiClient.post<GoogleConnectResponse, SupabaseGoogleConnectRequest>(
+    "/evidence/integrations/google/supabase-connect",
+    payload,
+  );
+}
+
+export async function syncGoogleMailbox(payload: GoogleSyncRequest): Promise<GoogleSyncResponse> {
+  return apiClient.post<GoogleSyncResponse, GoogleSyncRequest>("/evidence/integrations/google/sync", payload);
 }
