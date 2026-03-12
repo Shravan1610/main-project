@@ -27,6 +27,7 @@ create table if not exists public.market_instruments (
 create index if not exists idx_market_instruments_symbol on public.market_instruments (symbol);
 create index if not exists idx_market_instruments_asset_type on public.market_instruments (asset_type);
 create index if not exists idx_market_instruments_exchange on public.market_instruments (exchange);
+create unique index if not exists idx_market_instruments_symbol_asset_type on public.market_instruments (symbol, asset_type);
 
 create table if not exists public.market_candles (
     id bigint generated always as identity primary key,

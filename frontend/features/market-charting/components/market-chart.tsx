@@ -20,7 +20,7 @@ function toTimestamp(value: string): UTCTimestamp {
   return Math.floor(new Date(value).getTime() / 1000) as UTCTimestamp;
 }
 
-export function MarketChart({ candles }: MarketChartProps) {
+function ChartRenderer({ candles }: MarketChartProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const seriesRef = useRef<ISeriesApi<"Candlestick"> | null>(null);
@@ -96,6 +96,14 @@ export function MarketChart({ candles }: MarketChartProps) {
     chartRef.current.timeScale().fitContent();
   }, [candles]);
 
+  return (
+    <div className="rounded-[1.4rem] border border-terminal-border/80 bg-terminal-bg/30 p-3">
+      <div ref={containerRef} className="h-[460px] w-full" />
+    </div>
+  );
+}
+
+export function MarketChart({ candles }: MarketChartProps) {
   if (candles.length === 0) {
     return (
       <div className="flex h-[460px] items-center justify-center rounded-[1.4rem] border border-dashed border-terminal-border bg-terminal-bg/45 px-6 text-center text-sm text-terminal-text-dim">
@@ -104,9 +112,5 @@ export function MarketChart({ candles }: MarketChartProps) {
     );
   }
 
-  return (
-    <div className="rounded-[1.4rem] border border-terminal-border/80 bg-terminal-bg/30 p-3">
-      <div ref={containerRef} className="h-[460px] w-full" />
-    </div>
-  );
+  return <ChartRenderer candles={candles} />;
 }

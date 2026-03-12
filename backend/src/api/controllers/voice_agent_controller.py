@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import re
 
-from fastapi import HTTPException, UploadFile
+from fastapi import HTTPException
 from pydantic import BaseModel, field_validator
 from src.api.controllers._service_loader import load_function
 

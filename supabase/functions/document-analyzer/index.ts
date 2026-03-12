@@ -19,7 +19,7 @@ const corsHeaders = {
 const ESG_MODEL_URL = Deno.env.get("ESG_MODEL_URL") ?? "https://greenverify-api.onrender.com";
 const NLP_MODEL_URL = Deno.env.get("NLP_MODEL_URL") ?? "https://greenverifynlp-api.onrender.com";
 const GEMINI_API_KEY = Deno.env.get("GOOGLE_AI_STUDIO_API_KEY") ?? "";
-const GEMINI_MODEL = Deno.env.get("GEMINI_MODEL") ?? "gemini-3.1-flash-lite-preview";
+const GEMINI_MODEL = Deno.env.get("GEMINI_MODEL") ?? "gemini-2.0-flash-lite";
 
 const CLAIM_PATTERNS: Record<string, string[]> = {
   carbon: ["carbon neutral", "net zero", "carbon offset", "scope 1", "scope 2", "scope 3", "ghg emissions"],
@@ -83,14 +83,19 @@ function parseHtml(content: string) {
 }
 
 function validateUrl(rawUrl: string) {
-  const parsed = new URL(rawUrl);
+  let parsed: URL;
+  try {
+    parsed = new URL(rawUrl);
+  } catch {
+    throw new Error("Invalid URL format");
+  }
   if (!["http:", "https:"].includes(parsed.protocol)) {
     throw new Error("Only http and https URLs are supported");
   }
 
   const hostname = parsed.hostname.toLowerCase();
-  const privateHostPattern = /^(localhost|127\.|0\.0\.0\.0|10\.|192\.168\.|172\.(1[6-9]|2\d|3[0-1])\.|::1$)/;
-  if (privateHostPattern.test(hostname) || hostname.endsWith(".local")) {
+  const privateHostPattern = /^(localhost|127\.\d+\.\d+\.\d+|0\.0\.0\.0|10\.\d+\.\d+\.\d+|192\.168\.\d+\.\d+|172\.(1[6-9]|2\d|3[0-1])\.\d+\.\d+)$/;
+  if (privateHostPattern.test(hostname) || hostname === "::1" || hostname.endsWith(".local")) {
     throw new Error("Private or local URLs are not allowed");
   }
 }
@@ -178,9 +183,12 @@ async function summarizeWithGemini(text: string, claims: Claim[]) {
     text.slice(0, 12000),
   ].join("\n");
 
-  const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`, {
+  const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      "x-goog-api-key": GEMINI_API_KEY,
+    },
     body: JSON.stringify({
       contents: [{ parts: [{ text: prompt }] }],
       generationConfig: { temperature: 0.2 },
@@ -455,7 +463,6 @@ Deno.serve(async (req: Request) => {
         inputType,
         contentLength: 0,
         esg: null,
-        esk: null,
         extraction: { entities: {}, summary: "" },
         claims: [],
         modelStatus: "empty_input",
@@ -507,7 +514,6 @@ Deno.serve(async (req: Request) => {
       inputType,
       contentLength: text.length,
       esg,
-      esk: esg,
       extraction,
       claims,
       modelStatus,

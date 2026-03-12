@@ -241,7 +241,7 @@ async function syncMarketDetail(
   requireSupabaseConfig();
 
   const functionName =
-    process.env.NEXT_PUBLIC_SUPABASE_MARKET_SYNC_FUNCTION ?? "market-data-sync-v2";
+    process.env.NEXT_PUBLIC_SUPABASE_MARKET_SYNC_FUNCTION ?? "market-data-sync";
   const response = await fetch(
     `${SUPABASE_URL.replace(/\/$/, "")}/functions/v1/${functionName}`,
     {

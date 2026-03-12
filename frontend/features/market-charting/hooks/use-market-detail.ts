@@ -18,7 +18,13 @@ export function useMarketDetail(
   const name = lookup?.name;
 
   const fetcher = useCallback(
-    () => getMarketDetail(symbol, timeframe, lookup),
+    () =>
+      getMarketDetail(symbol, timeframe, {
+        assetType,
+        exchange,
+        market,
+        name,
+      }),
     [assetType, exchange, market, name, symbol, timeframe],
   );
 
