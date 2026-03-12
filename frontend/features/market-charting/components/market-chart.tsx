@@ -31,22 +31,22 @@ export function MarketChart({ candles }: MarketChartProps) {
 
     const chart = createChart(container, {
       autoSize: true,
-      height: 420,
+      height: 460,
       layout: {
         background: { type: ColorType.Solid, color: "transparent" },
-        textColor: "#94a3b8",
+        textColor: "#8a97ab",
         fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
         attributionLogo: true,
       },
       grid: {
-        vertLines: { color: "rgba(148, 163, 184, 0.08)" },
-        horzLines: { color: "rgba(148, 163, 184, 0.08)" },
+        vertLines: { color: "rgba(138, 151, 171, 0.08)" },
+        horzLines: { color: "rgba(138, 151, 171, 0.08)" },
       },
       rightPriceScale: {
-        borderColor: "rgba(148, 163, 184, 0.18)",
+        borderColor: "rgba(138, 151, 171, 0.18)",
       },
       timeScale: {
-        borderColor: "rgba(148, 163, 184, 0.18)",
+        borderColor: "rgba(138, 151, 171, 0.18)",
         timeVisible: true,
         secondsVisible: false,
       },
@@ -98,11 +98,15 @@ export function MarketChart({ candles }: MarketChartProps) {
 
   if (candles.length === 0) {
     return (
-      <div className="flex h-[420px] items-center justify-center rounded-xl border border-dashed border-terminal-border bg-terminal-bg/45 text-sm text-terminal-text-dim">
+      <div className="flex h-[460px] items-center justify-center rounded-[1.4rem] border border-dashed border-terminal-border bg-terminal-bg/45 px-6 text-center text-sm text-terminal-text-dim">
         No candle data in Supabase yet for this instrument and timeframe.
       </div>
     );
   }
 
-  return <div ref={containerRef} className="h-[420px] w-full" />;
+  return (
+    <div className="rounded-[1.4rem] border border-terminal-border/80 bg-terminal-bg/30 p-3">
+      <div ref={containerRef} className="h-[460px] w-full" />
+    </div>
+  );
 }
