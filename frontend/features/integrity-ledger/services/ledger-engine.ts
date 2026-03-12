@@ -4,10 +4,12 @@ export function buildLedgerRecord(
   assetName: string,
   assetType: any,
   hash: string,
-  previousHash?: string
+  previousHash?: string,
+  previousVersion?: number
 ): IntegrityRecord {
 
-  const version = previousHash ? 2 : 1
+  // Properly increment version from previous — supports chains beyond v2
+  const version = previousVersion !== undefined ? previousVersion + 1 : 1
 
   return {
     id: crypto.randomUUID(),

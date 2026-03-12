@@ -1,13 +1,15 @@
-import { IntegrityRecord } from "../types/integrity.types"
+import { buildLedgerRecord } from "./ledger-engine"
+import { findLedgerRecord, storeLedgerRecord } from "./ledger-lookup"
+import type { IntegrityRecord } from "../types/integrity.types"
 
-export function createLedgerRecord(): IntegrityRecord {
-
-  return {
-    id: crypto.randomUUID(),
-    assetName: "",
-    assetType: "document",
-    hash: "",
-    timestamp: Date.now(),
-    version: 1
-  }
+export function createLedgerRecord(
+  assetName: string,
+  assetType: IntegrityRecord["assetType"],
+  hash: string,
+  previousHash?: string,
+  previousVersion?: number
+): IntegrityRecord {
+  return buildLedgerRecord(assetName, assetType, hash, previousHash, previousVersion)
 }
+
+export { findLedgerRecord, storeLedgerRecord }
