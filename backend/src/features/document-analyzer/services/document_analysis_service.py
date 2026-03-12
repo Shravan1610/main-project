@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-import asyncio
 import io
 import importlib.util
 import ipaddress
+import json
 import os
 from pathlib import Path
 import re
@@ -15,12 +15,38 @@ from urllib.parse import urlparse
 from bs4 import BeautifulSoup
 
 from src.shared.clients.http_client import get_http_client
+from src.shared.config import get_settings
 
 # ---------------------------------------------------------------------------
 # AI Model endpoints
 # ---------------------------------------------------------------------------
-ESG_MODEL_URL = "https://greenverify-api.onrender.com"
-NLP_MODEL_URL = "https://greenverifynlp-api.onrender.com"
+def _get_esg_model_url() -> str:
+    return get_settings().esg_model_url.rstrip("/")
+
+
+def _get_nlp_model_url() -> str:
+    return get_settings().nlp_model_url.rstrip("/")
+
+
+def _is_supabase_enabled() -> bool:
+    settings = get_settings()
+    return bool(settings.supabase_url.strip() and settings.supabase_service_role_key.strip())
+
+
+def _get_supabase_rest_url() -> str:
+    return f"{get_settings().supabase_url.rstrip('/')}/rest/v1"
+
+
+def _get_supabase_headers(*, prefer: str | None = None) -> dict[str, str]:
+    service_role_key = get_settings().supabase_service_role_key.strip()
+    headers = {
+        "apikey": service_role_key,
+        "Authorization": f"Bearer {service_role_key}",
+        "Content-Type": "application/json",
+    }
+    if prefer:
+        headers["Prefer"] = prefer
+    return headers
 
 # ---------------------------------------------------------------------------
 # Greenwashing detection patterns
@@ -370,24 +396,147 @@ def _detect_greenwashing(text: str) -> dict[str, Any]:
 # ---------------------------------------------------------------------------
 
 
-async def _call_esg_model(metrics: dict[str, float]) -> dict[str, Any]:
+def _parse_json_from_text(raw_text: str) -> dict[str, Any] | None:
+    start = raw_text.find("{")
+    end = raw_text.rfind("}")
+    if start == -1 or end == -1 or end <= start:
+        return None
+
+    try:
+        parsed = json.loads(raw_text[start : end + 1])
+        return parsed if isinstance(parsed, dict) else None
+    except Exception:
+        return None
+
+
+async def _call_gemini_json(prompt: str) -> dict[str, Any] | None:
+    settings = get_settings()
+    api_key = settings.google_ai_studio_api_key.strip()
+    model = settings.gemini_model.strip()
+    if not api_key or not model:
+        return None
+
+    client = get_http_client()
+    response = await client.post(
+        f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent",
+        params={"key": api_key},
+        json={
+            "contents": [{"parts": [{"text": prompt}]}],
+            "generationConfig": {
+                "temperature": 0.1,
+                "responseMimeType": "application/json",
+            },
+        },
+    )
+    response.raise_for_status()
+    payload = response.json() if response.content else {}
+    raw_text = (
+        payload.get("candidates", [{}])[0]
+        .get("content", {})
+        .get("parts", [{}])[0]
+        .get("text", "")
+    )
+    return _parse_json_from_text(str(raw_text))
+
+
+def _build_esg_gemini_prompt(text: str, metrics: dict[str, float]) -> str:
+    return "\n".join(
+        [
+            "Estimate ESG risk from the supplied content and extracted metrics.",
+            "Return ONLY valid JSON with this exact shape:",
+            '{"risk_score": number, "risk_level": "string", "confidence": number, "reasoning": "string"}',
+            "Use risk_score from 0 to 100 and confidence from 0 to 1.",
+            "Prefer conservative estimates when evidence is weak.",
+            f"Metrics: {json.dumps(metrics, sort_keys=True)}",
+            f"Content: {text[:6000]}",
+        ]
+    )
+
+
+def _build_nlp_gemini_prompt(text: str, metrics: dict[str, float]) -> str:
+    return "\n".join(
+        [
+            "Assess climate and greenwashing claim risk from the supplied content and extracted metrics.",
+            "Return ONLY valid JSON with this exact shape:",
+            '{"risk_score": number, "risk_level": "string", "confidence": number, "reasoning": "string"}',
+            "Use risk_score from 0 to 100 and confidence from 0 to 1.",
+            "High risk means weak or misleading climate credibility.",
+            f"Metrics: {json.dumps(metrics, sort_keys=True)}",
+            f"Content: {text[:6000]}",
+        ]
+    )
+
+
+async def _call_esg_model(text: str, metrics: dict[str, float]) -> dict[str, Any]:
     try:
         client = get_http_client()
-        resp = await client.post(f"{ESG_MODEL_URL}/predict", json=metrics)
+        resp = await client.post(f"{_get_esg_model_url()}/predict", json=metrics)
         resp.raise_for_status()
         return resp.json() if resp.content else {}
     except Exception as exc:
+        try:
+            gemini_payload = await _call_gemini_json(_build_esg_gemini_prompt(text, metrics))
+            if gemini_payload:
+                gemini_payload["source"] = "gemini_fallback"
+                gemini_payload["model"] = get_settings().gemini_model.strip()
+                gemini_payload["render_error"] = str(exc)
+                return gemini_payload
+        except Exception:
+            pass
         return {"error": str(exc), "status": "unavailable"}
 
 
-async def _call_nlp_model(metrics: dict[str, float]) -> dict[str, Any]:
+async def _call_nlp_model(text: str, metrics: dict[str, float]) -> dict[str, Any]:
     try:
         client = get_http_client()
-        resp = await client.post(f"{NLP_MODEL_URL}/predict", json=metrics)
+        resp = await client.post(f"{_get_nlp_model_url()}/predict", json=metrics)
         resp.raise_for_status()
         return resp.json() if resp.content else {}
     except Exception as exc:
+        try:
+            gemini_payload = await _call_gemini_json(_build_nlp_gemini_prompt(text, metrics))
+            if gemini_payload:
+                gemini_payload["source"] = "gemini_fallback"
+                gemini_payload["model"] = get_settings().gemini_model.strip()
+                gemini_payload["render_error"] = str(exc)
+                return gemini_payload
+        except Exception:
+            pass
         return {"error": str(exc), "status": "unavailable"}
+
+
+async def _run_input_specific_models(
+    input_type: str,
+    text: str,
+    metrics: dict[str, float],
+) -> tuple[str, dict[str, Any], dict[str, Any], str]:
+    normalized = input_type.strip().lower()
+    if normalized == "document":
+        nlp_response = await _call_nlp_model(text, metrics)
+        esg_response = await _call_esg_model(text, metrics)
+
+        if "error" not in nlp_response and "error" not in esg_response:
+            model_status = "nlp_and_esg_loaded"
+        elif "error" in nlp_response and "error" in esg_response:
+            model_status = "nlp_and_esg_unavailable"
+        else:
+            model_status = "partial_document_analysis"
+
+        return (
+            "nlp+esg",
+            esg_response,
+            nlp_response,
+            model_status,
+        )
+
+    esg_response = await _call_esg_model(text, metrics)
+    model_status = "esg_model_loaded" if "error" not in esg_response else "esg_model_unavailable"
+    return (
+        "esg",
+        esg_response,
+        {"status": "skipped", "reason": "web_inputs_use_esg_model"},
+        model_status,
+    )
 
 # ---------------------------------------------------------------------------
 # Analytics computation
@@ -395,6 +544,7 @@ async def _call_nlp_model(metrics: dict[str, float]) -> dict[str, Any]:
 
 
 def _compute_analytics(
+    analysis_engine: str,
     esg_resp: dict[str, Any],
     nlp_resp: dict[str, Any],
     greenwash: dict[str, Any],
@@ -479,6 +629,7 @@ def _compute_analytics(
         status = "verified"
 
     return {
+        "analysisEngine": analysis_engine,
         "esgRiskScore": round(esg_score, 1),
         "esgRiskLevel": esg_level,
         "aiConfidence": round(esg_conf, 3),
@@ -496,6 +647,59 @@ def _compute_analytics(
         "verificationStatus": status,
         "extractedMetrics": metrics,
     }
+
+
+async def _persist_analysis_result(result: dict[str, Any], text: str) -> dict[str, Any]:
+    if not _is_supabase_enabled():
+        return {"status": "not_configured", "id": None}
+
+    payload = {
+        "input_type": result.get("inputType"),
+        "analysis_engine": result.get("analysisEngine"),
+        "model_status": result.get("modelStatus"),
+        "source": result.get("source") or {},
+        "content_length": result.get("contentLength", 0),
+        "content_preview": text[:2000],
+        "extraction": result.get("extraction") or {},
+        "claims": result.get("claims") or [],
+        "esg": result.get("esg"),
+        "ai_analytics": result.get("aiAnalytics"),
+    }
+
+    try:
+        client = get_http_client()
+        response = await client.post(
+            f"{_get_supabase_rest_url()}/document_analyzer_runs",
+            headers=_get_supabase_headers(prefer="return=representation"),
+            json=payload,
+        )
+        response.raise_for_status()
+        rows = response.json() if response.content else []
+        record = rows[0] if isinstance(rows, list) and rows else {}
+        return {"status": "stored", "id": record.get("id")}
+    except Exception as exc:
+        return {"status": "error", "id": None, "message": str(exc)}
+
+
+async def list_document_analysis_runs(limit: int = 10) -> list[dict[str, Any]]:
+    if not _is_supabase_enabled():
+        return []
+
+    safe_limit = max(1, min(limit, 25))
+
+    client = get_http_client()
+    response = await client.get(
+        f"{_get_supabase_rest_url()}/document_analyzer_runs",
+        headers=_get_supabase_headers(),
+        params={
+            "select": "id,input_type,analysis_engine,model_status,source,content_length,extraction,ai_analytics,created_at",
+            "order": "created_at.desc",
+            "limit": str(safe_limit),
+        },
+    )
+    response.raise_for_status()
+    payload = response.json() if response.content else []
+    return payload if isinstance(payload, list) else []
 
 # ---------------------------------------------------------------------------
 # Entity extraction (existing)
@@ -587,9 +791,11 @@ async def analyze_document_input(
     url: str | None,
     webpage: str | None,
 ) -> dict:
+    analysis_engine = "nlp+esg" if input_type.strip().lower() == "document" else "esg"
     text = await _resolve_text(input_type, document_bytes, url, webpage)
     if not text:
         return {
+            "analysisEngine": analysis_engine,
             "inputType": input_type,
             "contentLength": 0,
             "esg": None,
@@ -598,10 +804,11 @@ async def analyze_document_input(
             "claims": [],
             "modelStatus": "empty_input",
             "source": {"url": url},
+            "storage": {"status": "not_stored", "id": None},
             "aiAnalytics": None,
         }
 
-    extraction, model_status = _try_model_extract(text)
+    extraction, _ = _try_model_extract(text)
     claims = _extract_claims(text)
     subject = _derive_subject(text)
 
@@ -619,21 +826,16 @@ async def analyze_document_input(
     metrics = _extract_esg_metrics(text)
     greenwash = _detect_greenwashing(text)
 
-    esg_model_resp, nlp_model_resp = await asyncio.gather(
-        _call_esg_model(metrics),
-        _call_nlp_model(metrics),
+    analysis_engine, esg_model_resp, nlp_model_resp, model_status = await _run_input_specific_models(
+        input_type,
+        text,
+        metrics,
     )
 
-    ai_analytics = _compute_analytics(esg_model_resp, nlp_model_resp, greenwash, metrics)
+    ai_analytics = _compute_analytics(analysis_engine, esg_model_resp, nlp_model_resp, greenwash, metrics)
 
-    if "error" in esg_model_resp and "error" in nlp_model_resp:
-        model_status = "ai_models_unavailable"
-    elif "error" in esg_model_resp or "error" in nlp_model_resp:
-        model_status = "partial_ai_analysis"
-    else:
-        model_status = "ai_models_loaded"
-
-    return {
+    result = {
+        "analysisEngine": analysis_engine,
         "inputType": input_type,
         "contentLength": len(text),
         "esg": esg,
@@ -644,3 +846,6 @@ async def analyze_document_input(
         "source": {"url": url},
         "aiAnalytics": ai_analytics,
     }
+
+    result["storage"] = await _persist_analysis_result(result, text)
+    return result

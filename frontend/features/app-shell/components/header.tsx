@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
 import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler";
-import { VoiceAgentLauncher } from "@/features/voice-agent/components";
 
 type HeaderProps = {
   searchSlot?: ReactNode;
@@ -37,7 +36,6 @@ export function Header({ searchSlot, compareTraySlot, navSlot }: HeaderProps) {
         <div className="flex w-full flex-col gap-2 md:w-auto md:min-w-[360px]">
           <div className="flex justify-end">
             <div className="flex items-center gap-2">
-              <VoiceAgentLauncher />
               <AnimatedThemeToggler aria-label="Toggle theme" />
             </div>
           </div>

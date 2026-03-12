@@ -1,6 +1,10 @@
-from fastapi import APIRouter, File, Form, UploadFile
+from fastapi import APIRouter
 
-from src.api.controllers.voice_agent_controller import fetch_voice_tools, transcribe_voice_audio
+from src.api.controllers.voice_agent_controller import (
+    PhoneCallRequest,
+    fetch_voice_tools,
+    start_phone_call,
+)
 
 router = APIRouter()
 
@@ -10,9 +14,6 @@ async def voice_agent_tools() -> dict:
     return fetch_voice_tools()
 
 
-@router.post("/voice-agent/transcribe")
-async def voice_agent_transcribe(
-    audio: UploadFile = File(...),
-    tools: str | None = Form(default=None),
-) -> dict:
-    return await transcribe_voice_audio(audio=audio, tools=tools)
+@router.post("/voice-agent/phone-call")
+async def voice_agent_phone_call(body: PhoneCallRequest) -> dict:
+    return await start_phone_call(body)

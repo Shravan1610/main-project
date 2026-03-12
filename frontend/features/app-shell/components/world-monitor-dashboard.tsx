@@ -25,6 +25,7 @@ import { fetchMapLayers } from "@/features/map-intelligence/services";
 import type { MapProps } from "@/features/map-intelligence/types";
 import { MarketFeedSection } from "@/features/market-feed/components";
 import { NewsFeedSection } from "@/features/news-feed/components";
+import { VapiVoiceAgent } from "@/features/voice-agent/components";
 import { useApi } from "@/shared/hooks";
 
 import { AppShell } from "./app-shell";
@@ -314,6 +315,12 @@ function renderFeedSlot(activeTab: DashboardTab) {
           <div className="grid gap-4 xl:grid-cols-[1.3fr_1fr]">
             <LiveNewsPanel />
             <LiveWebcamsDashboard />
+          </div>
+
+          <div className="grid gap-4 xl:grid-cols-[1fr_1fr]">
+            <div className="min-h-[340px]">
+              <VapiVoiceAgent />
+            </div>
           </div>
         </div>
       );

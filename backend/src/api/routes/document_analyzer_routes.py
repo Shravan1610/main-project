@@ -1,6 +1,6 @@
-from fastapi import APIRouter, File, Form, UploadFile
+from fastapi import APIRouter, File, Form, Query, UploadFile
 
-from src.api.controllers.document_analyzer_controller import analyze_document_request
+from src.api.controllers.document_analyzer_controller import analyze_document_request, list_document_history_request
 
 router = APIRouter()
 
@@ -18,3 +18,8 @@ async def analyze_document(
         url=url,
         webpage=webpage,
     )
+
+
+@router.get("/document-analyzer/history")
+async def list_document_history(limit: int = Query(default=8, ge=1, le=25)) -> dict:
+    return await list_document_history_request(limit=limit)

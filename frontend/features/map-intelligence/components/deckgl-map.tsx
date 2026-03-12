@@ -176,7 +176,7 @@ export function DeckGLMap({
     [number, number, number, number]
   >([-180, -85, 180, 85]);
 
-  // Climate pulse animation state driven by rAF
+  // Climate pulse animation state driven by rAF (throttled to ~20fps)
   const pulseRef = useRef(1.0);
   const rafRef = useRef<number>(0);
   const [pulseScale, setPulseScale] = useState(1.0);
@@ -201,14 +201,17 @@ export function DeckGLMap({
     return () => { cancelled = true; };
   }, []);
 
-  // Climate pulse rAF loop
+  // Climate pulse rAF loop — throttled to ~20fps to avoid overwhelming deck.gl
   useEffect(() => {
     let t = 0;
-    const tick = () => {
+    let lastUpdate = 0;
+    const tick = (now: number) => {
       t += 0.03;
-      const s = 1.0 + 0.8 * Math.abs(Math.sin(t));
-      pulseRef.current = s;
-      setPulseScale(s);
+      pulseRef.current = 1.0 + 0.8 * Math.abs(Math.sin(t));
+      if (now - lastUpdate > 50) {
+        lastUpdate = now;
+        setPulseScale(pulseRef.current);
+      }
       rafRef.current = requestAnimationFrame(tick);
     };
     rafRef.current = requestAnimationFrame(tick);
@@ -457,7 +460,7 @@ export function DeckGLMap({
     );
 
     const overlay = new MapboxOverlay({
-      interleaved: true,
+      interleaved: false,
       layers: getSafeLayers(),
     });
 
@@ -505,7 +508,11 @@ export function DeckGLMap({
   // Sync deck.gl layers when data changes
   useEffect(() => {
     if (overlayRef.current) {
-      overlayRef.current.setProps({ layers: getSafeLayers() });
+      try {
+        overlayRef.current.setProps({ layers: getSafeLayers() });
+      } catch {
+        // Ignore transient deck.gl render errors during rapid layer updates
+      }
     }
   }, [getSafeLayers]);
 
