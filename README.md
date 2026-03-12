@@ -45,7 +45,7 @@ The market detail page lives at `/markets/[symbol]` and uses:
 - `lightweight-charts` from TradingView for the interactive OHLC chart
 - Supabase public tables `market_instruments` and `market_candles` for chart/fundamental/technical payloads
 - frontend env vars `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, and `NEXT_PUBLIC_SUPABASE_MARKET_SYNC_FUNCTION`
-- the `market-data-sync-v2` Supabase Edge Function with `ALPHA_VANTAGE_API_KEY`
+- the `market-data-sync` Supabase Edge Function for chart backfill
 
 Watchlist clicks in the stock and crypto sections deep-link into that page.
 If the chart page shows an empty-state message, the Supabase market tables exist but do not have candle rows for that symbol/timeframe yet.

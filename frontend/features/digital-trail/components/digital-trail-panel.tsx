@@ -12,6 +12,10 @@ type TrailEvent = {
   risk: "low" | "medium" | "high";
 };
 
+type DigitalTrailPanelProps = {
+  compact?: boolean;
+};
+
 const ASSET_KINDS: Array<{ id: AssetKind; label: string }> = [
   { id: "crypto", label: "Crypto Currency" },
   { id: "webpage", label: "Webpage" },
@@ -57,7 +61,7 @@ function riskClassName(risk: TrailEvent["risk"]) {
   return "text-terminal-green";
 }
 
-export function DigitalTrailPanel() {
+export function DigitalTrailPanel({ compact = false }: DigitalTrailPanelProps) {
   const [assetKind, setAssetKind] = useState<AssetKind>("crypto");
   const [asset, setAsset] = useState("BTC");
   const [sourceUrl, setSourceUrl] = useState("");
@@ -74,10 +78,12 @@ export function DigitalTrailPanel() {
 
   return (
     <section className="space-y-3">
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-terminal-text">Digital Asset Trail</h3>
-        <p className="text-xs text-terminal-text-muted">Crypto, webpages, documents, and blockchain artifacts</p>
-      </div>
+      {!compact ? (
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-semibold text-terminal-text">Digital Asset Trail</h3>
+          <p className="text-xs text-terminal-text-muted">Crypto, webpages, documents, and blockchain artifacts</p>
+        </div>
+      ) : null}
 
       <div className="rounded-xl border border-terminal-border bg-terminal-bg/50 p-3">
         <p className="text-xs text-terminal-text-muted">Asset Type</p>
@@ -98,7 +104,7 @@ export function DigitalTrailPanel() {
           ))}
         </div>
 
-        <label className="text-xs text-terminal-text-muted" htmlFor="digital-trail-asset">
+        <label className="mt-3 block text-xs text-terminal-text-muted" htmlFor="digital-trail-asset">
           {assetKind === "webpage"
             ? "Webpage Identifier"
             : assetKind === "document"

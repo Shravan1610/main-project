@@ -350,7 +350,7 @@ export function MarketDetailView({
     ?? "A synced company summary will appear here once the market profile is enriched in Supabase.";
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-[1440px] flex-col gap-5 p-4 md:p-6">
+    <main className="mx-auto flex min-h-screen w-full max-w-360 flex-col gap-5 p-4 md:p-6">
       <section className="terminal-surface overflow-hidden">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-terminal-border/80 px-4 py-3 text-[11px] uppercase tracking-[0.18em] text-terminal-text-muted md:px-5">
           <div className="flex min-w-0 items-center gap-3">

@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useMemo, useState } from "react";
 
 import { formatCurrency, formatPercent } from "@/shared/utils";
@@ -36,6 +35,11 @@ function simulatedPerformance(symbol: string, baseChange: number) {
       value,
     };
   });
+}
+
+function buildCoinGeckoUrl(item: CryptoTicker): string {
+  const query = item.name?.trim() || item.symbol.trim();
+  return `https://www.coingecko.com/en/search?query=${encodeURIComponent(query)}`;
 }
 
 export function CryptoWatchlist({ items }: CryptoWatchlistProps) {
@@ -76,12 +80,14 @@ export function CryptoWatchlist({ items }: CryptoWatchlistProps) {
             const changeValue = (item.price * change) / 100;
             const isSelected = item.symbol === selectedItem?.symbol;
             const isPositive = change >= 0;
-            const href = `/markets/${encodeURIComponent(item.symbol)}?asset=${item.assetType ?? "crypto"}`;
+            const href = buildCoinGeckoUrl(item);
 
             return (
-              <Link
+              <a
                 key={item.symbol}
                 href={href}
+                target="_blank"
+                rel="noreferrer"
                 onMouseEnter={() => setSelectedSymbol(item.symbol)}
                 onFocus={() => setSelectedSymbol(item.symbol)}
                 className={`grid w-full grid-cols-[1.15fr_1fr_0.95fr_0.8fr] gap-2 rounded px-2 py-1.5 text-left text-sm transition-colors ${
@@ -97,7 +103,7 @@ export function CryptoWatchlist({ items }: CryptoWatchlistProps) {
                   {change >= 0 ? "+" : ""}
                   {formatPercent(change)}
                 </span>
-              </Link>
+              </a>
             );
           })}
         </div>
@@ -115,12 +121,14 @@ export function CryptoWatchlist({ items }: CryptoWatchlistProps) {
             {formatPercent(selectedItem.changePercent ?? 0)}
           </p>
           <p className="mt-2 text-xs text-terminal-text-muted">Live crypto pulse from the platform market feed.</p>
-          <Link
-            href={`/markets/${encodeURIComponent(selectedItem.symbol)}?asset=${selectedItem.assetType ?? "crypto"}`}
+          <a
+            href={buildCoinGeckoUrl(selectedItem)}
+            target="_blank"
+            rel="noreferrer"
             className="mt-3 inline-flex rounded-full border border-terminal-cyan/40 px-3 py-1.5 text-xs uppercase tracking-[0.16em] text-terminal-cyan transition-colors hover:bg-terminal-cyan/10"
           >
-            Open chart and analysis
-          </Link>
+            View on CoinGecko
+          </a>
 
           <div className="mt-4 grid grid-cols-3 gap-2">
             {performance.map((item) => (

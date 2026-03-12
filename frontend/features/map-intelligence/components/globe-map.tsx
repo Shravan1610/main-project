@@ -20,9 +20,9 @@ type GlobeMapProps = {
 
 const DEFAULT_ACTIVE: ActiveLayers = {
   entities: true,
-  exchanges: false,
-  climate: false,
-  news: false,
+  exchanges: true,
+  climate: true,
+  news: true,
   heatmap: false,
   "risk-overlay": false,
 };
@@ -108,8 +108,8 @@ let worldGeoJsonCache: GeoJSON.FeatureCollection | null = null;
 const WORLD_GEOJSON_URL =
   "https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson";
 
-const DEFAULT_COUNTRY_FILL = "rgba(255,255,255,0.92)";
-const DEFAULT_COUNTRY_STROKE = "rgba(255,255,255,0.26)";
+const DEFAULT_COUNTRY_FILL = "rgba(200,210,220,0.25)";
+const DEFAULT_COUNTRY_STROKE = "rgba(180,190,200,0.20)";
 
 /* ------------------------------------------------------------------ */
 /*  Helpers                                                            */
@@ -156,17 +156,15 @@ export function GlobeMap({
 
       const globe = new GlobeGL(container)
         .globeImageUrl(
-          "https://unpkg.com/three-globe/example/img/earth-dark.jpg",
+          "https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg",
         )
         .bumpImageUrl(
           "https://unpkg.com/three-globe/example/img/earth-topology.png",
         )
-        .backgroundImageUrl(
-          "https://unpkg.com/three-globe/example/img/night-sky.png",
-        )
+        .backgroundColor("rgba(11, 15, 22, 1)")
         .showAtmosphere(true)
-        .atmosphereColor("#1a237e")
-        .atmosphereAltitude(0.15)
+        .atmosphereColor("rgba(136, 198, 245, 0.3)")
+        .atmosphereAltitude(0.12)
         .width(w)
         .height(h)
         .pointOfView({

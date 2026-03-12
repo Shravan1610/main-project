@@ -8,7 +8,7 @@ export function useCryptoFeed(enabled = true) {
   return useApi(getCryptoFeed, {
     enabled,
     initialData: [],
-    refreshIntervalMs: 150000,
+    refreshIntervalMs: 30000,
     pauseWhenHidden: true,
   });
 }

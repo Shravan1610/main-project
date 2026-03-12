@@ -100,7 +100,8 @@ export function StreetViewPanel({ lat, lng, onClose }: StreetViewPanelProps) {
   }, [lat, lng]);
 
   useEffect(() => {
-    initStreetView();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void initStreetView();
     return () => {
       panoramaRef.current = null;
     };

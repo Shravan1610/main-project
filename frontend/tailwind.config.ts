@@ -43,6 +43,7 @@ const config: Config = {
       animation: {
         "pulse-glow": "pulse-glow 2s ease-in-out infinite",
         "scan-line": "scan-line 8s linear infinite",
+        "fade-in-up": "fade-in-up 0.3s ease-out",
       },
       keyframes: {
         "pulse-glow": {
@@ -52,6 +53,10 @@ const config: Config = {
         "scan-line": {
           "0%": { transform: "translateY(-100%)" },
           "100%": { transform: "translateY(100%)" },
+        },
+        "fade-in-up": {
+          "0%": { opacity: "0", transform: "translateY(8px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
         },
       },
     },

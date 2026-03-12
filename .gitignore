@@ -18,6 +18,7 @@ backend/.venv/
 out/
 dist/
 build/
+supabase/.temp/
 *.tsbuildinfo
 
 # TypeScript build info

@@ -1,0 +1,95 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "DisclosureGapResponse",
+  "description": "Response from the Disclosure Gap Analyzer endpoint",
+  "type": "object",
+  "required": [
+    "compliance_score",
+    "total_fields",
+    "present_count",
+    "weak_count",
+    "missing_count",
+    "framework_results",
+    "missing_fields",
+    "weak_fields",
+    "section_completeness"
+  ],
+  "properties": {
+    "compliance_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "Overall compliance score as percentage"
+    },
+    "total_fields": {
+      "type": "integer",
+      "description": "Total disclosure fields checked"
+    },
+    "present_count": {
+      "type": "integer"
+    },
+    "weak_count": {
+      "type": "integer"
+    },
+    "missing_count": {
+      "type": "integer"
+    },
+    "framework_results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["framework", "score", "total_fields", "present_count", "weak_count", "missing_count"],
+        "properties": {
+          "framework": { "type": "string" },
+          "score": { "type": "number" },
+          "total_fields": { "type": "integer" },
+          "present_count": { "type": "integer" },
+          "weak_count": { "type": "integer" },
+          "missing_count": { "type": "integer" }
+        }
+      }
+    },
+    "missing_fields": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "framework", "section", "field_name"],
+        "properties": {
+          "id": { "type": "string" },
+          "framework": { "type": "string" },
+          "section": { "type": "string" },
+          "field_name": { "type": "string" },
+          "description": { "type": "string" }
+        }
+      }
+    },
+    "weak_fields": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "framework", "section", "field_name"],
+        "properties": {
+          "id": { "type": "string" },
+          "framework": { "type": "string" },
+          "section": { "type": "string" },
+          "field_name": { "type": "string" },
+          "evidence": { "type": "string" }
+        }
+      }
+    },
+    "section_completeness": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "status": { "type": "string", "enum": ["complete", "partial", "incomplete"] },
+          "percentage": { "type": "number" },
+          "total": { "type": "integer" },
+          "present": { "type": "integer" },
+          "weak": { "type": "integer" },
+          "missing": { "type": "integer" }
+        }
+      }
+    }
+  }
+}

@@ -2,6 +2,7 @@ import json
 from datetime import datetime, timezone
 
 from src.shared.clients.http_client import get_http_client
+from src.shared.clients.gemini_client import call_gemini_grounded
 from src.shared.config import get_settings
 
 NEWS_QUERY = "global markets OR policy OR regulation OR supply chain OR AI OR crypto"
@@ -114,9 +115,8 @@ async def _fetch_the_news(api_key: str, limit: int) -> list[dict]:
 async def _summarize_with_gemini(items: list[dict]) -> list[dict]:
     settings = get_settings()
     api_key = settings.google_ai_studio_api_key
-    model = settings.gemini_model
 
-    if not api_key or not model or not items:
+    if not api_key or not items:
         return items
 
     prompt_items: list[str] = []
@@ -142,34 +142,14 @@ async def _summarize_with_gemini(items: list[dict]) -> list[dict]:
         ]
     )
 
-    client = get_http_client()
-    response = await client.post(
-        f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent",
-        params={"key": api_key},
-        json={
-            "contents": [{"parts": [{"text": prompt}]}],
-            "generationConfig": {"temperature": 0.2},
-        },
-    )
-    response.raise_for_status()
-    payload = response.json() if response.content else {}
-
-    candidates = payload.get("candidates", [])
-    if not candidates:
-        return items
-
-    text = (
-        candidates[0]
-        .get("content", {})
-        .get("parts", [{}])[0]
-        .get("text", "")
-    )
-    parsed = _parse_json_from_text(str(text))
-    if not parsed:
+    parsed = await call_gemini_grounded(prompt, temperature=0.2)
+    if not parsed or not isinstance(parsed, list):
         return items
 
     summarized = [dict(item) for item in items]
     for entry in parsed:
+        if not isinstance(entry, dict):
+            continue
         index = entry.get("index")
         summary = entry.get("summary")
         if not isinstance(index, int) or not isinstance(summary, str):

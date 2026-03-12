@@ -1,5 +1,9 @@
 // Map types: MarkerData, MapViewport, LayerConfig | Owner: Srijan | Task: SR-1-08
-export type MarkerKind = "entity" | "climate" | "news" | "exchange";
+export type MarkerKind =
+  | "entity"
+  | "climate"
+  | "news"
+  | "exchange";
 
 export type MapMarker = {
   id: string;

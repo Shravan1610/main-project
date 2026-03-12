@@ -10,7 +10,13 @@
 //   LayerConfig { id: LayerType, label: string, icon: string, enabled: boolean }
 //   LayerState { layers: LayerConfig[] }
 
-export type LayerType = "entities" | "exchanges" | "climate" | "news" | "heatmap" | "risk-overlay";
+export type LayerType =
+  | "entities"
+  | "exchanges"
+  | "climate"
+  | "news"
+  | "heatmap"
+  | "risk-overlay";
 
 export type LayerConfig = {
   id: LayerType;

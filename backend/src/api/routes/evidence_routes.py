@@ -2,11 +2,12 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
-from fastapi import APIRouter, File, Form, Query, UploadFile
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
 from pydantic import BaseModel, Field
 
 from src.api.controllers.evidence_controller import (
     apply_review_decision,
+    connect_google_integration,
     create_claim_record,
     fetch_claim_trace,
     fetch_dashboard_summary,
@@ -15,8 +16,10 @@ from src.api.controllers.evidence_controller import (
     fetch_review_tasks,
     ingest_email_document,
     run_extraction,
+    sync_google_integration,
     upload_document,
 )
+from src.api.deps import require_supabase_jwt
 
 router = APIRouter()
 
@@ -57,6 +60,23 @@ class ClaimCreateRequest(BaseModel):
     period_end: str | None = None
     evidence_record_ids: list[str] = Field(min_length=1)
     created_by: str = Field(default="system")
+
+
+class GoogleConnectRequest(BaseModel):
+    organization_id: str = Field(default="org_demo")
+    actor_id: str = Field(default="system")
+    user_email: str = Field(min_length=5)
+    supabase_user_id: str = Field(min_length=3)
+    provider_token: str | None = None
+    provider_refresh_token: str | None = None
+    granted_scopes: list[str] | None = None
+
+
+class GoogleSyncRequest(BaseModel):
+    organization_id: str = Field(default="org_demo")
+    actor_id: str = Field(default="system")
+    scope: Literal["last_90_days", "last_180_days", "all_mail"] = "last_180_days"
+    query_hint: str | None = None
 
 
 @router.post("/evidence/documents/upload")
@@ -160,3 +180,48 @@ def evidence_get_claim_trace(claim_id: str) -> dict:
 @router.get("/evidence/dashboard/summary")
 def evidence_dashboard_summary() -> dict:
     return fetch_dashboard_summary()
+
+
+@router.post("/evidence/integrations/google/supabase-connect")
+def evidence_connect_google(
+    payload: GoogleConnectRequest,
+    caller_subject: str = Depends(require_supabase_jwt),
+) -> dict:
+    """Connect a Google account for evidence collection.
+
+    Requires a valid Supabase JWT in the ``Authorization: Bearer <token>``
+    header.  The authenticated caller's subject must match ``supabase_user_id``
+    in the request body to prevent cross-user token injection.
+    """
+    if payload.supabase_user_id != caller_subject:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="supabase_user_id does not match the authenticated user.",
+        )
+    return connect_google_integration(
+        organization_id=payload.organization_id,
+        actor_id=payload.actor_id,
+        user_email=payload.user_email,
+        supabase_user_id=payload.supabase_user_id,
+        provider_token=payload.provider_token,
+        provider_refresh_token=payload.provider_refresh_token,
+        granted_scopes=payload.granted_scopes,
+    )
+
+
+@router.post("/evidence/integrations/google/sync")
+def evidence_sync_google(
+    payload: GoogleSyncRequest,
+    _: str = Depends(require_supabase_jwt),
+) -> dict:
+    """Trigger a Gmail evidence sync for the authenticated organization.
+
+    Requires a valid Supabase JWT in the ``Authorization: Bearer <token>``
+    header.
+    """
+    return sync_google_integration(
+        organization_id=payload.organization_id,
+        actor_id=payload.actor_id,
+        scope=payload.scope,
+        query_hint=payload.query_hint,
+    )

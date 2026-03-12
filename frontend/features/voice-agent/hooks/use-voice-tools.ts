@@ -75,7 +75,7 @@ export function useVapiCall(assistantId: string) {
 
   const startCall = useCallback(async () => {
     if (!VAPI_PUBLIC_KEY) {
-      setError("VAPI public key not configured (NEXT_PUBLIC_VAPI_PUBLIC_KEY).");
+      setError("Voice agent API key not configured. Please check your environment settings.");
       return;
     }
     if (!assistantId) {

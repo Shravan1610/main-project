@@ -18,9 +18,9 @@ const GlobeMap = dynamic(
 
 const DEFAULT_ACTIVE: ActiveLayers = {
   entities: true,
-  exchanges: false,
-  climate: false,
-  news: false,
+  exchanges: true,
+  climate: true,
+  news: true,
   heatmap: false,
   "risk-overlay": false,
 };
@@ -80,7 +80,7 @@ export function WorldMap({
   });
 
   return (
-    <div className="group relative h-full min-h-[320px] rounded-xl border border-terminal-border/90 bg-terminal-bg/70 p-2">
+    <div className="group relative h-full min-h-80 rounded-xl border border-terminal-border/90 bg-terminal-bg/70 p-2">
       {/* Top header bar */}
       <div className="mb-2 flex items-center justify-between border-b border-terminal-border px-2 pb-2 text-[11px] text-terminal-text-dim">
         <span className="font-semibold tracking-[0.12em] text-terminal-text">
@@ -117,7 +117,7 @@ export function WorldMap({
       </div>
 
       {/* Map viewport */}
-      <div className="relative overflow-hidden rounded-lg border border-terminal-border bg-[#0b0f16] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]"
+      <div className="relative overflow-hidden rounded-lg border border-terminal-border bg-terminal-bg shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]"
         style={{ height: "calc(100% - 40px)" }}
         onClick={() => setContextMenu(null)}
       >
@@ -177,8 +177,7 @@ export function WorldMap({
 
         {/* HUD: Stats */}
         <div className="pointer-events-none absolute bottom-3 right-3 rounded border border-terminal-border bg-black/70 px-2.5 py-1.5 text-[10px] tracking-wide text-terminal-text-dim backdrop-blur-sm">
-          ENTITY {countByKind("entity")} | EXCH {countByKind("exchange")} | CLIMATE{" "}
-          {countByKind("climate")} | NEWS {countByKind("news")}
+          ENTITY {countByKind("entity")} | EXCH {countByKind("exchange")} | CLIMATE {countByKind("climate")} | NEWS {countByKind("news")}
         </div>
 
         {/* HUD: Status badge */}

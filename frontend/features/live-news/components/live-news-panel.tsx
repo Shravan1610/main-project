@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { MacWindow } from "@/shared/components/mac-window";
 
 type LiveNewsChannel = {
   id: string;
@@ -74,6 +75,7 @@ const CHANNELS: LiveNewsChannel[] = [
     liveUrl: "https://www.youtube.com/@aljazeeraenglish/live",
   },
 ];
+const PLAYABLE_CHANNELS = CHANNELS.filter((channel) => channel.channelId);
 
 function buildLiveEmbedUrl(channelId: string): string {
   const params = new URLSearchParams({
@@ -88,93 +90,66 @@ function buildLiveEmbedUrl(channelId: string): string {
 }
 
 export function LiveNewsPanel() {
-  const [activeChannelId, setActiveChannelId] = useState(CHANNELS[0].id);
+  const [activeChannelId, setActiveChannelId] = useState(PLAYABLE_CHANNELS[0].id);
   const activeChannel =
-    CHANNELS.find((channel) => channel.id === activeChannelId) ?? CHANNELS[0];
+    PLAYABLE_CHANNELS.find((channel) => channel.id === activeChannelId) ?? PLAYABLE_CHANNELS[0];
 
   return (
-    <section className="space-y-2">
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold tracking-wide text-terminal-text">
-          Live News
-        </h3>
-        <p className="text-xs uppercase tracking-[0.18em] text-terminal-red/80">
-          YouTube Live
-        </p>
-      </div>
-
-      <div className="rounded-xl border border-terminal-border bg-terminal-bg/50 p-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
-        <div className="mb-2 flex flex-wrap gap-2">
-          {CHANNELS.map((channel) => (
-            <button
-              key={channel.id}
-              type="button"
-              onClick={() => setActiveChannelId(channel.id)}
-              className={`rounded-md border px-3 py-1.5 text-xs uppercase tracking-[0.14em] transition-colors ${
-                activeChannel.id === channel.id
-                  ? "border-terminal-red/35 bg-terminal-red/8 text-terminal-red ring-1 ring-terminal-red/10"
-                  : "border-terminal-border bg-terminal-surface/60 text-terminal-text-dim hover:bg-terminal-border/35 hover:text-terminal-text"
-              }`}
-            >
-              {channel.label}
-            </button>
-          ))}
-        </div>
-
-        <div className="overflow-hidden rounded-lg border border-terminal-border bg-terminal-surface">
-          {activeChannel.channelId ? (
-            <div className="relative aspect-video w-full bg-black">
-              <iframe
-                className="absolute inset-0 h-full w-full"
-                src={buildLiveEmbedUrl(activeChannel.channelId)}
-                title={`${activeChannel.channelTitle} live stream`}
-                loading="lazy"
-                allow="autoplay; encrypted-media; picture-in-picture"
-                referrerPolicy="strict-origin-when-cross-origin"
-                allowFullScreen
-              />
-            </div>
-          ) : (
-            <div className="flex aspect-video flex-col justify-between bg-terminal-bg/70 p-4">
-              <div>
-                <p className="text-base font-semibold tracking-wide text-terminal-text">
-                  {activeChannel.channelTitle}
-                </p>
-                <p className="mt-2 max-w-md text-sm text-terminal-text-dim">
-                  Official YouTube live stream.
-                </p>
-              </div>
-              <a
-                href={activeChannel.liveUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex w-fit items-center rounded-md border border-terminal-border px-3 py-1.5 text-xs uppercase tracking-[0.14em] text-terminal-text transition-colors hover:bg-terminal-border/35"
-              >
-                Open on YouTube
-              </a>
-            </div>
-          )}
-
-          <div className="flex items-center justify-between border-t border-terminal-border bg-terminal-bg/80 px-3 py-2">
+    <MacWindow
+      title="Live News"
+      rightSlot={<span className="text-terminal-red/80">Live</span>}
+    >
+        {activeChannel.channelId ? (
+          <div className="relative aspect-video w-full bg-black">
+            <iframe
+              className="absolute inset-0 h-full w-full"
+              src={buildLiveEmbedUrl(activeChannel.channelId)}
+              title={`${activeChannel.channelTitle} live stream`}
+              loading="lazy"
+              allow="autoplay; encrypted-media; picture-in-picture"
+              referrerPolicy="strict-origin-when-cross-origin"
+              allowFullScreen
+            />
+          </div>
+        ) : (
+          <div className="flex aspect-video flex-col justify-between bg-terminal-bg/70 p-4">
             <div>
-              <p className="text-[11px] uppercase tracking-[0.16em] text-terminal-text-muted">
-                Active Channel
-              </p>
-              <p className="mt-0.5 text-xs text-terminal-text">
+              <p className="text-base font-semibold tracking-wide text-terminal-text">
                 {activeChannel.channelTitle}
+              </p>
+              <p className="mt-2 max-w-md text-sm text-terminal-text-dim">
+                Official YouTube live stream.
               </p>
             </div>
             <a
               href={activeChannel.liveUrl}
               target="_blank"
               rel="noreferrer"
-              className="text-[11px] uppercase tracking-[0.16em] text-terminal-text-dim transition-colors hover:text-terminal-text"
+              className="inline-flex w-fit items-center rounded-md border border-terminal-border px-3 py-1.5 text-xs uppercase tracking-[0.14em] text-terminal-text transition-colors hover:bg-terminal-border/35"
             >
-              Open Source
+              Open on YouTube
             </a>
           </div>
+        )}
+
+        <div className="overflow-x-auto border-t border-terminal-border bg-terminal-bg/80 px-2.5 py-2">
+          <div className="flex min-w-max gap-2">
+            {PLAYABLE_CHANNELS.map((channel) => (
+              <button
+                key={channel.id}
+                type="button"
+                onClick={() => setActiveChannelId(channel.id)}
+                className={`whitespace-nowrap rounded-md border px-3 py-1.5 text-xs uppercase tracking-[0.14em] transition-colors ${
+                  activeChannel.id === channel.id
+                    ? "border-terminal-red/35 bg-terminal-red/8 text-terminal-red ring-1 ring-terminal-red/10"
+                    : "border-terminal-border bg-terminal-surface/60 text-terminal-text-dim hover:bg-terminal-border/35 hover:text-terminal-text"
+                }`}
+              >
+                {channel.label}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
-    </section>
+    </MacWindow>
   );
 }

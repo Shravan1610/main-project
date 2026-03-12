@@ -1,4 +1,5 @@
 import { Header } from "./header";
+import { MacWindow } from "@/shared/components/mac-window";
 import type { ReactNode } from "react";
 
 type AppShellProps = {
@@ -10,6 +11,7 @@ type AppShellProps = {
   layerControlsSlot?: ReactNode;
   navSlot?: ReactNode;
   showMap?: boolean;
+  onTogglePanelSelector?: () => void;
 };
 
 export function AppShell({
@@ -21,32 +23,30 @@ export function AppShell({
   layerControlsSlot,
   navSlot,
   showMap = true,
+  onTogglePanelSelector,
 }: AppShellProps) {
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-[1660px] flex-col gap-4 p-3 md:p-4">
-      <Header searchSlot={searchSlot} compareTraySlot={compareTraySlot} navSlot={navSlot} />
+    <main className="mx-auto flex min-h-screen w-full max-w-415 flex-col gap-4 p-3 md:p-4">
+      <Header searchSlot={searchSlot} compareTraySlot={compareTraySlot} navSlot={navSlot} onTogglePanelSelector={onTogglePanelSelector} />
 
       {showMap ? (
-        <section className="grid flex-1 gap-4 xl:grid-cols-[1fr_360px]">
-          <div className="terminal-surface relative h-[520px] min-h-[520px] p-2 md:p-3">
+        <section className="flex-1">
+          <MacWindow title="Global Map" bodyClassName="relative h-[560px] min-h-[560px] p-2 md:p-3">
             {layerControlsSlot ? <div className="absolute left-4 top-4 z-10">{layerControlsSlot}</div> : null}
             {mapSlot ?? (
-              <div className="flex h-full min-h-[360px] items-center justify-center text-sm text-terminal-text-dim">
+              <div className="flex h-full min-h-90 items-center justify-center text-sm text-terminal-text-dim">
                 Map area (Phase 1 scaffold)
               </div>
             )}
-          </div>
-
-          <aside className="terminal-surface min-h-[520px] p-4">
-            {sidePanelSlot ?? (
-              <div className="text-sm text-terminal-text-dim">Insight panel (Phase 1 scaffold)</div>
-            )}
-          </aside>
+          </MacWindow>
         </section>
       ) : null}
 
-      <section className="terminal-surface min-h-[210px] p-3 md:p-4">
-        {feedSlot ?? <div className="text-sm text-terminal-text-dim">Feeds section (Phase 1 scaffold)</div>}
+      <section className="min-h-52.5">
+        {feedSlot ??
+          sidePanelSlot ?? (
+            <div className="text-sm text-terminal-text-dim">Feeds section (Phase 1 scaffold)</div>
+          )}
       </section>
     </main>
   );

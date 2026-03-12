@@ -2,22 +2,16 @@
 
 import { MarketWatchlist } from "./market-watchlist";
 import { useMarketFeed } from "../hooks";
+import { MacWindow } from "@/shared/components/mac-window";
 
 export function MarketFeedSection() {
   const { data, loading, error } = useMarketFeed(true);
 
-  if (loading) {
-    return <div className="text-sm text-terminal-text-dim">Loading market feed...</div>;
-  }
-
-  if (error) {
-    return <div className="text-sm text-terminal-red">Failed to load market feed.</div>;
-  }
-
   return (
-    <section className="space-y-2">
-      <h3 className="text-sm font-semibold text-terminal-text">Watchlist</h3>
-      <MarketWatchlist items={data ?? []} />
-    </section>
+    <MacWindow title="Watchlist" bodyClassName="p-4">
+      {loading ? <div className="text-sm text-terminal-text-dim">Loading market feed...</div> : null}
+      {error ? <div className="text-sm text-terminal-red">Failed to load market feed.</div> : null}
+      {!loading && !error ? <MarketWatchlist items={data ?? []} /> : null}
+    </MacWindow>
   );
 }

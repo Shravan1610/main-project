@@ -19,6 +19,7 @@ export function useMarketDetail(
 
   const fetcher = useCallback(
     () => getMarketDetail(symbol, timeframe, lookup),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [assetType, exchange, market, name, symbol, timeframe],
   );
 
