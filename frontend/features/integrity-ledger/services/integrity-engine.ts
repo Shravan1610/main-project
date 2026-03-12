@@ -1,17 +1,18 @@
 import { normalizeContent } from "./content-normalizer"
 import { sha256 } from "./hash-engine"
 import { buildLedgerRecord } from "./ledger-engine"
-
+import { findLedgerRecord, storeLedgerRecord } from "./ledger-lookup"
 import { createIntegrityEvent } from "./integrity-event-engine"
 import { pushTrailEvent } from "./trail-integration"
-
-import { recordHashOnChain } from "./blockchain-engine"
+import { recordHashOnBlockchain } from "./blockchain-service"
+import type { AssetType } from "../types/integrity.types"
 
 export async function processIntegrity(
   assetName: string,
-  assetType: string,
+  assetType: AssetType,
   content: unknown,
-  previousHash?: string
+  previousHash?: string,
+  previousVersion?: number
 ) {
 
   // Step 1 — Normalize content
@@ -20,13 +21,26 @@ export async function processIntegrity(
   // Step 2 — Generate SHA256 hash
   const hash = await sha256(normalized)
 
-  // Step 3 — Build ledger record
+  // Step 3 — Resolve previous version for proper chain tracking
+  // Prefer caller-supplied previousVersion; fall back to ledger lookup only when not provided
+  const resolvedVersion =
+    previousVersion !== undefined
+      ? previousVersion
+      : previousHash
+        ? findLedgerRecord(previousHash)?.version
+        : undefined
+
+  // Step 4 — Build ledger record
   const ledgerRecord = buildLedgerRecord(
     assetName,
     assetType,
     hash,
-    previousHash
+    previousHash,
+    resolvedVersion
   )
+
+  // Step 5 — Persist to in-memory ledger (enables verification lookups)
+  storeLedgerRecord(ledgerRecord)
 
   /* --------------------------------------------------
      Determine integrity event type
@@ -65,14 +79,14 @@ export async function processIntegrity(
   pushTrailEvent(event)
 
   /* --------------------------------------------------
-     Blockchain Verification
+     Blockchain Proof Anchoring
   -------------------------------------------------- */
 
   try {
 
-    const txHash = await recordHashOnChain(hash)
+    const txHash = await recordHashOnBlockchain(hash)
 
-    // attach blockchain tx to ledger record
+    // Attach blockchain tx — object is already in ledger store by reference
     ledgerRecord.blockchainTx = txHash
 
     const blockchainEvent = createIntegrityEvent(
@@ -86,7 +100,7 @@ export async function processIntegrity(
 
   } catch (error) {
 
-    console.warn("Blockchain verification failed:", error)
+    console.warn("Blockchain anchoring failed:", error)
 
   }
 
