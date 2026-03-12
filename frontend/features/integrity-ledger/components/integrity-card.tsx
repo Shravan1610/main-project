@@ -60,7 +60,7 @@ export default function IntegrityCard({ record }: Props) {
       <div className="flex items-center gap-4 text-[11px] text-terminal-text-dim pt-1 border-t border-terminal-border">
         <span>Version {record.version}</span>
         <span>{new Date(record.timestamp).toLocaleString()}</span>
-        {record.previousHash && (
+        {record.previousHash && record.previousHash !== record.hash && (
           <span className="text-terminal-amber">Updated</span>
         )}
       </div>

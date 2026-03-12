@@ -103,6 +103,7 @@ export default function IntegrityLedgerPanel() {
         {tabs.map(tab => (
           <button
             key={tab.key}
+            type="button"
             onClick={() => setActiveTab(tab.key)}
             className={`shrink-0 px-4 py-2.5 text-xs font-medium transition-colors relative ${
               activeTab === tab.key
@@ -145,6 +146,14 @@ export default function IntegrityLedgerPanel() {
               onDragLeave={() => setDragActive(false)}
               onDrop={handleDrop}
               onClick={() => fileInputRef.current?.click()}
+              onKeyDown={event => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault()
+                  fileInputRef.current?.click()
+                }
+              }}
+              role="button"
+              tabIndex={0}
               className={`border border-dashed rounded p-5 text-center cursor-pointer transition ${
                 dragActive
                   ? "border-terminal-cyan/50 bg-terminal-cyan/8"
@@ -224,6 +233,7 @@ export default function IntegrityLedgerPanel() {
 
             {/* Submit button */}
             <button
+              type="button"
               onClick={handleSubmit}
               disabled={loading || !assetName.trim() || !content.trim()}
               className="flex items-center gap-2 rounded border border-terminal-cyan/40 bg-terminal-cyan/8 px-5 py-2 text-sm text-terminal-cyan transition hover:bg-terminal-cyan/15 disabled:opacity-40"
@@ -332,19 +342,19 @@ export default function IntegrityLedgerPanel() {
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                   {(
                     [
-                      { type: "DOCUMENT_HASH_CREATED", label: "Created", color: "terminal-cyan" },
-                      { type: "BLOCKCHAIN_PROOF_RECORDED", label: "Anchored", color: "terminal-green" },
-                      { type: "DOCUMENT_VERSION_UPDATED", label: "Updated", color: "terminal-amber" },
-                      { type: "DOCUMENT_TAMPER_ALERT", label: "Tampered", color: "terminal-red" },
+                      { type: "DOCUMENT_HASH_CREATED", label: "Created", colorClass: "text-terminal-cyan" },
+                      { type: "BLOCKCHAIN_PROOF_RECORDED", label: "Anchored", colorClass: "text-terminal-green" },
+                      { type: "DOCUMENT_VERSION_UPDATED", label: "Updated", colorClass: "text-terminal-amber" },
+                      { type: "DOCUMENT_TAMPER_ALERT", label: "Tampered", colorClass: "text-terminal-red" },
                     ] as const
-                  ).map(({ type, label, color }) => {
+                  ).map(({ type, label, colorClass }) => {
                     const count = events.filter(e => e.type === type).length
                     return (
                       <div
                         key={type}
                         className="rounded border border-terminal-border bg-terminal-bg p-3 text-center"
                       >
-                        <p className={`text-xl font-bold text-${color}`}>{count}</p>
+                        <p className={`text-xl font-bold ${colorClass}`}>{count}</p>
                         <p className="text-[11px] text-terminal-text-dim mt-0.5">{label}</p>
                       </div>
                     )

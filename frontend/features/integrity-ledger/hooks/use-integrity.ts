@@ -4,7 +4,7 @@ import { useState, useCallback } from "react"
 import { processIntegrity } from "../services/integrity-engine"
 import { verifyContent } from "../services/verification-engine"
 import { getTrailEvents } from "../services/trail-integration"
-import type { IntegrityRecord } from "../types/integrity.types"
+import type { AssetType, IntegrityRecord } from "../types/integrity.types"
 import type { IntegrityEvent } from "../types/integrity-events.types"
 
 export function useIntegrity() {
@@ -21,7 +21,7 @@ export function useIntegrity() {
   const submitDocument = useCallback(
     async (
       assetName: string,
-      assetType: string,
+      assetType: AssetType,
       content: unknown
     ): Promise<IntegrityRecord> => {
 
@@ -36,12 +36,14 @@ export function useIntegrity() {
           .sort((a, b) => b.version - a.version)[0]
 
         const previousHash = existing?.hash
+        const previousVersion = existing?.version
 
         const record = await processIntegrity(
           assetName,
           assetType,
           content,
-          previousHash
+          previousHash,
+          previousVersion
         )
 
         setRecords(prev => [...prev, record])
@@ -95,11 +97,31 @@ export function useIntegrity() {
   }, [])
 
   /**
-   * Detect whether a record has been tampered with by comparing hashes.
+   * Detect whether a record has been tampered with by validating the hash chain
+   * against the previous record in local state.
    */
   const checkTamper = useCallback((record: IntegrityRecord): boolean => {
-    return Boolean(record.previousHash && record.previousHash !== record.hash)
-  }, [])
+
+    // If there is no previous hash, we cannot infer tampering from the chain.
+    if (!record.previousHash) {
+      return false
+    }
+
+    // Find the previous version of this asset (if present in local records).
+    const previousRecord = records
+      .filter(r => r.assetName === record.assetName && r.version === record.version - 1)
+      .sort((a, b) => b.version - a.version)[0]
+
+    // If we don't have the previous record locally, we cannot validate the chain here.
+    if (!previousRecord) {
+      return false
+    }
+
+    // Tampering is flagged if the stored previousHash does not match the actual
+    // hash of the previous record in the chain.
+    return previousRecord.hash !== record.previousHash
+
+  }, [records])
 
   /**
    * Pull the latest events from the global trail store into React state.

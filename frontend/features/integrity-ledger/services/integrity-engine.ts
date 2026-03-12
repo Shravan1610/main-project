@@ -5,12 +5,14 @@ import { findLedgerRecord, storeLedgerRecord } from "./ledger-lookup"
 import { createIntegrityEvent } from "./integrity-event-engine"
 import { pushTrailEvent } from "./trail-integration"
 import { recordHashOnBlockchain } from "./blockchain-service"
+import type { AssetType } from "../types/integrity.types"
 
 export async function processIntegrity(
   assetName: string,
-  assetType: string,
+  assetType: AssetType,
   content: unknown,
-  previousHash?: string
+  previousHash?: string,
+  previousVersion?: number
 ) {
 
   // Step 1 — Normalize content
@@ -20,8 +22,13 @@ export async function processIntegrity(
   const hash = await sha256(normalized)
 
   // Step 3 — Resolve previous version for proper chain tracking
-  const previousRecord = previousHash ? findLedgerRecord(previousHash) : undefined
-  const previousVersion = previousRecord?.version
+  // Prefer caller-supplied previousVersion; fall back to ledger lookup only when not provided
+  const resolvedVersion =
+    previousVersion !== undefined
+      ? previousVersion
+      : previousHash
+        ? findLedgerRecord(previousHash)?.version
+        : undefined
 
   // Step 4 — Build ledger record
   const ledgerRecord = buildLedgerRecord(
@@ -29,7 +36,7 @@ export async function processIntegrity(
     assetType,
     hash,
     previousHash,
-    previousVersion
+    resolvedVersion
   )
 
   // Step 5 — Persist to in-memory ledger (enables verification lookups)
