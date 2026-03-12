@@ -1,10 +1,16 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 
 import type { ActiveLayers, MapEngine, MapMarker, MapProps } from "../types";
 import { StreetViewPanel } from "./street-view-panel";
+import {
+  getAllExchangeStatuses,
+  getUserTimezone,
+  getUserTimezoneAbbr,
+  type ExchangeStatusInfo,
+} from "../utils/market-hours";
 
 const DeckGLMap = dynamic(
   () => import("./deckgl-map").then((m) => m.DeckGLMap),
@@ -17,10 +23,8 @@ const GlobeMap = dynamic(
 );
 
 const DEFAULT_ACTIVE: ActiveLayers = {
-  entities: true,
-  exchanges: true,
+  population: true,
   climate: true,
-  news: true,
   heatmap: false,
   "risk-overlay": false,
 };
@@ -32,12 +36,36 @@ export function WorldMap({
   onMarkerSelect,
   engine: externalEngine,
   onEngineChange,
+  climateHeatmap,
 }: MapProps) {
   const [internalEngine, setInternalEngine] = useState<MapEngine>("2d");
   const engine = externalEngine ?? internalEngine;
 
   const [streetViewCoord, setStreetViewCoord] = useState<{ lat: number; lng: number } | null>(null);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; lat: number; lng: number } | null>(null);
+
+  // Market hours
+  const [exchangeStatuses, setExchangeStatuses] = useState<ExchangeStatusInfo[]>(
+    () => getAllExchangeStatuses(),
+  );
+  const [localTz] = useState(() => getUserTimezone());
+  const [localTzAbbr] = useState(() => getUserTimezoneAbbr());
+  const [localTime, setLocalTime] = useState(() =>
+    new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true }),
+  );
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setExchangeStatuses(getAllExchangeStatuses());
+      setLocalTime(
+        new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true }),
+      );
+    }, 30_000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const openCount = exchangeStatuses.filter((s) => s.status === "open").length;
+  const showMarketHUD = activeLayers?.["market-hours"] ?? true;
 
   const toggle = useCallback(() => {
     const next = engine === "2d" ? "3d" : "2d";
@@ -122,9 +150,9 @@ export function WorldMap({
         onClick={() => setContextMenu(null)}
       >
         {engine === "2d" ? (
-          <DeckGLMap viewport={viewport} markers={markers} activeLayers={activeLayers} onMarkerSelect={onMarkerSelect} onContextMenu={handleContextMenu} />
+          <DeckGLMap viewport={viewport} markers={markers} activeLayers={activeLayers} onMarkerSelect={onMarkerSelect} onContextMenu={handleContextMenu} climateHeatmap={climateHeatmap} />
         ) : (
-          <GlobeMap viewport={viewport} markers={markers} activeLayers={activeLayers} onMarkerSelect={onMarkerSelect} />
+          <GlobeMap viewport={viewport} markers={markers} activeLayers={activeLayers} onMarkerSelect={onMarkerSelect} climateHeatmap={climateHeatmap} />
         )}
 
         {/* Street View overlay */}
@@ -156,32 +184,97 @@ export function WorldMap({
           </div>
         )}
 
-        {/* HUD: Legend */}
-        <div className="pointer-events-none absolute bottom-3 left-3 flex gap-2">
-          <div className="rounded border border-terminal-border bg-black/70 px-2.5 py-1.5 text-[10px] tracking-wide text-terminal-text-dim backdrop-blur-sm">
-            <span className="mr-2 font-semibold text-terminal-text">LEGEND</span>
-            <span className="inline-flex items-center gap-1 mr-2">
-              <span className="h-2 w-2 rounded-full bg-[#84dba0]" /> Entity
-            </span>
-            <span className="inline-flex items-center gap-1 mr-2">
-              <span className="h-2 w-2 rounded-full bg-[#88c6f5]" /> Exchange
-            </span>
-            <span className="inline-flex items-center gap-1 mr-2">
-              <span className="h-2 w-2 rounded-full bg-[#e9bc74]" /> Climate
-            </span>
-            <span className="inline-flex items-center gap-1">
-              <span className="h-2 w-2 rounded-full bg-[#ea7b78]" /> News
-            </span>
+        {/* HUD: Climate color index */}
+        <div className="pointer-events-none absolute bottom-3 left-3">
+          <div className="rounded border border-terminal-border bg-black/75 px-2.5 py-2 text-[10px] backdrop-blur-sm">
+            <span className="mb-1.5 block font-semibold tracking-wider text-terminal-text">CLIMATE INDEX</span>
+            <div className="flex items-center gap-1">
+              <span className="text-terminal-text-dim">Cold</span>
+              <div className="flex h-2.5 w-36 overflow-hidden rounded-sm">
+                <div className="flex-1" style={{ background: "rgb(0,120,255)" }} />
+                <div className="flex-1" style={{ background: "rgb(0,200,180)" }} />
+                <div className="flex-1" style={{ background: "rgb(0,255,136)" }} />
+                <div className="flex-1" style={{ background: "rgb(200,230,0)" }} />
+                <div className="flex-1" style={{ background: "rgb(255,184,0)" }} />
+                <div className="flex-1" style={{ background: "rgb(255,100,60)" }} />
+                <div className="flex-1" style={{ background: "rgb(255,59,92)" }} />
+              </div>
+              <span className="text-terminal-text-dim">Hot</span>
+            </div>
+            <div className="mt-1 flex justify-between text-[8px] text-terminal-text-dim/60" style={{ paddingLeft: "24px", paddingRight: "20px" }}>
+              <span>&lt;10°</span>
+              <span>20°</span>
+              <span>30°</span>
+              <span>&gt;40°</span>
+            </div>
           </div>
         </div>
 
         {/* HUD: Stats */}
         <div className="pointer-events-none absolute bottom-3 right-3 rounded border border-terminal-border bg-black/70 px-2.5 py-1.5 text-[10px] tracking-wide text-terminal-text-dim backdrop-blur-sm">
-          ENTITY {countByKind("entity")} | EXCH {countByKind("exchange")} | CLIMATE {countByKind("climate")} | NEWS {countByKind("news")}
+          POP {countByKind("population")} | CLIMATE {countByKind("climate")}
         </div>
 
+        {/* HUD: Market Hours panel — top-right */}
+        {showMarketHUD && (
+          <div className="pointer-events-auto absolute right-3 top-3 z-30 max-h-[280px] w-52 overflow-y-auto rounded border border-terminal-border bg-black/85 text-[10px] backdrop-blur-sm">
+            <div className="sticky top-0 z-10 flex items-center justify-between border-b border-terminal-border bg-black/95 px-2.5 py-1.5">
+              <span className="font-semibold tracking-wider text-terminal-text">
+                MARKET HOURS
+              </span>
+              <span className="text-terminal-green">
+                {openCount} OPEN
+              </span>
+            </div>
+            <div className="px-2 py-1 border-b border-terminal-border/50 text-terminal-text-dim">
+              <span className="text-terminal-cyan">{localTzAbbr}</span> {localTime}
+            </div>
+            <div className="divide-y divide-terminal-border/30">
+              {exchangeStatuses.map((es) => (
+                <div
+                  key={es.exchange.id}
+                  className="flex items-center justify-between px-2.5 py-1"
+                >
+                  <div className="flex items-center gap-1.5">
+                    <span
+                      className={`inline-block h-1.5 w-1.5 rounded-full ${
+                        es.status === "open"
+                          ? "bg-terminal-green shadow-[0_0_4px_rgba(0,255,136,0.5)]"
+                          : "bg-terminal-text-dim/40"
+                      }`}
+                    />
+                    <span
+                      className={
+                        es.status === "open"
+                          ? "font-medium text-terminal-green"
+                          : "text-terminal-text-dim"
+                      }
+                    >
+                      {es.exchange.shortName}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-terminal-text-dim/70">
+                      {es.localTimeStr}
+                    </span>
+                    <span
+                      className={`text-[9px] ${
+                        es.status === "open"
+                          ? "text-terminal-green/80"
+                          : "text-terminal-text-dim/50"
+                      }`}
+                    >
+                      {es.timeUntilChange}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* HUD: Status badge */}
-        <div className="pointer-events-none absolute right-3 top-3">
+        <div className="pointer-events-none absolute left-3 top-3">
           <span className="rounded border border-terminal-green/30 bg-terminal-green/10 px-2 py-0.5 text-[10px] text-terminal-green backdrop-blur-sm">
             LIVE
           </span>

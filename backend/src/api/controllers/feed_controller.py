@@ -5,6 +5,7 @@ from src.shared.clients.cache_client import get_cached, set_cached
 
 get_feeds = load_function("features/feed-builder/services/feed_service.py", "get_feeds")
 get_live_webcam_feeds = load_function("features/feed-builder/services/webcam_resolver.py", "get_live_webcam_feeds")
+get_live_news = load_function("features/feed-builder/services/live_news_resolver.py", "get_live_news_feeds")
 
 
 async def get_homepage_feeds() -> dict:
@@ -29,3 +30,7 @@ async def get_live_webcams(region: str = "all", limit: int = 4) -> dict:
     payload = await get_live_webcam_feeds(region=region, limit=limit)
     set_cached(cache_key, payload)
     return payload
+
+
+async def get_live_news_channels() -> dict:
+    return await get_live_news()

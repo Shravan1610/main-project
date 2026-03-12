@@ -1,9 +1,7 @@
 // Map types: MarkerData, MapViewport, LayerConfig | Owner: Srijan | Task: SR-1-08
 export type MarkerKind =
-  | "entity"
-  | "climate"
-  | "news"
-  | "exchange";
+  | "population"
+  | "climate";
 
 export type MapMarker = {
   id: string;
@@ -38,11 +36,23 @@ export type MapProps = {
   onMarkerSelect?: (marker: MapMarker) => void;
   engine?: MapEngine;
   onEngineChange?: (engine: MapEngine) => void;
+  climateHeatmap?: ClimateHeatmapPoint[];
 };
 
 export type LayerResponse = {
-  exchanges: MapMarker[];
+  population: MapMarker[];
   climate: MapMarker[];
-  news: MapMarker[];
   updatedAt?: string;
 };
+
+export type ClimateHeatmapPoint = {
+  lat: number;
+  lng: number;
+  temperature: number;
+  humidity: number;
+  wind_speed: number;
+  weight: number;
+};
+
+export type { ExchangeStatusInfo } from "../utils/market-hours";
+export type { WorldExchange } from "../config/world-exchanges";

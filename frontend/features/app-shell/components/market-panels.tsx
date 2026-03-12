@@ -12,7 +12,7 @@ type StockAnalysisData = {
 export function PremiumStockPanel() {
   const { data, loading, error, refetch } = useFetchPanel<StockAnalysisData>("/ai/panel/premium-stock-analysis");
   return (
-    <MacWindow title="Premium Stock Analysis" rightSlot={<span className="text-terminal-cyan/80">AI</span>}>
+    <MacWindow title="Premium Stock Analysis">
       <div className="p-3">
         {loading ? <PanelLoader /> : error ? <PanelError message={error} onRetry={refetch} /> : data?.stocks?.length ? (
           <div className="space-y-2">
@@ -51,7 +51,7 @@ type BacktestingData = {
 export function BacktestingPanel() {
   const { data, loading, error, refetch } = useFetchPanel<BacktestingData>("/ai/panel/premium-backtesting");
   return (
-    <MacWindow title="Premium Backtesting" rightSlot={<span className="text-terminal-cyan/80">AI</span>}>
+    <MacWindow title="Premium Backtesting">
       <div className="p-3">
         {loading ? <PanelLoader /> : error ? <PanelError message={error} onRetry={refetch} /> : data?.strategies?.length ? (
           <div className="space-y-2">
@@ -99,7 +99,7 @@ type ForexData = {
 export function ForexPanel() {
   const { data, loading, error, refetch } = useFetchPanel<ForexData>("/ai/panel/forex-currencies");
   return (
-    <MacWindow title="Forex & Currencies" rightSlot={<span className="text-terminal-cyan/80">AI</span>}>
+    <MacWindow title="Forex & Currencies">
       <div className="p-3">
         {loading ? <PanelLoader /> : error ? <PanelError message={error} onRetry={refetch} /> : data ? (
           <div className="space-y-3">
@@ -142,7 +142,7 @@ type FixedIncomeData = {
 export function FixedIncomePanel() {
   const { data, loading, error, refetch } = useFetchPanel<FixedIncomeData>("/ai/panel/fixed-income");
   return (
-    <MacWindow title="Fixed Income" rightSlot={<span className="text-terminal-cyan/80">AI</span>}>
+    <MacWindow title="Fixed Income">
       <div className="p-3">
         {loading ? <PanelLoader /> : error ? <PanelError message={error} onRetry={refetch} /> : data ? (
           <div className="space-y-3">
@@ -182,7 +182,7 @@ type CommoditiesData = {
 export function CommoditiesPanel() {
   const { data, loading, error, refetch } = useFetchPanel<CommoditiesData>("/ai/panel/commodities");
   return (
-    <MacWindow title="Commodities" rightSlot={<span className="text-terminal-cyan/80">AI</span>}>
+    <MacWindow title="Commodities">
       <div className="p-3">
         {loading ? <PanelLoader /> : error ? <PanelError message={error} onRetry={refetch} /> : data ? (
           <div className="space-y-3">
@@ -221,7 +221,7 @@ type IpoSpacData = {
 export function IpoSpacPanel() {
   const { data, loading, error, refetch } = useFetchPanel<IpoSpacData>("/ai/panel/ipo-spac");
   return (
-    <MacWindow title="IPO & SPAC" rightSlot={<span className="text-terminal-cyan/80">AI</span>}>
+    <MacWindow title="IPO & SPAC">
       <div className="p-3">
         {loading ? <PanelLoader /> : error ? <PanelError message={error} onRetry={refetch} /> : data ? (
           <div className="space-y-3">
@@ -289,7 +289,7 @@ function heatColor(v: number) {
 export function SectorHeatmapPanel() {
   const { data, loading, error, refetch } = useFetchPanel<SectorHeatmapData>("/ai/panel/sector-heatmap");
   return (
-    <MacWindow title="Sector Heatmap" rightSlot={<span className="text-terminal-cyan/80">AI</span>}>
+    <MacWindow title="Sector Heatmap">
       <div className="p-3">
         {loading ? <PanelLoader /> : error ? <PanelError message={error} onRetry={refetch} /> : data ? (
           <div className="space-y-3">
@@ -330,7 +330,7 @@ const RADAR_ICON: Record<string, string> = {
 export function MarketRadarPanel() {
   const { data, loading, error, refetch } = useFetchPanel<MarketRadarData>("/ai/panel/market-radar");
   return (
-    <MacWindow title="Market Radar" rightSlot={<span className="text-terminal-cyan/80">AI</span>}>
+    <MacWindow title="Market Radar">
       <div className="p-3">
         {loading ? <PanelLoader /> : error ? <PanelError message={error} onRetry={refetch} /> : data?.alerts?.length ? (
           <div className="space-y-1.5">
@@ -369,7 +369,7 @@ type DerivativesData = {
 export function DerivativesPanel() {
   const { data, loading, error, refetch } = useFetchPanel<DerivativesData>("/ai/panel/derivatives-options");
   return (
-    <MacWindow title="Derivatives & Options" rightSlot={<span className="text-terminal-cyan/80">AI</span>}>
+    <MacWindow title="Derivatives & Options">
       <div className="p-3">
         {loading ? <PanelLoader /> : error ? <PanelError message={error} onRetry={refetch} /> : data ? (
           <div className="space-y-3">
@@ -417,7 +417,7 @@ type HedgeFundsData = {
 export function HedgeFundsPanel() {
   const { data, loading, error, refetch } = useFetchPanel<HedgeFundsData>("/ai/panel/hedge-funds-pe");
   return (
-    <MacWindow title="Hedge Funds & PE" rightSlot={<span className="text-terminal-cyan/80">AI</span>}>
+    <MacWindow title="Hedge Funds & PE">
       <div className="p-3">
         {loading ? <PanelLoader /> : error ? <PanelError message={error} onRetry={refetch} /> : data ? (
           <div className="space-y-3">

@@ -12,7 +12,7 @@ type CommoditiesNewsData = {
 export function CommoditiesNewsPanel() {
   const { data, loading, error, refetch } = useFetchPanel<CommoditiesNewsData>("/ai/panel/commodities-news");
   return (
-    <MacWindow title="Commodities News" rightSlot={<span className="text-terminal-cyan/80">AI</span>}>
+    <MacWindow title="Commodities News">
       <div className="p-3">
         {loading ? <PanelLoader /> : error ? <PanelError message={error} onRetry={refetch} /> : data?.articles?.length ? (
           <div className="space-y-2">
@@ -45,7 +45,7 @@ type EconomicNewsData = {
 export function EconomicNewsPanel() {
   const { data, loading, error, refetch } = useFetchPanel<EconomicNewsData>("/ai/panel/economic-news");
   return (
-    <MacWindow title="Economic News" rightSlot={<span className="text-terminal-cyan/80">AI</span>}>
+    <MacWindow title="Economic News">
       <div className="p-3">
         {loading ? <PanelLoader /> : error ? <PanelError message={error} onRetry={refetch} /> : data?.articles?.length ? (
           <div className="space-y-2">

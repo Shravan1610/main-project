@@ -6,7 +6,8 @@ import { Suspense, useCallback, useMemo, useState, lazy } from "react";
 import { LayerPanel } from "@/features/layer-controls/components";
 import { useLayers } from "@/features/layer-controls/hooks";
 import { useMap, useUrlMapState } from "@/features/map-intelligence/hooks";
-import { fetchMapLayers } from "@/features/map-intelligence/services";
+import { fetchMapLayers, fetchClimateHeatmap } from "@/features/map-intelligence/services";
+import { populationToMarkers } from "@/features/map-intelligence/config/country-populations";
 import type { MapProps } from "@/features/map-intelligence/types";
 import { useApi } from "@/shared/hooks";
 
@@ -24,6 +25,9 @@ const DocumentAnalyzerPanel = lazy(() =>
 );
 const EvidenceCollectionPanel = lazy(() =>
   import("@/features/evidence-collection/components").then((m) => ({ default: m.EvidenceCollectionPanel })),
+);
+const RegulatoryComplianceWorkspace = lazy(() =>
+  import("@/features/regulatory-compliance/components").then((m) => ({ default: m.RegulatoryComplianceWorkspace })),
 );
 import { usePanelSelection } from "../hooks/use-panel-selection";
 import { PANEL_REGISTRY } from "../constants/panel-registry";
@@ -74,16 +78,24 @@ export function WorldMonitorDashboard({
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const loadLayers = useCallback(() => fetchMapLayers(), []);
+  const loadClimateHeatmap = useCallback(() => fetchClimateHeatmap(), []);
 
   const { data: layerData } = useApi(loadLayers, {
-    initialData: { exchanges: [], climate: [], news: [] },
+    initialData: { population: [], climate: [] },
     refreshIntervalMs: 45_000,
     pauseWhenHidden: true,
   });
 
+  const { data: climateHeatmap } = useApi(loadClimateHeatmap, {
+    initialData: [],
+    refreshIntervalMs: 300_000, // 5 minutes
+    pauseWhenHidden: true,
+  });
+
   const markers = useMemo(() => {
-    if (!layerData) return [];
-    return [...layerData.exchanges, ...layerData.climate, ...layerData.news];
+    const pop = populationToMarkers();
+    const climate = layerData?.climate ?? [];
+    return [...pop, ...climate];
   }, [layerData]);
 
   const activeLayers = useMemo(() => {
@@ -103,6 +115,9 @@ export function WorldMonitorDashboard({
   const toggleablePanels = PANEL_REGISTRY.filter(
     (p) => !p.isPinned && enabledPanels[p.id],
   );
+  const voiceAgentPanel = toggleablePanels.find((panel) => panel.id === "voice-agent");
+  const VoiceAgentComponent = voiceAgentPanel ? getLazyComponent(voiceAgentPanel) : null;
+  const showDockedVoiceAgent = isMonitor && Boolean(voiceAgentPanel && VoiceAgentComponent);
 
   return (
     <>
@@ -115,6 +130,7 @@ export function WorldMonitorDashboard({
               viewport={viewport}
               markers={markers}
               activeLayers={activeLayers}
+              climateHeatmap={climateHeatmap ?? undefined}
             />
           ) : undefined
         }
@@ -128,6 +144,19 @@ export function WorldMonitorDashboard({
           pinnedPanels,
           toggleablePanels,
         )}
+        preFooterSlot={
+          showDockedVoiceAgent && VoiceAgentComponent ? (
+            <div className="min-h-[15rem] md:min-h-[16rem]">
+              <div className="sticky bottom-4 z-20 md:bottom-6">
+                <div className="overflow-hidden rounded-[1.75rem] border border-terminal-border bg-terminal-surface shadow-[0_24px_80px_rgba(0,0,0,0.45)]">
+                  <Suspense fallback={<PanelLoadingSkeleton />}>
+                    <VoiceAgentComponent />
+                  </Suspense>
+                </div>
+              </div>
+            </div>
+          ) : undefined
+        }
         onTogglePanelSelector={
           isMonitor ? () => setSidebarOpen((p) => !p) : undefined
         }
@@ -174,8 +203,22 @@ function renderFeedSlot(
           <EvidenceCollectionPanel />
         </Suspense>
       );
+    case "disclosure-gap-analyzer":
+      return (
+        <Suspense fallback={<PageLoadingSkeleton />}>
+          <RegulatoryComplianceWorkspace initialTab="disclosure-gaps" />
+        </Suspense>
+      );
+    case "compliance-risk-engine":
+      return (
+        <Suspense fallback={<PageLoadingSkeleton />}>
+          <RegulatoryComplianceWorkspace initialTab="compliance-risk" />
+        </Suspense>
+      );
     case "monitor":
     default:
+      const inlinePanels = toggleablePanels.filter((panel) => panel.id !== "voice-agent");
+
       return (
         <div className="space-y-4">
           {/* Pinned row: Live News + Live Webcams — always at top */}
@@ -183,7 +226,7 @@ function renderFeedSlot(
             {pinnedPanels.map((panel) => {
               const LazyComponent = getLazyComponent(panel);
               return (
-                <div key={panel.id} className="h-105 overflow-y-auto rounded-[1.6rem] border border-terminal-border">
+                <div key={panel.id} className="h-105 overflow-hidden">
                   <Suspense fallback={<PanelLoadingSkeleton />}>
                     <LazyComponent />
                   </Suspense>
@@ -193,9 +236,9 @@ function renderFeedSlot(
           </div>
 
           {/* Toggleable panel grid — equal-sized cells */}
-          {toggleablePanels.length > 0 ? (
+          {inlinePanels.length > 0 ? (
             <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
-              {toggleablePanels.map((panel) => {
+              {inlinePanels.map((panel) => {
                 const LazyComponent = getLazyComponent(panel);
                 return (
                   <div

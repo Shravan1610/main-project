@@ -13,7 +13,7 @@ type CentralBankData = {
 export function CentralBankPanel() {
   const { data, loading, error, refetch } = useFetchPanel<CentralBankData>("/ai/panel/central-bank-watch");
   return (
-    <MacWindow title="Central Bank Watch" rightSlot={<span className="text-terminal-cyan/80">AI</span>}>
+    <MacWindow title="Central Bank Watch">
       <div className="p-3">
         {loading ? <PanelLoader /> : error ? <PanelError message={error} onRetry={refetch} /> : data ? (
           <div className="space-y-3">
@@ -56,7 +56,7 @@ type EconomicIndicatorsData = {
 export function EconomicIndicatorsPanel() {
   const { data, loading, error, refetch } = useFetchPanel<EconomicIndicatorsData>("/ai/panel/economic-indicators");
   return (
-    <MacWindow title="Economic Indicators" rightSlot={<span className="text-terminal-cyan/80">AI</span>}>
+    <MacWindow title="Economic Indicators">
       <div className="p-3">
         {loading ? <PanelLoader /> : error ? <PanelError message={error} onRetry={refetch} /> : data ? (
           <div className="space-y-3">
@@ -99,7 +99,7 @@ type TradePolicyData = {
 export function TradePolicyPanel() {
   const { data, loading, error, refetch } = useFetchPanel<TradePolicyData>("/ai/panel/trade-policy");
   return (
-    <MacWindow title="Trade Policy" rightSlot={<span className="text-terminal-cyan/80">AI</span>}>
+    <MacWindow title="Trade Policy">
       <div className="p-3">
         {loading ? <PanelLoader /> : error ? <PanelError message={error} onRetry={refetch} /> : data ? (
           <div className="space-y-3">
@@ -143,7 +143,7 @@ type SupplyChainData = {
 export function SupplyChainPanel() {
   const { data, loading, error, refetch } = useFetchPanel<SupplyChainData>("/ai/panel/supply-chain");
   return (
-    <MacWindow title="Supply Chain" rightSlot={<span className="text-terminal-cyan/80">AI</span>}>
+    <MacWindow title="Supply Chain">
       <div className="p-3">
         {loading ? <PanelLoader /> : error ? <PanelError message={error} onRetry={refetch} /> : data ? (
           <div className="space-y-3">

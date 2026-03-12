@@ -15,7 +15,7 @@ from urllib.parse import urlparse
 from bs4 import BeautifulSoup
 
 from src.shared.clients.http_client import get_http_client
-from src.shared.clients.gemini_client import call_gemini
+from src.shared.clients.gemini_client import call_gemini, call_gemini_grounded
 from src.shared.config import get_settings
 
 # ---------------------------------------------------------------------------
@@ -55,26 +55,70 @@ def _get_supabase_headers(*, prefer: str | None = None) -> dict[str, str]:
 _GREENWASH_PHRASES = [
     "committed to being 100% sustainable",
     "eco-friendly",
+    "eco friendly",
     "carbon neutral",
+    "carbon-neutral",
     "net zero",
+    "net-zero",
     "green energy leader",
     "industry-leading sustainability",
+    "industry leading sustainability",
     "best-in-class esg",
+    "best in class esg",
     "world-class environmental",
+    "world class environmental",
     "fully sustainable",
     "zero environmental impact",
     "completely green",
     "100% clean energy",
+    "climate positive",
+    "climate-positive",
+    "planet-friendly",
+    "planet friendly",
+    "environmentally responsible",
+    "sustainable future",
+    "greener future",
+    "clean energy transition",
+    "responsible growth",
+    "esg excellence",
+    "sustainability leader",
+    "environmental stewardship",
+    "going green",
+    "green initiative",
+    "offset our carbon",
+    "nature-based solution",
+    "nature based solution",
+    "just transition",
+    "circular economy",
+    "zero waste",
+    "carbon footprint reduction",
+    "aligned with the paris agreement",
+    "aligned with sdg",
+    "aligned with un",
+    "science-based target",
+    "science based target",
+    "race to zero",
+    "decarbonization pathway",
+    "decarbonisation pathway",
 ]
 
 _VAGUE_CLAIM_PATTERNS = [
-    r"significantly\s+(?:reduc|improv|lower)",
-    r"substantially\s+(?:reduc|improv|lower|better)",
-    r"committed\s+to\s+(?:a\s+)?sustainable",
+    r"significantly\s+(?:reduc|improv|lower|decreas)",
+    r"substantially\s+(?:reduc|improv|lower|better|decreas)",
+    r"committed\s+to\s+(?:a\s+)?(?:sustainable|greener|net.?zero|carbon)",
     r"striving\s+(?:for|to|towards)",
-    r"working\s+towards?\s+(?:a\s+)?(?:greener|sustainable|better)",
-    r"dedicated\s+to\s+(?:protect|preserv|sustain)",
+    r"working\s+towards?\s+(?:a\s+)?(?:greener|sustainable|better|net.?zero)",
+    r"dedicated\s+to\s+(?:protect|preserv|sustain|reduc)",
     r"passionate\s+about\s+(?:the\s+)?environment",
+    r"on\s+track\s+to\s+(?:achiev|reach|meet)",
+    r"ambitious\s+(?:goal|target|plan|commitment)",
+    r"pledge[ds]?\s+to\s+(?:reduc|achiev|eliminat|become)",
+    r"leading\s+the\s+(?:way|charge|transition)\s+(?:in|to|towards)",
+    r"proud\s+(?:to|of)\s+(?:our|the)",
+    r"making\s+(?:a\s+)?(?:meaningful|significant|real)\s+(?:impact|progress|difference)",
+    r"ahead\s+of\s+(?:schedule|target|plan)",
+    r"pioneer(?:ing|s)?\s+(?:in\s+)?(?:sustain|green|clean|renew)",
+    r"transforming\s+(?:our|the)\s+(?:approach|business|operations)",
 ]
 
 # ---------------------------------------------------------------------------
@@ -276,15 +320,48 @@ def _classify_claim(sentence: str) -> tuple[str, float]:
     return claim_type, min(confidence, 0.95)
 
 
+def _clean_pdf_artifacts(text: str) -> str:
+    """Remove common PDF extraction artifacts (§, █, column markers, etc.)."""
+    # Replace § followed by optional whitespace/block chars with sentence breaks
+    text = re.sub(r"§[█▪▫■□●○•]*\s*", ". ", text)
+    # Remove remaining isolated special characters
+    text = re.sub(r"[§█▪▫■□●○•]+", " ", text)
+    # Collapse multiple dots/periods
+    text = re.sub(r"\.{2,}", ".", text)
+    # Collapse whitespace
+    text = re.sub(r"\s+", " ", text)
+    return text.strip()
+
+
+def _is_meaningful_claim(sentence: str) -> bool:
+    """Filter out table-of-contents lines, navigation items, and very short fragments."""
+    stripped = sentence.strip()
+    # Too short or too long to be a meaningful claim
+    if len(stripped) < 20 or len(stripped) > 500:
+        return False
+    # Mostly just a list of proper nouns / navigation items (no verbs)
+    words = stripped.split()
+    if len(words) < 4:
+        return False
+    # Skip lines that are just a series of capitalized words (ToC entries)
+    capitalized = sum(1 for w in words if w[0].isupper() and len(w) > 1)
+    if capitalized / len(words) > 0.85 and len(words) > 6:
+        return False
+    return True
+
+
 def _extract_claims(text: str) -> list[dict[str, Any]]:
     if not text:
         return []
 
-    sentences = [segment.strip() for segment in re.split(r"(?<=[.!?])\s+", text) if segment.strip()]
+    cleaned = _clean_pdf_artifacts(text)
+    sentences = [segment.strip() for segment in re.split(r"(?<=[.!?])\s+", cleaned) if segment.strip()]
     claims: list[dict[str, Any]] = []
     seen: set[tuple[str, str]] = set()
 
     for sentence in sentences:
+        if not _is_meaningful_claim(sentence):
+            continue
         lowered = sentence.lower()
         for category, patterns in CLAIM_PATTERNS.items():
             if any(pattern in lowered for pattern in patterns):
@@ -293,9 +370,11 @@ def _extract_claims(text: str) -> list[dict[str, Any]]:
                     continue
                 seen.add(key)
                 claim_type, confidence = _classify_claim(sentence)
+                # Truncate very long claim text for display
+                display_text = sentence if len(sentence) <= 300 else sentence[:297] + "…"
                 claims.append(
                     {
-                        "text": sentence,
+                        "text": display_text,
                         "type": claim_type,
                         "category": category,
                         "confidence": confidence,
@@ -378,12 +457,17 @@ def _detect_greenwashing(text: str) -> dict[str, Any]:
         text_lower,
     ))
 
-    total = len(suspicious) + vague_count + specific_count
-    if total == 0:
-        prob = 0.1
+    # Score based on suspicious + vague signals (specific metrics don't reduce risk)
+    signal_count = len(suspicious) + vague_count
+    if signal_count == 0:
+        prob = 0.05
     else:
-        vague_ratio = (len(suspicious) + vague_count) / max(total, 1)
-        prob = min(0.95, vague_ratio * 0.8 + 0.05)
+        # More signals → higher probability, capped at 0.95
+        # Each signal adds ~0.12, base 0.15
+        prob = min(0.95, 0.15 + signal_count * 0.12)
+        # Documents with many vague claims and few specifics are more suspicious
+        if specific_count > 0 and signal_count > specific_count:
+            prob = min(0.95, prob + 0.05)
 
     return {
         "probability": round(prob, 3),
@@ -445,12 +529,56 @@ def _build_nlp_gemini_prompt(text: str, metrics: dict[str, float]) -> str:
     )
 
 
+async def _verify_model_output_with_gemini(
+    model_type: str, raw_output: dict[str, Any], text_snippet: str
+) -> dict[str, Any]:
+    """Verify ESG/NLP model output using Gemini with Google Search grounding."""
+    prompt = "\n".join(
+        [
+            f"You are an ESG verification analyst. A {model_type} model analyzed a document and produced the following output.",
+            "Use Google Search to cross-check the claims and scores against publicly available ESG data, sustainability reports, and news.",
+            "",
+            f"Model output: {json.dumps(raw_output, default=str)[:3000]}",
+            f"Document excerpt: {text_snippet[:2000]}",
+            "",
+            "Return ONLY valid JSON with this shape:",
+            "{",
+            '  "verified": true/false,',
+            '  "adjusted_output": { ... the model output with any corrections ... },',
+            '  "confidence": number (0-1),',
+            '  "verification_notes": "brief explanation of verification findings"',
+            "}",
+            "",
+            "If the output is reasonable and consistent with public data, set verified=true and return adjusted_output same as input.",
+            "If scores or claims are significantly inconsistent with public evidence, set verified=false and correct them.",
+        ]
+    )
+
+    try:
+        result = await call_gemini_grounded(prompt, temperature=0.1)
+        if result and isinstance(result, dict):
+            adjusted = result.get("adjusted_output")
+            if adjusted and isinstance(adjusted, dict):
+                adjusted["_verification"] = {
+                    "verified": result.get("verified", False),
+                    "confidence": result.get("confidence"),
+                    "notes": result.get("verification_notes", ""),
+                }
+                return adjusted
+    except Exception:
+        pass
+    return raw_output
+
+
 async def _call_esg_model(text: str, metrics: dict[str, float]) -> dict[str, Any]:
     try:
         client = get_http_client()
         resp = await client.post(f"{_get_esg_model_url()}/predict", json=metrics)
         resp.raise_for_status()
-        return resp.json() if resp.content else {}
+        raw_output = resp.json() if resp.content else {}
+        # Verify with Gemini grounded search
+        verified = await _verify_model_output_with_gemini("ESG", raw_output, text)
+        return verified
     except Exception as exc:
         try:
             gemini_payload = await _call_gemini_json(_build_esg_gemini_prompt(text, metrics))
@@ -469,7 +597,10 @@ async def _call_nlp_model(text: str, metrics: dict[str, float]) -> dict[str, Any
         client = get_http_client()
         resp = await client.post(f"{_get_nlp_model_url()}/predict", json=metrics)
         resp.raise_for_status()
-        return resp.json() if resp.content else {}
+        raw_output = resp.json() if resp.content else {}
+        # Verify with Gemini grounded search
+        verified = await _verify_model_output_with_gemini("NLP", raw_output, text)
+        return verified
     except Exception as exc:
         try:
             gemini_payload = await _call_gemini_json(_build_nlp_gemini_prompt(text, metrics))
@@ -597,11 +728,33 @@ def _compute_analytics(
     carbon_exp = round((fossil / max(total_energy, 1)) * 100, 1) if total_energy > 0 else 50.0
     env_risk = round(esg_score * 0.6 + carbon_exp * 0.4, 1)
     gov_risk = round(greenwash["probability"] * 80 + (1 - esg_conf) * 20, 1)
-    gw_prob = greenwash["probability"]
+
+    # Fuse greenwashing probability with NLP model signal
+    gw_text = greenwash["probability"]
+    gw_nlp = 0.0
+    if "error" not in nlp_resp:
+        nlp_raw = nlp_resp.get("risk_score") or nlp_resp.get("score") or nlp_resp.get("prediction_score")
+        if nlp_raw is not None:
+            v = float(nlp_raw)
+            if v <= 1:
+                v *= 100
+            gw_nlp = v / 100  # NLP risk as 0-1 probability
+
+    # Weighted combination: text signals 40%, NLP model 60% (when available)
+    if gw_nlp > 0:
+        gw_prob = gw_text * 0.4 + gw_nlp * 0.6
+    else:
+        gw_prob = gw_text
+
+    # ESG model high risk also pushes greenwashing probability up
+    if esg_score >= 60 and gw_prob < 0.5:
+        gw_prob = gw_prob * 0.7 + (esg_score / 100) * 0.3
+
+    gw_prob = round(min(0.95, gw_prob), 3)
 
     if "error" in esg_resp and "error" in nlp_resp:
         status = "unavailable"
-    elif gw_prob > 0.6:
+    elif gw_prob > 0.4:
         status = "flagged"
     else:
         status = "verified"
@@ -737,8 +890,10 @@ async def _resolve_text(input_type: str, document_bytes: bytes | None, url: str 
         if not document_bytes:
             return ""
         if document_bytes[:5] == b"%PDF-":
-            return _extract_pdf_text(document_bytes)
-        return document_bytes.decode("utf-8", errors="ignore").strip()
+            raw = _extract_pdf_text(document_bytes)
+        else:
+            raw = document_bytes.decode("utf-8", errors="ignore").strip()
+        return _clean_pdf_artifacts(raw)
 
     if normalized == "url":
         if not url:

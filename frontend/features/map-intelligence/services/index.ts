@@ -3,4 +3,4 @@
 //
 // Owner: Srijan
 
-export { fetchMapLayers, transformToMarkers } from "./map-data-service";
+export { fetchMapLayers, fetchClimateHeatmap, transformToMarkers } from "./map-data-service";

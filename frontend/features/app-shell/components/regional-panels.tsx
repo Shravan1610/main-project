@@ -14,7 +14,7 @@ type GccInvestmentsData = {
 export function GccInvestmentsPanel() {
   const { data, loading, error, refetch } = useFetchPanel<GccInvestmentsData>("/ai/panel/gcc-investments");
   return (
-    <MacWindow title="GCC Investments" rightSlot={<span className="text-terminal-cyan/80">AI</span>}>
+    <MacWindow title="GCC Investments">
       <div className="p-3">
         {loading ? <PanelLoader /> : error ? <PanelError message={error} onRetry={refetch} /> : data ? (
           <div className="space-y-3">
@@ -56,7 +56,7 @@ type GccBusinessNewsData = {
 export function GccBusinessNewsPanel() {
   const { data, loading, error, refetch } = useFetchPanel<GccBusinessNewsData>("/ai/panel/gcc-business-news");
   return (
-    <MacWindow title="GCC Business News" rightSlot={<span className="text-terminal-cyan/80">AI</span>}>
+    <MacWindow title="GCC Business News">
       <div className="p-3">
         {loading ? <PanelLoader /> : error ? <PanelError message={error} onRetry={refetch} /> : data?.articles?.length ? (
           <div className="space-y-2">
@@ -90,7 +90,7 @@ type GulfEconomiesData = {
 export function GulfEconomiesPanel() {
   const { data, loading, error, refetch } = useFetchPanel<GulfEconomiesData>("/ai/panel/gulf-economies");
   return (
-    <MacWindow title="Gulf Economies" rightSlot={<span className="text-terminal-cyan/80">AI</span>}>
+    <MacWindow title="Gulf Economies">
       <div className="p-3">
         {loading ? <PanelLoader /> : error ? <PanelError message={error} onRetry={refetch} /> : data ? (
           <div className="space-y-3">

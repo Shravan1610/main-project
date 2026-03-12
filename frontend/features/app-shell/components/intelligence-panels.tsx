@@ -13,7 +13,7 @@ type FintechData = {
 export function FintechPanel() {
   const { data, loading, error, refetch } = useFetchPanel<FintechData>("/ai/panel/fintech-trading-tech");
   return (
-    <MacWindow title="Fintech & Trading Tech" rightSlot={<span className="text-terminal-cyan/80">AI</span>}>
+    <MacWindow title="Fintech & Trading Tech">
       <div className="p-3">
         {loading ? <PanelLoader /> : error ? <PanelError message={error} onRetry={refetch} /> : data ? (
           <div className="space-y-3">
@@ -54,7 +54,7 @@ type AirlineData = {
 export function AirlineIntelPanel() {
   const { data, loading, error, refetch } = useFetchPanel<AirlineData>("/ai/panel/airline-intelligence");
   return (
-    <MacWindow title="Airline Intelligence" rightSlot={<span className="text-terminal-cyan/80">AI</span>}>
+    <MacWindow title="Airline Intelligence">
       <div className="p-3">
         {loading ? <PanelLoader /> : error ? <PanelError message={error} onRetry={refetch} /> : data ? (
           <div className="space-y-3">

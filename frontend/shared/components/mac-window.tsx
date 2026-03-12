@@ -42,7 +42,7 @@ export function MacWindow({
         </div>
       </div>
 
-      <div className={joinClasses("bg-terminal-surface", bodyClassName)}>{children}</div>
+      <div className={joinClasses("flex-1 min-h-0 bg-terminal-surface", bodyClassName)}>{children}</div>
     </section>
   );
 }

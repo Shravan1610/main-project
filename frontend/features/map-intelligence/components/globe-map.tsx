@@ -4,8 +4,9 @@ import { useEffect, useRef, useState } from "react";
 import GlobeGL from "globe.gl";
 import type { GlobeInstance } from "globe.gl";
 
-import type { ActiveLayers, MapMarker, MapViewport } from "../types";
+import type { ActiveLayers, ClimateHeatmapPoint, MapMarker, MapViewport } from "../types";
 import { getLayerDef } from "../config/map-layer-definitions";
+import { getAllExchangeStatuses, type ExchangeStatusInfo } from "../utils/market-hours";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -16,14 +17,13 @@ type GlobeMapProps = {
   markers: MapMarker[];
   activeLayers?: ActiveLayers;
   onMarkerSelect?: (marker: MapMarker) => void;
+  climateHeatmap?: ClimateHeatmapPoint[];
 };
 
 const DEFAULT_ACTIVE: ActiveLayers = {
-  entities: true,
-  exchanges: true,
+  population: true,
   climate: true,
-  news: true,
-  heatmap: false,
+  heatmap: true,
   "risk-overlay": false,
 };
 
@@ -32,10 +32,8 @@ const DEFAULT_ACTIVE: ActiveLayers = {
 /* ------------------------------------------------------------------ */
 
 const HEATMAP_BLOB_COLORS: Record<string, string> = {
-  entity: "rgba(132,219,160,0.35)",
-  exchange: "rgba(136,198,245,0.35)",
+  population: "rgba(132,219,160,0.35)",
   climate: "rgba(233,188,116,0.40)",
-  news: "rgba(234,123,120,0.35)",
 };
 
 /* ------------------------------------------------------------------ */
@@ -112,12 +110,60 @@ const DEFAULT_COUNTRY_FILL = "rgba(200,210,220,0.25)";
 const DEFAULT_COUNTRY_STROKE = "rgba(180,190,200,0.20)";
 
 /* ------------------------------------------------------------------ */
+/*  Climate choropleth helpers                                         */
+/* ------------------------------------------------------------------ */
+
+function temperatureToRgba(weight: number): string {
+  if (weight < 0.25) return "rgba(0,120,255,0.40)";     // cold — blue
+  if (weight < 0.4)  return "rgba(0,200,180,0.40)";     // cool — teal
+  if (weight < 0.55) return "rgba(0,255,136,0.40)";     // mild — green
+  if (weight < 0.65) return "rgba(200,230,0,0.40)";     // warm — yellow-green
+  if (weight < 0.75) return "rgba(255,184,0,0.40)";     // warm — amber
+  if (weight < 0.85) return "rgba(255,100,60,0.45)";    // hot — orange
+  return "rgba(255,59,92,0.50)";                          // very hot — red
+}
+
+function degDist(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const dLat = lat1 - lat2;
+  const dLng = lng1 - lng2;
+  return dLat * dLat + dLng * dLng;
+}
+
+function nearestClimateWeight(
+  centroidLat: number,
+  centroidLng: number,
+  climateData: ClimateHeatmapPoint[],
+): number {
+  let minDist = Infinity;
+  let weight = 0.5;
+  for (const p of climateData) {
+    const d = degDist(centroidLat, centroidLng, p.lat, p.lng);
+    if (d < minDist) {
+      minDist = d;
+      weight = p.weight;
+    }
+  }
+  return weight;
+}
+
+function computeCentroid(feature: GeoJSON.Feature): [number, number] | null {
+  const coords: number[][] = [];
+  extractCoords(feature.geometry, coords);
+  if (coords.length === 0) return null;
+  let sumLat = 0, sumLng = 0;
+  for (const c of coords) {
+    sumLng += c[0];
+    sumLat += c[1];
+  }
+  return [sumLat / coords.length, sumLng / coords.length];
+}
+
+/* ------------------------------------------------------------------ */
 /*  Helpers                                                            */
 /* ------------------------------------------------------------------ */
 
 function kindToLayerKey(kind: string): string {
-  if (kind === "entity") return "entities";
-  if (kind === "exchange") return "exchanges";
+  if (kind === "population") return "population";
   return kind;
 }
 
@@ -135,6 +181,7 @@ export function GlobeMap({
   markers,
   activeLayers = DEFAULT_ACTIVE,
   onMarkerSelect,
+  climateHeatmap,
 }: GlobeMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const globeRef = useRef<GlobeInstance | null>(null);
@@ -143,6 +190,18 @@ export function GlobeMap({
   const [worldGeoJson, setWorldGeoJson] =
     useState<GeoJSON.FeatureCollection | null>(worldGeoJsonCache);
   activeLayersRef.current = activeLayers;
+
+  // Market hours status (updated every 30s)
+  const [exchangeStatuses, setExchangeStatuses] = useState<ExchangeStatusInfo[]>(
+    () => getAllExchangeStatuses(),
+  );
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setExchangeStatuses(getAllExchangeStatuses());
+    }, 30_000);
+    return () => clearInterval(interval);
+  }, []);
 
   // ---- Initialize globe ---- //
   useEffect(() => {
@@ -247,20 +306,107 @@ export function GlobeMap({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ---- Update marker data ---- //
+  // ---- Update marker data (including market hour markers) ---- //
   useEffect(() => {
     if (!globeRef.current) return;
 
+    // Build combined data: regular markers + market hours (if enabled)
+    const showMarketHours = activeLayersRef.current["market-hours"] ?? false;
+    type MarkerOrExchange = { type: "marker"; data: MapMarker } | { type: "exchange"; data: ExchangeStatusInfo };
+
+    const combined: MarkerOrExchange[] = markers.map((m) => ({ type: "marker" as const, data: m }));
+    if (showMarketHours) {
+      for (const es of exchangeStatuses) {
+        combined.push({ type: "exchange" as const, data: es });
+      }
+    }
+
     globeRef.current
-      .htmlElementsData(markers)
-      .htmlLat((d: unknown) => (d as MapMarker).coordinates.lat)
-      .htmlLng((d: unknown) => (d as MapMarker).coordinates.lng)
+      .htmlElementsData(combined)
+      .htmlLat((d: unknown) => {
+        const item = d as MarkerOrExchange;
+        return item.type === "marker"
+          ? item.data.coordinates.lat
+          : item.data.exchange.coordinates.lat;
+      })
+      .htmlLng((d: unknown) => {
+        const item = d as MarkerOrExchange;
+        return item.type === "marker"
+          ? item.data.coordinates.lng
+          : item.data.exchange.coordinates.lng;
+      })
       .htmlAltitude((d: unknown) => {
-        const marker = d as MapMarker;
-        return getLayerDef(marker.kind).globe.altitude;
+        const item = d as MarkerOrExchange;
+        if (item.type === "exchange") return 0.03;
+        return getLayerDef(item.data.kind).globe.altitude;
       })
       .htmlElement((d: unknown) => {
-        const marker = d as MapMarker;
+        const item = d as MarkerOrExchange;
+
+        if (item.type === "exchange") {
+          const es = item.data;
+          const isOpen = es.status === "open";
+          const el = document.createElement("div");
+          el.className = "globe-marker globe-exchange-marker";
+          el.dataset.kind = "market-hours";
+          el.style.cssText = `
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            pointer-events: none;
+            opacity: 1;
+          `;
+
+          // Dot
+          const dot = document.createElement("div");
+          dot.style.cssText = `
+            width: ${isOpen ? 14 : 10}px;
+            height: ${isOpen ? 14 : 10}px;
+            border-radius: 50%;
+            background: ${isOpen ? "#00ff88" : "rgba(120,120,140,0.7)"};
+            border: 1.5px solid ${isOpen ? "rgba(0,255,136,0.6)" : "rgba(80,80,100,0.5)"};
+            box-shadow: ${isOpen ? "0 0 12px rgba(0,255,136,0.5)" : "none"};
+          `;
+
+          // Label
+          const label = document.createElement("div");
+          label.style.cssText = `
+            font-family: monospace;
+            font-size: 9px;
+            font-weight: bold;
+            color: ${isOpen ? "#00ff88" : "rgba(150,150,170,0.8)"};
+            text-shadow: 0 0 4px rgba(0,0,0,0.8);
+            white-space: nowrap;
+            text-align: center;
+          `;
+          label.textContent = `${es.exchange.shortName}`;
+
+          el.appendChild(dot);
+          el.appendChild(label);
+
+          // Pulse ring for open
+          if (isOpen) {
+            const ring = document.createElement("div");
+            ring.style.cssText = `
+              position: absolute;
+              top: 0; left: 50%;
+              transform: translateX(-50%);
+              width: 14px;
+              height: 14px;
+              border-radius: 50%;
+              border: 2px solid #00ff88;
+              animation: globe-pulse 2s ease-out infinite;
+              pointer-events: none;
+            `;
+            el.appendChild(ring);
+          }
+
+          return el;
+        }
+
+        // Regular marker
+        const marker = item.data;
         const def = getLayerDef(marker.kind);
         const layerKey = kindToLayerKey(marker.kind);
         const isActive = activeLayersRef.current[layerKey] ?? false;
@@ -314,14 +460,14 @@ export function GlobeMap({
 
         return el;
       });
-  }, [markers, onMarkerSelect]);
+  }, [markers, onMarkerSelect, exchangeStatuses]);
 
   // ---- Layer visibility toggle — animate opacity ---- //
   useEffect(() => {
     if (!containerRef.current) return;
     const container = containerRef.current;
 
-    for (const kind of ["entity", "exchange", "climate", "news"] as const) {
+    for (const kind of ["population", "climate"] as const) {
       const layerKey = kindToLayerKey(kind);
       const isActive = activeLayers[layerKey] ?? false;
       const els = container.querySelectorAll<HTMLElement>(
@@ -332,48 +478,48 @@ export function GlobeMap({
         el.style.pointerEvents = isActive ? "auto" : "none";
       }
     }
+
+    // Toggle market-hours markers
+    const showMarketHours = activeLayers["market-hours"] ?? false;
+    const marketEls = container.querySelectorAll<HTMLElement>(
+      `.globe-marker[data-kind="market-hours"]`,
+    );
+    for (const el of marketEls) {
+      el.style.opacity = showMarketHours ? "1" : "0";
+    }
   }, [activeLayers]);
 
-  // ---- Heatmap: pointsData blobs ---- //
+  // ---- Heatmap: choropleth via polygon fills (climate-bounded to country borders) ---- //
+  // (handled in the country polygons useEffect below — no separate pointsData needed)
   useEffect(() => {
     if (!globeRef.current) return;
+    // Clear pointsData since heatmap is now choropleth-based
+    globeRef.current.pointsData([]);
+  }, [activeLayers, climateHeatmap]);
 
-    if (activeLayers["heatmap"]) {
-      const visibleMarkers = markers.filter((m) => {
-        const key = kindToLayerKey(m.kind);
-        return activeLayers[key];
-      });
-      const data = visibleMarkers.length > 0 ? visibleMarkers : markers;
-
-      globeRef.current
-        .pointsData(data)
-        .pointLat((d: unknown) => (d as MapMarker).coordinates.lat)
-        .pointLng((d: unknown) => (d as MapMarker).coordinates.lng)
-        .pointAltitude(0.0)
-        .pointRadius(3.5)
-        .pointColor(
-          (d: unknown) =>
-            HEATMAP_BLOB_COLORS[(d as MapMarker).kind] ??
-            "rgba(255,255,255,0.2)",
-        );
-    } else {
-      globeRef.current.pointsData([]);
-    }
-  }, [activeLayers, markers]);
-
-  // ---- Country polygons: default white land, risk tint when enabled ---- //
+  // ---- Country polygons: climate choropleth when heatmap active, risk tint when enabled ---- //
   useEffect(() => {
     if (!globeRef.current) return;
     if (!worldGeoJson) return;
 
     const riskMarkers = markers.filter(
-      (m) => m.kind === "climate" || m.kind === "news",
+      (m) => m.kind === "climate",
     );
     const riskOverlayEnabled = activeLayers["risk-overlay"];
+    const heatmapEnabled = activeLayers["heatmap"];
+    const hasClimateData = climateHeatmap && climateHeatmap.length > 0;
+
     const features = worldGeoJson.features.map((f) => {
       const bbox = featureBBox(f);
       const count = bbox ? countMarkersInBBox(bbox, riskMarkers) : 0;
-      return { ...f, properties: { ...f.properties, _riskCount: count } };
+      const centroid = computeCentroid(f);
+      const climateWeight = centroid && hasClimateData
+        ? nearestClimateWeight(centroid[0], centroid[1], climateHeatmap)
+        : 0.5;
+      return {
+        ...f,
+        properties: { ...f.properties, _riskCount: count, _climateWeight: climateWeight },
+      };
     });
 
     globeRef.current
@@ -382,23 +528,30 @@ export function GlobeMap({
         ((d: unknown) => (d as GeoJSON.Feature).geometry) as any,
       )
       .polygonCapColor((d: unknown) => {
-        if (!riskOverlayEnabled) {
-          return DEFAULT_COUNTRY_FILL;
+        const props = (d as GeoJSON.Feature).properties as Record<string, number>;
+
+        // Climate choropleth takes priority when heatmap is active
+        if (heatmapEnabled && hasClimateData) {
+          return temperatureToRgba(props?._climateWeight ?? 0.5);
         }
 
-        const riskColor = computeRiskColor(
-          ((d as GeoJSON.Feature).properties as Record<string, number>)
-            ?._riskCount ?? 0,
-        );
+        if (riskOverlayEnabled) {
+          const riskColor = computeRiskColor(props?._riskCount ?? 0);
+          return riskColor === "rgba(0,0,0,0)" ? DEFAULT_COUNTRY_FILL : riskColor;
+        }
 
-        return riskColor === "rgba(0,0,0,0)" ? DEFAULT_COUNTRY_FILL : riskColor;
+        return DEFAULT_COUNTRY_FILL;
       })
       .polygonSideColor(() => "rgba(0,0,0,0)")
       .polygonStrokeColor(() =>
-        riskOverlayEnabled ? "rgba(255,255,255,0.18)" : DEFAULT_COUNTRY_STROKE,
+        heatmapEnabled && hasClimateData
+          ? "rgba(255,255,255,0.12)"
+          : riskOverlayEnabled
+            ? "rgba(255,255,255,0.18)"
+            : DEFAULT_COUNTRY_STROKE,
       )
       .polygonAltitude(0.004);
-  }, [activeLayers, markers, worldGeoJson]);
+  }, [activeLayers, markers, worldGeoJson, climateHeatmap]);
 
   // ---- Fly to viewport changes ---- //
   useEffect(() => {

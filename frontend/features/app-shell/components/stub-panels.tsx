@@ -32,8 +32,8 @@ export default function GlobalSituationPanel() {
 
 export function AIInsightsPanel() {
   return (
-    <MacWindow title="AI Insights">
-      <StubContent title="AI Insights" category="Intelligence" />
+    <MacWindow title="Insights">
+      <StubContent title="Insights" category="Intelligence" />
     </MacWindow>
   );
 }
@@ -184,8 +184,8 @@ export function FintechPanel() {
 
 export function AIRegulationPanel() {
   return (
-    <MacWindow title="AI Regulation Dashboard">
-      <StubContent title="AI Regulation Dashboard" category="Intelligence" />
+    <MacWindow title="Regulation Dashboard">
+      <StubContent title="Regulation Dashboard" category="Intelligence" />
     </MacWindow>
   );
 }

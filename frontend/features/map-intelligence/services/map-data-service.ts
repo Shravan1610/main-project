@@ -12,12 +12,16 @@
 
 import { apiClient } from "@/shared/api";
 
-import type { LayerResponse, MapMarker } from "../types";
+import type { ClimateHeatmapPoint, LayerResponse, MapMarker } from "../types";
 
 export async function fetchMapLayers(): Promise<LayerResponse> {
   return apiClient.get<LayerResponse>("/layers");
 }
 
+export async function fetchClimateHeatmap(): Promise<ClimateHeatmapPoint[]> {
+  return apiClient.get<ClimateHeatmapPoint[]>("/layers/climate-heatmap");
+}
+
 export function transformToMarkers(layers: LayerResponse): MapMarker[] {
-  return [...layers.exchanges, ...layers.climate, ...layers.news];
+  return [...layers.population, ...layers.climate];
 }

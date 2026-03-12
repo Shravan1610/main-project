@@ -1,4 +1,5 @@
 import { Header } from "./header";
+import { SiteFooter } from "./site-footer";
 import { MacWindow } from "@/shared/components/mac-window";
 import type { ReactNode } from "react";
 
@@ -6,6 +7,7 @@ type AppShellProps = {
   mapSlot?: ReactNode;
   sidePanelSlot?: ReactNode;
   feedSlot?: ReactNode;
+  preFooterSlot?: ReactNode;
   searchSlot?: ReactNode;
   compareTraySlot?: ReactNode;
   layerControlsSlot?: ReactNode;
@@ -18,6 +20,7 @@ export function AppShell({
   mapSlot,
   sidePanelSlot,
   feedSlot,
+  preFooterSlot,
   searchSlot,
   compareTraySlot,
   layerControlsSlot,
@@ -48,6 +51,10 @@ export function AppShell({
             <div className="text-sm text-terminal-text-dim">Feeds section (Phase 1 scaffold)</div>
           )}
       </section>
+
+      {preFooterSlot ? <section>{preFooterSlot}</section> : null}
+
+      <SiteFooter />
     </main>
   );
 }

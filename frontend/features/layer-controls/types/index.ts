@@ -11,12 +11,11 @@
 //   LayerState { layers: LayerConfig[] }
 
 export type LayerType =
-  | "entities"
-  | "exchanges"
+  | "population"
   | "climate"
-  | "news"
   | "heatmap"
-  | "risk-overlay";
+  | "risk-overlay"
+  | "market-hours";
 
 export type LayerConfig = {
   id: LayerType;

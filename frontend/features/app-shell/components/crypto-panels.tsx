@@ -12,7 +12,7 @@ type CryptoNewsData = {
 export function CryptoNewsPanel() {
   const { data, loading, error, refetch } = useFetchPanel<CryptoNewsData>("/ai/panel/crypto-news");
   return (
-    <MacWindow title="Crypto News" rightSlot={<span className="text-terminal-cyan/80">AI</span>}>
+    <MacWindow title="Crypto News">
       <div className="p-3">
         {loading ? <PanelLoader /> : error ? <PanelError message={error} onRetry={refetch} /> : data?.articles?.length ? (
           <div className="space-y-2">
@@ -53,7 +53,7 @@ const FLOW_COLORS: Record<string, string> = {
 export function BtcEtfPanel() {
   const { data, loading, error, refetch } = useFetchPanel<BtcEtfData>("/ai/panel/btc-etf-tracker");
   return (
-    <MacWindow title="BTC ETF Tracker" rightSlot={<span className="text-terminal-cyan/80">AI</span>}>
+    <MacWindow title="BTC ETF Tracker">
       <div className="p-3">
         {loading ? <PanelLoader /> : error ? <PanelError message={error} onRetry={refetch} /> : data ? (
           <div className="space-y-3">
@@ -100,7 +100,7 @@ type StablecoinsData = {
 export function StablecoinsPanel() {
   const { data, loading, error, refetch } = useFetchPanel<StablecoinsData>("/ai/panel/stablecoins");
   return (
-    <MacWindow title="Stablecoins" rightSlot={<span className="text-terminal-cyan/80">AI</span>}>
+    <MacWindow title="Stablecoins">
       <div className="p-3">
         {loading ? <PanelLoader /> : error ? <PanelError message={error} onRetry={refetch} /> : data ? (
           <div className="space-y-3">

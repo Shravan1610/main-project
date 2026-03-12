@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { PANEL_REGISTRY, PINNED_PANEL_IDS } from "../constants/panel-registry";
 
@@ -34,11 +34,14 @@ function saveToStorage(state: Record<string, boolean>) {
 }
 
 export function usePanelSelection() {
-  const [enabledPanels, setEnabledPanels] = useState<Record<string, boolean>>(() => {
-    const stored = loadFromStorage();
-    if (!stored) return getDefaults();
+  // Always start with defaults to avoid SSR/client hydration mismatch
+  const [enabledPanels, setEnabledPanels] = useState<Record<string, boolean>>(getDefaults);
 
-    // Merge stored selections with defaults (handles newly added panels)
+  // Sync from localStorage after hydration
+  useEffect(() => {
+    const stored = loadFromStorage();
+    if (!stored) return;
+
     const defaults = getDefaults();
     const merged: Record<string, boolean> = { ...defaults };
     for (const [id, enabled] of Object.entries(stored)) {
@@ -46,12 +49,16 @@ export function usePanelSelection() {
         merged[id] = enabled;
       }
     }
-    // Pinned panels are always enabled regardless of stored state
     for (const id of PINNED_PANEL_IDS) {
       merged[id] = true;
     }
-    return merged;
-  });
+
+    // Only update if there's an actual difference
+    setEnabledPanels((prev) => {
+      const changed = Object.keys(merged).some((k) => merged[k] !== prev[k]);
+      return changed ? merged : prev;
+    });
+  }, []);
 
   const togglePanel = useCallback((panelId: string) => {
     if (PINNED_PANEL_IDS.has(panelId)) return; // can't toggle pinned panels

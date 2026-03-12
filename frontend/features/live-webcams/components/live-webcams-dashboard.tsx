@@ -344,6 +344,7 @@ function buildYoutubeEmbedUrl(videoId: string): string {
     modestbranding: "1",
     playsinline: "1",
     enablejsapi: "1",
+    origin: typeof window !== "undefined" ? window.location.origin : "http://localhost:3000",
   });
 
   return `https://www.youtube.com/embed/${videoId}?${params.toString()}`;
@@ -416,8 +417,11 @@ export function LiveWebcamsDashboard() {
   return (
     <MacWindow
       title="Live Webcams"
+      className="h-full flex flex-col"
+      bodyClassName="flex min-h-0 flex-col"
       rightSlot={<span className="text-terminal-red/80">{visibleFeeds.length} online</span>}
     >
+      <div className="flex flex-1 flex-col min-h-0">
         {loading ? (
           <p className="px-2.5 py-2 text-xs text-terminal-text-dim">
             Resolving live streams...
@@ -439,14 +443,14 @@ export function LiveWebcamsDashboard() {
           </p>
         ) : null}
 
-        <div>
-          <div className="grid grid-cols-2 gap-px bg-terminal-border">
+        <div className="flex-1 min-h-0">
+          <div className="grid h-full grid-cols-2 gap-px bg-terminal-border">
           {visibleFeeds.map((feed) => (
             <article
               key={`${feed.id}-${feed.videoId}`}
-              className="overflow-hidden bg-terminal-surface"
+              className="overflow-hidden bg-terminal-surface flex flex-col"
             >
-              <header className="flex items-start justify-between px-3 py-2">
+              <header className="shrink-0 flex items-start justify-between px-3 py-1.5">
                 <p className="text-xs font-semibold uppercase tracking-[0.14em] text-terminal-text">
                   {feed.city}
                 </p>
@@ -454,15 +458,23 @@ export function LiveWebcamsDashboard() {
                   {feed.country}
                 </span>
               </header>
-              {feed.videoId || feed.channelId ? (
-                <div className="relative aspect-video w-full bg-black">
+              {feed.videoId ? (
+                <div className="relative flex-1 min-h-0 bg-black">
                   <iframe
                     className="absolute inset-0 h-full w-full"
-                    src={
-                      feed.videoId
-                        ? buildYoutubeEmbedUrl(feed.videoId)
-                        : buildYoutubeChannelLiveEmbedUrl(feed.channelId!)
-                    }
+                    src={buildYoutubeEmbedUrl(feed.videoId)}
+                    title={`${feed.city} live webcam`}
+                    loading="eager"
+                    allow="autoplay; encrypted-media; picture-in-picture"
+                    referrerPolicy="strict-origin-when-cross-origin"
+                    allowFullScreen
+                  />
+                </div>
+              ) : feed.channelId ? (
+                <div className="relative flex-1 min-h-0 bg-black">
+                  <iframe
+                    className="absolute inset-0 h-full w-full"
+                    src={buildYoutubeChannelLiveEmbedUrl(feed.channelId)}
                     title={`${feed.city} live webcam`}
                     loading="eager"
                     allow="autoplay; encrypted-media; picture-in-picture"
@@ -471,7 +483,7 @@ export function LiveWebcamsDashboard() {
                   />
                 </div>
               ) : (
-                <div className="flex aspect-video flex-col justify-between bg-terminal-bg/70 p-3">
+                <div className="flex flex-1 min-h-0 flex-col justify-between bg-terminal-bg/70 p-3">
                   <div>
                     <p className="text-sm font-medium leading-snug text-terminal-text">
                       {feed.title}
@@ -500,7 +512,7 @@ export function LiveWebcamsDashboard() {
           </div>
         </div>
 
-        <div className="overflow-x-auto border-t border-terminal-border bg-terminal-bg/80 px-2.5 py-2">
+        <div className="shrink-0 overflow-x-auto border-t border-terminal-border bg-terminal-bg/80 px-2.5 py-2">
           <div className="flex min-w-max gap-2">
             {REGION_ORDER.map((item) => (
               <button
@@ -518,6 +530,7 @@ export function LiveWebcamsDashboard() {
             ))}
           </div>
         </div>
+      </div>
     </MacWindow>
   );
 }

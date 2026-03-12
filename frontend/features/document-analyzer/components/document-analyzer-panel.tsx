@@ -269,7 +269,7 @@ export function DocumentAnalyzerPanel() {
           {result.extraction?.summary && (
             <div className="rounded-2xl border border-terminal-border bg-terminal-bg/50 p-4">
               <p className="mb-2 text-[9px] font-semibold uppercase tracking-[0.2em] text-terminal-text-muted">Summary</p>
-              <p className="text-xs leading-relaxed text-terminal-text">{result.extraction.summary}</p>
+              <p className="text-xs leading-relaxed text-terminal-text wrap-break-word max-h-32 overflow-y-auto">{result.extraction.summary}</p>
             </div>
           )}
 
@@ -362,7 +362,7 @@ export function DocumentAnalyzerPanel() {
                   </div>
                   <ul className="space-y-2">
                     {result.aiAnalytics.suspiciousStatements.map((statement, i) => (
-                      <li key={i} className="rounded-lg border border-terminal-red/15 bg-terminal-bg/40 px-3 py-2 text-xs text-terminal-text-dim italic">
+                      <li key={i} className="rounded-lg border border-terminal-red/15 bg-terminal-bg/40 px-3 py-2 text-xs text-terminal-text-dim italic wrap-break-word" style={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                         &ldquo;{statement}&rdquo;
                       </li>
                     ))}
@@ -399,7 +399,7 @@ export function DocumentAnalyzerPanel() {
               <p className="mb-3 text-sm font-bold text-terminal-text">
                 ESG Claims Detected <span className="ml-1 text-xs font-normal text-terminal-text-muted">({claims.length})</span>
               </p>
-              <div className="space-y-2">
+              <div className="space-y-2 max-h-96 overflow-y-auto">
                 {claims.map((claim) => {
                   const style = CLAIM_TYPE_STYLES[claim.type] ?? "border-terminal-border bg-terminal-surface text-terminal-text";
                   const confidence = Math.max(0, Math.min(1, claim.confidence ?? 0));
@@ -413,7 +413,7 @@ export function DocumentAnalyzerPanel() {
                           {claim.type}
                         </span>
                       </div>
-                      <p className="text-xs text-terminal-text">{claim.text}</p>
+                      <p className="text-xs leading-relaxed text-terminal-text wrap-break-word" style={{ display: '-webkit-box', WebkitLineClamp: 4, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{claim.text}</p>
                       <div className="mt-2.5">
                         <div className="mb-1 flex items-center justify-between text-[9px] text-terminal-text-muted">
                           <span>Confidence</span>

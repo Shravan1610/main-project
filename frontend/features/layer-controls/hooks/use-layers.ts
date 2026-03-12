@@ -19,12 +19,11 @@ import { useMemo, useState } from "react";
 import type { LayerConfig, LayerType } from "../types";
 
 const DEFAULT_LAYERS: LayerConfig[] = [
-  { id: "entities", label: "Entities", icon: "●", enabled: true },
-  { id: "exchanges", label: "Exchanges", icon: "▣", enabled: true },
+  { id: "population", label: "Population", icon: "●", enabled: true },
   { id: "climate", label: "Climate", icon: "⚠", enabled: true },
-  { id: "news", label: "News", icon: "◉", enabled: true },
-  { id: "heatmap", label: "Heatmap", icon: "▒", enabled: false },
+  { id: "heatmap", label: "Heatmap", icon: "▒", enabled: true },
   { id: "risk-overlay", label: "Risk Overlay", icon: "△", enabled: false },
+  { id: "market-hours", label: "Market Hours", icon: "◷", enabled: true },
 ];
 
 export function useLayers(initialLayers: LayerConfig[] = DEFAULT_LAYERS) {

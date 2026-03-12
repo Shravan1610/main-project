@@ -5,6 +5,21 @@ import { apiClient } from "@/shared/api/client";
 
 /* ── Shared fetch hook ──────────────────────────────────────────────── */
 
+const PANEL_FETCH_RETRY_ATTEMPTS = 2;
+const PANEL_FETCH_RETRY_DELAY_MS = 1200;
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function shouldRetryPanelFetch(error: unknown) {
+  if (!(error instanceof Error)) {
+    return false;
+  }
+
+  return error.message === "Request timed out" || error.message === "Failed to fetch";
+}
+
 export function useFetchPanel<T>(path: string) {
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(true);
@@ -14,7 +29,28 @@ export function useFetchPanel<T>(path: string) {
     setLoading(true);
     setError(null);
     try {
-      const result = await apiClient.get<T>(path);
+      let attempt = 0;
+      let result: T | null = null;
+
+      while (attempt <= PANEL_FETCH_RETRY_ATTEMPTS) {
+        try {
+          result = await apiClient.get<T>(path);
+          break;
+        } catch (err) {
+          const isLastAttempt = attempt === PANEL_FETCH_RETRY_ATTEMPTS;
+          if (isLastAttempt || !shouldRetryPanelFetch(err)) {
+            throw err;
+          }
+
+          attempt += 1;
+          await sleep(PANEL_FETCH_RETRY_DELAY_MS * attempt);
+        }
+      }
+
+      if (result === null) {
+        throw new Error("Failed to load");
+      }
+
       setData(result);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load");

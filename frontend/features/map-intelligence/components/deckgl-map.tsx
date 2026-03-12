@@ -5,12 +5,12 @@ import maplibregl from "maplibre-gl";
 import { MapboxOverlay } from "@deck.gl/mapbox";
 import type { Layer } from "@deck.gl/core";
 import { GeoJsonLayer, ScatterplotLayer, TextLayer } from "@deck.gl/layers";
-import { HeatmapLayer } from "@deck.gl/aggregation-layers";
 
-import type { ActiveLayers, MapMarker, MapViewport, MarkerKind } from "../types";
+import type { ActiveLayers, ClimateHeatmapPoint, MapMarker, MapViewport, MarkerKind } from "../types";
 import { getLayerDef, MAP_LAYER_DEFINITIONS } from "../config/map-layer-definitions";
 import { buildClusterIndex, getClusters } from "../utils/cluster";
 import type { ClusterFeature } from "../utils/cluster";
+import { getAllExchangeStatuses, type ExchangeStatusInfo } from "../utils/market-hours";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -22,9 +22,10 @@ type DeckGLMapProps = {
   activeLayers?: ActiveLayers;
   onMarkerSelect?: (marker: MapMarker) => void;
   onContextMenu?: (lngLat: { lat: number; lng: number }) => void;
+  climateHeatmap?: ClimateHeatmapPoint[];
 };
 
-const MARKER_KINDS: MarkerKind[] = ["entity", "exchange", "climate", "news"];
+const MARKER_KINDS: MarkerKind[] = ["population", "climate"];
 
 /* ------------------------------------------------------------------ */
 /*  Heatmap color ramp:  green → amber → red (terminal palette)       */
@@ -38,6 +39,66 @@ const HEATMAP_COLOR_RANGE: [number, number, number][] = [
   [255, 59, 92],     // terminal-red
   [180, 20, 50],     // deep red
 ];
+
+/* ------------------------------------------------------------------ */
+/*  Climate choropleth: temperature → RGBA per-country fill            */
+/* ------------------------------------------------------------------ */
+
+function temperatureToColor(weight: number): [number, number, number, number] {
+  const alpha = 100;
+  if (weight < 0.25) return [0, 120, 255, alpha];     // cold — blue
+  if (weight < 0.4)  return [0, 200, 180, alpha];     // cool — teal
+  if (weight < 0.55) return [0, 255, 136, alpha];     // mild — green
+  if (weight < 0.65) return [200, 230, 0, alpha];     // warm — yellow-green
+  if (weight < 0.75) return [255, 184, 0, alpha];     // warm — amber
+  if (weight < 0.85) return [255, 100, 60, alpha];    // hot — orange
+  return [255, 59, 92, alpha];                         // very hot — red
+}
+
+/** Approximate distance in degrees between two lat/lng points */
+function degDist(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const dLat = lat1 - lat2;
+  const dLng = lng1 - lng2;
+  return dLat * dLat + dLng * dLng;
+}
+
+/** Find the nearest climate data point to a given centroid */
+function nearestClimateWeight(
+  centroidLat: number,
+  centroidLng: number,
+  climateData: ClimateHeatmapPoint[],
+): number {
+  let minDist = Infinity;
+  let weight = 0.5;
+  for (const p of climateData) {
+    const d = degDist(centroidLat, centroidLng, p.lat, p.lng);
+    if (d < minDist) {
+      minDist = d;
+      weight = p.weight;
+    }
+  }
+  return weight;
+}
+
+/** Compute rough centroid from a GeoJSON feature */
+function computeCentroid(feature: GeoJSON.Feature): [number, number] | null {
+  const coords: number[][] = [];
+  extractCoords(feature.geometry, coords);
+  if (coords.length === 0) return null;
+  let sumLat = 0, sumLng = 0;
+  for (const c of coords) {
+    sumLng += c[0];
+    sumLat += c[1];
+  }
+  return [sumLat / coords.length, sumLng / coords.length];
+}
+
+/* ------------------------------------------------------------------ */
+/*  Market hours colors                                                */
+/* ------------------------------------------------------------------ */
+
+const MARKET_OPEN_COLOR: [number, number, number, number] = [0, 255, 136, 240];   // green
+const MARKET_CLOSED_COLOR: [number, number, number, number] = [120, 120, 140, 160]; // gray
 
 /* ------------------------------------------------------------------ */
 /*  Risk overlay helpers — country fill color from marker density      */
@@ -153,11 +214,9 @@ const DARK_STYLE: maplibregl.StyleSpecification = {
 /* ------------------------------------------------------------------ */
 
 const DEFAULT_ACTIVE: ActiveLayers = {
-  entities: true,
-  exchanges: true,
+  population: true,
   climate: true,
-  news: true,
-  heatmap: false,
+  heatmap: true,
   "risk-overlay": false,
 };
 
@@ -167,6 +226,7 @@ export function DeckGLMap({
   activeLayers = DEFAULT_ACTIVE,
   onMarkerSelect,
   onContextMenu,
+  climateHeatmap,
 }: DeckGLMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
@@ -185,6 +245,19 @@ export function DeckGLMap({
   const [worldGeo, setWorldGeo] = useState<GeoJSON.FeatureCollection | null>(
     worldGeoJsonCache,
   );
+
+  // Market hours status (updated every 30s)
+  const [exchangeStatuses, setExchangeStatuses] = useState<ExchangeStatusInfo[]>(
+    () => getAllExchangeStatuses(),
+  );
+
+  // Refresh market hours every 30 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setExchangeStatuses(getAllExchangeStatuses());
+    }, 30_000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Fetch world GeoJSON once
   useEffect(() => {
@@ -227,20 +300,38 @@ export function DeckGLMap({
     [clusterIndex, currentBounds, currentZoom],
   );
 
+  // Climate choropleth: annotate country features with temperature-based colors
+  const climateFeatures = useMemo(() => {
+    if (!worldGeo || !climateHeatmap || climateHeatmap.length === 0) return null;
+    return {
+      ...worldGeo,
+      features: worldGeo.features.map((f) => {
+        const centroid = computeCentroid(f);
+        const weight = centroid
+          ? nearestClimateWeight(centroid[0], centroid[1], climateHeatmap)
+          : 0.5;
+        return {
+          ...f,
+          properties: { ...f.properties, _climateWeight: weight },
+        };
+      }),
+    } as GeoJSON.FeatureCollection;
+  }, [worldGeo, climateHeatmap]);
+
   // Risk overlay: annotate features with marker counts
   const riskFeatures = useMemo(() => {
     if (!worldGeo || !activeLayers["risk-overlay"]) return null;
-    const climateAndNews = markers.filter(
-      (m) => m.kind === "climate" || m.kind === "news",
+    const climateMarkers = markers.filter(
+      (m) => m.kind === "climate",
     );
-    if (climateAndNews.length === 0) return null;
+    if (climateMarkers.length === 0) return null;
     return {
       ...worldGeo,
       features: worldGeo.features.map((f) => ({
         ...f,
         properties: {
           ...f.properties,
-          _riskCount: countMarkersInFeature(f, climateAndNews),
+          _riskCount: countMarkersInFeature(f, climateMarkers),
         },
       })),
     } as GeoJSON.FeatureCollection;
@@ -272,25 +363,111 @@ export function DeckGLMap({
       );
     }
 
-    // ----- Heatmap layer ----- //
-    if (activeLayers["heatmap"]) {
-      const visibleMarkers = markers.filter((m) => {
-        const kindKey = m.kind === "entity" ? "entities" : m.kind === "exchange" ? "exchanges" : m.kind;
-        return activeLayers[kindKey];
-      });
-      // Fall back to all markers if none specifically visible
-      const heatData = visibleMarkers.length > 0 ? visibleMarkers : markers;
+    // ----- Climate choropleth — country fills bounded to borders ----- //
+    if (activeLayers["heatmap"] && climateFeatures) {
       layers.push(
-        new HeatmapLayer<MapMarker>({
-          id: "heatmap",
-          data: heatData,
-          getPosition: (d) => [d.coordinates.lng, d.coordinates.lat] as [number, number],
-          getWeight: 1,
-          radiusPixels: 60,
-          intensity: 1.2,
-          threshold: 0.05,
-          colorRange: HEATMAP_COLOR_RANGE,
-          opacity: 0.7,
+        new GeoJsonLayer({
+          id: "climate-choropleth",
+          data: climateFeatures,
+          filled: true,
+          stroked: true,
+          getLineColor: [40, 50, 65, 60],
+          lineWidthMinPixels: 0.5,
+          getFillColor: (f: GeoJSON.Feature) =>
+            temperatureToColor(
+              (f.properties as Record<string, number>)?._climateWeight ?? 0.5,
+            ),
+          opacity: 0.65,
+          pickable: false,
+          transitions: { opacity: { duration: 400, type: "interpolation" } },
+        }),
+      );
+    }
+
+    // ----- Market hours markers ----- //
+    if (activeLayers["market-hours"]) {
+      // Open exchanges
+      const openExchanges = exchangeStatuses.filter((s) => s.status === "open");
+      const closedExchanges = exchangeStatuses.filter((s) => s.status === "closed");
+
+      if (openExchanges.length > 0) {
+        layers.push(
+          new ScatterplotLayer<ExchangeStatusInfo>({
+            id: "market-open",
+            data: openExchanges,
+            getPosition: (d) => [d.exchange.coordinates.lng, d.exchange.coordinates.lat] as [number, number],
+            getFillColor: MARKET_OPEN_COLOR,
+            getLineColor: [0, 255, 136, 255],
+            getRadius: 55000,
+            radiusScale: 1,
+            radiusMinPixels: 7,
+            radiusMaxPixels: 22,
+            lineWidthMinPixels: 2,
+            stroked: true,
+            radiusUnits: "meters",
+            pickable: false,
+            opacity: 1,
+          }),
+        );
+        // Pulse ring for open markets
+        layers.push(
+          new ScatterplotLayer<ExchangeStatusInfo>({
+            id: "market-open-pulse",
+            data: openExchanges,
+            getPosition: (d) => [d.exchange.coordinates.lng, d.exchange.coordinates.lat] as [number, number],
+            getFillColor: [0, 0, 0, 0],
+            getLineColor: [0, 255, 136, Math.max(0, Math.round(140 * (1.0 / pulseScale)))],
+            getRadius: 55000 * pulseScale,
+            radiusScale: 1,
+            radiusMinPixels: 7 * pulseScale,
+            radiusMaxPixels: 40,
+            lineWidthMinPixels: 2,
+            stroked: true,
+            filled: false,
+            radiusUnits: "meters",
+            pickable: false,
+            opacity: 0.8,
+          }),
+        );
+      }
+
+      if (closedExchanges.length > 0) {
+        layers.push(
+          new ScatterplotLayer<ExchangeStatusInfo>({
+            id: "market-closed",
+            data: closedExchanges,
+            getPosition: (d) => [d.exchange.coordinates.lng, d.exchange.coordinates.lat] as [number, number],
+            getFillColor: MARKET_CLOSED_COLOR,
+            getLineColor: [80, 80, 100, 120],
+            getRadius: 45000,
+            radiusScale: 1,
+            radiusMinPixels: 5,
+            radiusMaxPixels: 16,
+            lineWidthMinPixels: 1,
+            stroked: true,
+            radiusUnits: "meters",
+            pickable: false,
+            opacity: 0.7,
+          }),
+        );
+      }
+
+      // Labels for exchanges
+      layers.push(
+        new TextLayer<ExchangeStatusInfo>({
+          id: "market-labels",
+          data: exchangeStatuses,
+          getPosition: (d) => [d.exchange.coordinates.lng, d.exchange.coordinates.lat] as [number, number],
+          getText: (d) => `${d.exchange.shortName} ${d.status === "open" ? "●" : "○"}`,
+          getSize: 11,
+          getColor: (d) => d.status === "open" ? [0, 255, 136, 255] : [150, 150, 170, 200],
+          getTextAnchor: "middle" as const,
+          getAlignmentBaseline: "bottom" as const,
+          getPixelOffset: [0, -14] as [number, number],
+          fontFamily: "monospace",
+          fontWeight: "bold",
+          outlineColor: [11, 15, 22, 220],
+          outlineWidth: 2,
         }),
       );
     }
@@ -351,7 +528,7 @@ export function DeckGLMap({
     // ----- Individual marker layers per kind with opacity transitions ----- //
     const byKind = new Map<string, ClusterFeature[]>();
     for (const f of pointFeatures) {
-      const kind = f.properties.marker?.kind ?? "entity";
+      const kind = f.properties.marker?.kind ?? "population";
       if (!byKind.has(kind)) byKind.set(kind, []);
       byKind.get(kind)!.push(f);
     }
@@ -363,8 +540,7 @@ export function DeckGLMap({
       const def = getLayerDef(kind);
       // Map marker kind → activeLayers key
       const kindToLayerKey: Record<string, string> = {
-        entity: "entities",
-        exchange: "exchanges",
+        population: "population",
       };
       const layerKey = kindToLayerKey[kind] ?? kind;
       const isActive = activeLayers[layerKey] ?? false;
@@ -429,7 +605,10 @@ export function DeckGLMap({
     activeLayers,
     markers,
     riskFeatures,
+    climateFeatures,
+    exchangeStatuses,
     pulseScale,
+    climateHeatmap,
   ]);
 
   const getSafeLayers = useCallback((): Layer[] => {

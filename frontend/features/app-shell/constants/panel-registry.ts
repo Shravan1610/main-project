@@ -327,7 +327,7 @@ const INTELLIGENCE_PANELS: PanelRegistryEntry[] = [
   },
   {
     id: "ai-insights",
-    label: "AI Insights",
+    label: "Insights",
     category: "intelligence",
     defaultEnabled: true,
     isPinned: false,
@@ -350,7 +350,7 @@ const INTELLIGENCE_PANELS: PanelRegistryEntry[] = [
   },
   {
     id: "ai-regulation",
-    label: "AI Regulation Dashboard",
+    label: "Regulation Dashboard",
     category: "intelligence",
     defaultEnabled: true,
     isPinned: false,
@@ -455,6 +455,17 @@ const TOOL_PANELS: PanelRegistryEntry[] = [
     load: () =>
       import("../components/my-monitors-panel").then((m) => ({
         default: m.default,
+      })),
+  },
+  {
+    id: "voice-agent",
+    label: "Voice Agent",
+    category: "tools",
+    defaultEnabled: true,
+    isPinned: false,
+    load: () =>
+      import("@/features/voice-agent/components").then((m) => ({
+        default: m.VapiVoiceAgent,
       })),
   },
 ];

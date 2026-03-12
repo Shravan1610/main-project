@@ -127,8 +127,7 @@ export function AIInsightsPanel() {
 
   return (
     <MacWindow
-      title="AI Insights"
-      rightSlot={<span className="text-terminal-cyan/80">AI</span>}
+      title="Insights"
     >
       <div className="p-3">
         {loading ? (
@@ -177,7 +176,7 @@ export function GlobalSituationPanel() {
   return (
     <MacWindow
       title="Global Situation"
-      rightSlot={<span className="text-terminal-cyan/80">AI</span>}
+     
     >
       <div className="p-3">
         {loading ? (
@@ -253,9 +252,6 @@ export function MarketAnalysisPanel() {
   return (
     <MacWindow
       title="Market Analysis"
-      rightSlot={
-        <span className="text-terminal-cyan/80">AI</span>
-      }
     >
       <div className="p-3">
         {loading ? (
@@ -333,7 +329,7 @@ export function PredictionsPanel() {
   return (
     <MacWindow
       title="Predictions"
-      rightSlot={<span className="text-terminal-cyan/80">AI</span>}
+     
     >
       <div className="p-3">
         {loading ? (
@@ -393,7 +389,7 @@ export function DailyBriefPanel() {
   return (
     <MacWindow
       title="Daily Market Brief"
-      rightSlot={<span className="text-terminal-cyan/80">AI</span>}
+     
     >
       <div className="p-3">
         {loading ? (
@@ -456,8 +452,7 @@ export function AIRegulationPanel() {
 
   return (
     <MacWindow
-      title="AI Regulation Dashboard"
-      rightSlot={<span className="text-terminal-cyan/80">AI</span>}
+      title="Regulation Dashboard"
     >
       <div className="p-3">
         {loading ? (
