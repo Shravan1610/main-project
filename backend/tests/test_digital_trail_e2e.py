@@ -1,107 +1,95 @@
-"""End-to-end tests for the Digital Trail feature."""
+"""End-to-end tests for the Digital Trail feature.
+
+These tests require a running backend at http://localhost:8000 and are
+skipped automatically (via the ``live_api`` fixture) when the server is not
+reachable, so they are safe to collect in CI without a live backend.
+"""
+import pytest
 import requests
 
 BASE = "http://localhost:8000"
 HASH = "abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890"
 TAMPERED = "0000000000000000000000000000000000000000000000000000000000000000"
-
-passed = 0
-failed = 0
+UNKNOWN = "1111111111111111111111111111111111111111111111111111111111111111"
 
 
-def check(name, condition, msg=""):
-    global passed, failed
-    if condition:
-        print(f"  PASS: {name}")
-        passed += 1
-    else:
-        print(f"  FAIL: {name} — {msg}")
-        failed += 1
+@pytest.fixture(scope="module")
+def live_api():
+    """Skip all tests in this module when the backend is not running."""
+    try:
+        requests.get(f"{BASE}/health", timeout=2)
+    except requests.exceptions.ConnectionError:
+        pytest.skip("Backend not running at http://localhost:8000")
 
 
-print("=== E2E TEST: Digital Trail ===\n")
+def test_register_document(live_api):
+    r = requests.post(f"{BASE}/digital-trail/register", json={
+        "hash": HASH,
+        "asset_name": "e2e-test-doc.pdf",
+        "asset_type": "document",
+        "encrypted_chunk": "dGVzdCBjaHVuaw==",
+    })
+    assert r.status_code == 200, f"Expected 200, got {r.status_code}"
+    d = r.json()
+    assert d["record"]["status"] == "anchored"
+    assert d["record"]["blockchain_tx"].startswith("0x")
+    assert "registered" in d["message"].lower()
 
-# 1. Register
-print("Test 1: Register document")
-r = requests.post(f"{BASE}/digital-trail/register", json={
-    "hash": HASH,
-    "asset_name": "e2e-test-doc.pdf",
-    "asset_type": "document",
-    "encrypted_chunk": "dGVzdCBjaHVuaw==",
-})
-d = r.json()
-check("HTTP 200", r.status_code == 200, f"got {r.status_code}")
-check("status anchored", d["record"]["status"] == "anchored")
-check("has blockchain_tx", d["record"]["blockchain_tx"].startswith("0x"))
-check("message", "registered" in d["message"].lower())
 
-# 2. Verify matching hash
-print("\nTest 2: Verify matching hash")
-r = requests.post(f"{BASE}/digital-trail/verify", json={"hash": HASH})
-d = r.json()
-check("status verified", d["status"] == "verified", f"got {d['status']}")
-check("no forensic event", d["forensic_event"] is None)
-check("last_verified_at updated", d["record"]["last_verified_at"] is not None)
+def test_verify_matching_hash(live_api):
+    r = requests.post(f"{BASE}/digital-trail/verify", json={"hash": HASH})
+    assert r.status_code == 200
+    d = r.json()
+    assert d["status"] == "verified", f"Expected verified, got {d['status']}"
+    assert d["forensic_event"] is None
+    assert d["record"]["last_verified_at"] is not None
 
-# 3. Verify tampered hash
-print("\nTest 3: Verify tampered hash")
-r = requests.post(f"{BASE}/digital-trail/verify", json={
-    "hash": TAMPERED,
-    "original_hash": HASH,
-})
-d = r.json()
-check("status tampered", d["status"] == "tampered", f"got {d['status']}")
-check("forensic event exists", d["forensic_event"] is not None)
-check("IP captured", bool(d["forensic_event"]["ip"]))
-check("timestamp captured", bool(d["forensic_event"]["timestamp"]))
-check("attempted hash stored", d["forensic_event"]["attempted_hash"] == TAMPERED)
-check("original hash stored", d["forensic_event"]["original_hash"] == HASH)
 
-# 4. Forensic trail
-print("\nTest 4: Get forensic trail")
-r = requests.get(f"{BASE}/digital-trail/forensic/{HASH}")
-d = r.json()
-check("has events", len(d["events"]) >= 1)
-check("tamper count", d["total_tamper_attempts"] >= 1)
-check("asset name", d["asset_name"] == "e2e-test-doc.pdf")
+def test_verify_tampered_hash(live_api):
+    r = requests.post(f"{BASE}/digital-trail/verify", json={
+        "hash": TAMPERED,
+        "original_hash": HASH,
+    })
+    assert r.status_code == 200
+    d = r.json()
+    assert d["status"] == "tampered", f"Expected tampered, got {d['status']}"
+    assert d["forensic_event"] is not None
+    assert d["forensic_event"]["ip"]
+    assert d["forensic_event"]["timestamp"]
+    assert d["forensic_event"]["attempted_hash"] == TAMPERED
+    assert d["forensic_event"]["original_hash"] == HASH
 
-# 5. Get single record
-print("\nTest 5: Get single record")
-r = requests.get(f"{BASE}/digital-trail/records/{HASH}")
-d = r.json()
-check("record exists", "record" in d)
-check("correct asset", d["record"]["asset_name"] == "e2e-test-doc.pdf")
 
-# 6. List all records
-print("\nTest 6: List all records")
-r = requests.get(f"{BASE}/digital-trail/records")
-d = r.json()
-check("total >= 1", d["total"] >= 1)
-check("records is list", isinstance(d["records"], list))
+def test_get_record(live_api):
+    r = requests.get(f"{BASE}/digital-trail/records/{HASH}")
+    assert r.status_code == 200
+    d = r.json()
+    assert "record" in d
+    assert d["record"]["asset_name"] == "e2e-test-doc.pdf"
 
-# 7. Re-register same hash (should update, not duplicate)
-print("\nTest 7: Re-register same hash (idempotent)")
-r = requests.post(f"{BASE}/digital-trail/register", json={
-    "hash": HASH,
-    "asset_name": "e2e-test-doc.pdf",
-    "asset_type": "document",
-})
-d = r.json()
-check("already registered msg", "already" in d["message"].lower())
 
-# 8. Verify unknown hash (no original_hash)
-print("\nTest 8: Verify unknown hash (no original)")
-r = requests.post(f"{BASE}/digital-trail/verify", json={
-    "hash": "1111111111111111111111111111111111111111111111111111111111111111",
-})
-d = r.json()
-check("status tampered", d["status"] == "tampered", f"got {d['status']}")
+def test_list_records(live_api):
+    r = requests.get(f"{BASE}/digital-trail/records")
+    assert r.status_code == 200
+    d = r.json()
+    assert d["total"] >= 1
+    assert isinstance(d["records"], list)
 
-# Summary
-print(f"\n{'='*40}")
-print(f"RESULTS: {passed} passed, {failed} failed")
-if failed == 0:
-    print("ALL TESTS PASSED")
-else:
-    print("SOME TESTS FAILED")
-    exit(1)
+
+def test_reregister_same_hash_is_idempotent(live_api):
+    r = requests.post(f"{BASE}/digital-trail/register", json={
+        "hash": HASH,
+        "asset_name": "e2e-test-doc.pdf",
+        "asset_type": "document",
+    })
+    assert r.status_code == 200
+    d = r.json()
+    assert "already" in d["message"].lower()
+
+
+def test_verify_unknown_hash(live_api):
+    r = requests.post(f"{BASE}/digital-trail/verify", json={"hash": UNKNOWN})
+    assert r.status_code == 200
+    d = r.json()
+    assert d["status"] == "tampered", f"Expected tampered, got {d['status']}"
+

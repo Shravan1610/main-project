@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
-from fastapi import APIRouter, File, Form, Query, UploadFile
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
 from pydantic import BaseModel, Field
 
 from src.api.controllers.evidence_controller import (
@@ -19,6 +19,7 @@ from src.api.controllers.evidence_controller import (
     sync_google_integration,
     upload_document,
 )
+from src.api.deps import require_supabase_jwt
 
 router = APIRouter()
 
@@ -182,7 +183,21 @@ def evidence_dashboard_summary() -> dict:
 
 
 @router.post("/evidence/integrations/google/supabase-connect")
-def evidence_connect_google(payload: GoogleConnectRequest) -> dict:
+def evidence_connect_google(
+    payload: GoogleConnectRequest,
+    caller_subject: str = Depends(require_supabase_jwt),
+) -> dict:
+    """Connect a Google account for evidence collection.
+
+    Requires a valid Supabase JWT in the ``Authorization: Bearer <token>``
+    header.  The authenticated caller's subject must match ``supabase_user_id``
+    in the request body to prevent cross-user token injection.
+    """
+    if payload.supabase_user_id != caller_subject:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="supabase_user_id does not match the authenticated user.",
+        )
     return connect_google_integration(
         organization_id=payload.organization_id,
         actor_id=payload.actor_id,
@@ -195,7 +210,15 @@ def evidence_connect_google(payload: GoogleConnectRequest) -> dict:
 
 
 @router.post("/evidence/integrations/google/sync")
-def evidence_sync_google(payload: GoogleSyncRequest) -> dict:
+def evidence_sync_google(
+    payload: GoogleSyncRequest,
+    _: str = Depends(require_supabase_jwt),
+) -> dict:
+    """Trigger a Gmail evidence sync for the authenticated organization.
+
+    Requires a valid Supabase JWT in the ``Authorization: Bearer <token>``
+    header.
+    """
     return sync_google_integration(
         organization_id=payload.organization_id,
         actor_id=payload.actor_id,

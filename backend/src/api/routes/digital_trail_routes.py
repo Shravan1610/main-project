@@ -4,10 +4,11 @@ from __future__ import annotations
 
 from typing import Any
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel, Field
 
 from src.api.controllers._service_loader import load_function
+from src.api.deps import require_internal_key
 
 # ── Dynamic imports via service loader (kebab-case dir) ─────────────────────
 _register = load_function(
@@ -90,9 +91,14 @@ async def get_record(hash_hex: str) -> dict[str, Any]:
     return {"record": record}
 
 
-@router.get("/digital-trail/forensic/{hash_hex}")
+@router.get("/digital-trail/forensic/{hash_hex}", dependencies=[Depends(require_internal_key)])
 async def get_forensic_trail(hash_hex: str) -> dict[str, Any]:
-    """Return decrypted forensic trail for a document (system-only access)."""
+    """Return decrypted forensic trail for a document (system-only access).
+
+    Requires the ``X-Internal-Key`` header to equal the server's
+    ``SUPABASE_SERVICE_ROLE_KEY``.  This endpoint exposes PII (client IPs)
+    and must not be publicly accessible.
+    """
     trail = _get_forensic(hash_hex)
     if not trail:
         return {"error": "No forensic trail found", "hash": hash_hex}
