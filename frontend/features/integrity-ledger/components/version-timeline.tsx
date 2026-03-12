@@ -76,7 +76,7 @@ export default function VersionTimeline({ records }: Props) {
                     </p>
                   )}
 
-                  {record.previousHash && (
+                  {record.previousHash && record.previousHash !== record.hash && (
                     <p className="text-[10px] text-terminal-amber mt-1">
                       Modified from previous version
                     </p>

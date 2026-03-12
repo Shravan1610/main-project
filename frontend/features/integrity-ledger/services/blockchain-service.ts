@@ -1,8 +1,10 @@
 export async function recordHashOnBlockchain(hash: string): Promise<string> {
-  // Simulate blockchain network latency
-  await new Promise<void>(resolve => setTimeout(resolve, 400))
+  // Simulate blockchain network latency in non-production environments
+  if (process.env.NODE_ENV !== "production") {
+    await new Promise<void>(resolve => setTimeout(resolve, 400))
+  }
 
-  // Generate a deterministic-looking TX hash via Web Crypto
+  // Generate a non-deterministic, TX-like hash via Web Crypto (includes timestamp in salt)
   const encoder = new TextEncoder()
   const salt = `${hash}:${Date.now()}:anchored`
   const data = encoder.encode(salt)
