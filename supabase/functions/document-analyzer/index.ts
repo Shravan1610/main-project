@@ -62,6 +62,14 @@ function jsonResponse(body: unknown, status = 200) {
   });
 }
 
+class ValidationError extends Error {
+  readonly status: number;
+  constructor(message: string, status = 400) {
+    super(message);
+    this.status = status;
+  }
+}
+
 function normalizeWhitespace(value: string) {
   return value.replace(/\s+/g, " ").trim();
 }
@@ -87,31 +95,44 @@ function validateUrl(rawUrl: string) {
   try {
     parsed = new URL(rawUrl);
   } catch {
-    throw new Error("Invalid URL format");
+    throw new ValidationError("Invalid URL format");
   }
   if (!["http:", "https:"].includes(parsed.protocol)) {
-    throw new Error("Only http and https URLs are supported");
+    throw new ValidationError("Only http and https URLs are supported");
   }
 
   const hostname = parsed.hostname.toLowerCase();
   const privateHostPattern = /^(localhost|127\.\d+\.\d+\.\d+|0\.0\.0\.0|10\.\d+\.\d+\.\d+|192\.168\.\d+\.\d+|172\.(1[6-9]|2\d|3[0-1])\.\d+\.\d+|169\.254\.\d+\.\d+)$/;
   const ipv6PrivatePattern = /^(::1|fe80:|fc00:|fd00:)/i;
   if (privateHostPattern.test(hostname) || ipv6PrivatePattern.test(hostname) || hostname.endsWith(".local")) {
-    throw new Error("Private or local URLs are not allowed");
+    throw new ValidationError("Private or local URLs are not allowed");
   }
 }
 
 async function scrapeUrl(rawUrl: string) {
   validateUrl(rawUrl);
-  const response = await fetch(rawUrl, {
-    redirect: "follow",
-    headers: { "User-Agent": "GreenTrust-DocumentAnalyzer/1.0" },
-  });
-  if (!response.ok) {
-    throw new Error(`Failed to scrape URL: ${response.status}`);
+  let currentUrl = rawUrl;
+  const MAX_REDIRECTS = 5;
+  for (let i = 0; i < MAX_REDIRECTS; i++) {
+    const response = await fetch(currentUrl, {
+      redirect: "manual",
+      headers: { "User-Agent": "GreenTrust-DocumentAnalyzer/1.0" },
+    });
+    if (response.status >= 300 && response.status < 400) {
+      const location = response.headers.get("Location");
+      if (!location) throw new Error(`Redirect response (status ${response.status}) missing required Location header`);
+      const nextUrl = new URL(location, currentUrl).href;
+      validateUrl(nextUrl);
+      currentUrl = nextUrl;
+      continue;
+    }
+    if (!response.ok) {
+      throw new Error(`Failed to scrape URL: ${response.status}`);
+    }
+    const html = await response.text();
+    return parseHtml(html);
   }
-  const html = await response.text();
-  return parseHtml(html);
+  throw new Error("Too many redirects");
 }
 
 function classifyClaim(sentence: string) {
@@ -525,6 +546,9 @@ Deno.serve(async (req: Request) => {
     result.storage = await persistRun(result, text);
     return jsonResponse(result);
   } catch (error) {
+    if (error instanceof ValidationError) {
+      return jsonResponse({ detail: error.message }, error.status);
+    }
     const message = error instanceof Error ? error.message : "Unknown error";
     return jsonResponse({ detail: message }, 500);
   }
